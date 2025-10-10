@@ -1,0 +1,155 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+// ============================================================
+// USER MANAGEMENT
+// ============================================================
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  name      String
+  role      String   @default("ghost_writer") // "ghost_writer" | "admin" | "author"
+  projects  Project[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([email])
+}
+
+// ============================================================
+// PROJECT & BOOK DATA
+// ============================================================
+
+model Project {
+  id              String   @id @default(cuid())
+  userId          String
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  // Form Data (dal NewProjectModal)
+  authorName      String
+  authorRole      String
+  company         String
+  industry        String
+  bookTitle       String
+  bookSubtitle    String?
+  targetReaders   String   @db.Text
+  
+  // Hero's Journey Data
+  currentSituation String  @db.Text
+  challengeFaced   String  @db.Text
+  transformation   String  @db.Text
+  achievement      String  @db.Text
+  lessonLearned    String  @db.Text
+  
+  // Business Goals
+  businessGoals   String   @db.Text
+  uniqueValue     String   @db.Text
+  
+  // Technical
+  estimatedPages  Int?
+  additionalNotes String?  @db.Text
+  
+  // Status & Generation
+  status          String   @default("draft") // draft, generating_outline, generating_chapters, completed, error
+  
+  // Generation Progress (stored as JSON)
+  generationProgress Json? @default("{\"status\":\"idle\",\"progress\":0,\"chaptersComplete\":0,\"chaptersTotal\":0}")
+  
+  // Relations
+  outline         Outline?
+  chapters        Chapter[]
+  generationLogs  GenerationLog[]
+  
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([userId])
+  @@index([status])
+  @@index([createdAt])
+}
+
+// ============================================================
+// AI GENERATED CONTENT
+// ============================================================
+
+model Outline {
+  id          String   @id @default(cuid())
+  projectId   String   @unique
+  project     Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  
+  structure   Json     // Struttura JSON completa dell'outline
+  totalChapters Int
+  estimatedWords Int
+  
+  aiModel     String   // "gpt-4", "gpt-4o", "claude-3-5-sonnet", etc.
+  generatedAt DateTime @default(now())
+  
+  chapters    Chapter[]
+
+  @@index([projectId])
+}
+
+model Chapter {
+  id          String   @id @default(cuid())
+  projectId   String
+  project     Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  outlineId   String?
+  outline     Outline? @relation(fields: [outlineId], references: [id], onDelete: SetNull)
+  
+  chapterNumber Int
+  title       String
+  content     String   @db.Text
+  wordCount   Int      @default(0)
+  
+  status      String   @default("pending") // pending, generating, completed, error
+  
+  aiModel     String?
+  generatedAt DateTime?
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  @@unique([projectId, chapterNumber])
+  @@index([projectId])
+  @@index([status])
+}
+
+// ============================================================
+// MONITORING & ANALYTICS
+// ============================================================
+
+model GenerationLog {
+  id          String   @id @default(cuid())
+  projectId   String
+  project     Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  
+  step        String   // "outline", "chapter_1", "chapter_2", etc.
+  aiModel     String
+  
+  promptTokens     Int
+  completionTokens Int
+  totalTokens      Int
+  
+  cost        Float?   // USD
+  duration    Int      // milliseconds
+  
+  success     Boolean
+  errorMessage String? @db.Text
+  
+  createdAt   DateTime @default(now())
+
+  @@index([projectId])
+  @@index([createdAt])
+  @@index([success])
+}
