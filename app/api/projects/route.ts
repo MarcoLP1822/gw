@@ -40,7 +40,7 @@ export async function POST(request: NextRequest) {
                 company: body.company,
                 industry: body.industry,
                 bookTitle: body.bookTitle,
-                bookSubtitle: body.bookSubtitle,
+                bookSubtitle: body.bookSubtitle || null,
                 targetReaders: body.targetReaders,
                 currentSituation: body.currentSituation,
                 challengeFaced: body.challengeFaced,
@@ -49,8 +49,8 @@ export async function POST(request: NextRequest) {
                 lessonLearned: body.lessonLearned,
                 businessGoals: body.businessGoals,
                 uniqueValue: body.uniqueValue,
-                estimatedPages: body.estimatedPages,
-                additionalNotes: body.additionalNotes,
+                estimatedPages: body.estimatedPages ? parseInt(String(body.estimatedPages), 10) : null,
+                additionalNotes: body.additionalNotes || null,
                 status: 'draft',
             }
         });

@@ -39,10 +39,22 @@ Una piattaforma completa per la creazione automatizzata di libri di business e c
 - ✅ **Visualizzazione Professionale**: Card design per capitoli
 - ✅ **Cost Tracking**: Log dei costi e usage tokens
 
-### 📊 Dashboard & Analytics
+### � Sprint 4: AI Chapter Generation
+- ✅ **Generazione Sequenziale**: Capitoli generati uno dopo l'altro per massima coerenza
+- ✅ **Context Window Espanso**: Ogni capitolo conosce tutto ciò che è stato scritto prima
+- ✅ **Style Guide Automatico**: Estratto dai primi 2 capitoli e applicato al resto
+- ✅ **Master Context Tracking**: Traccia personaggi, termini, numeri per coerenza fattuale
+- ✅ **Mini Consistency Check**: Verifica incrementale dopo ogni capitolo
+- ✅ **Consistency Check Finale**: Analisi approfondita di tutto il libro con gpt-4o
+- ✅ **Edit Manuale**: Modifica inline del contenuto con textarea
+- ✅ **Rigenerazione Capitoli**: Rigenera capitoli singoli illimitatamente
+- ✅ **Report Visuale**: Score 0-100 con issues dettagliati e raccomandazioni
+
+### �📊 Dashboard & Analytics
 - ✅ **Lista Progetti**: Overview con ricerca e filtri
 - ✅ **Status Management**: Draft, In Progress, Review, Completed
 - ✅ **Conteggio Capitoli**: Tracking progresso per progetto
+- ✅ **Progress Visualization**: X/Y capitoli generati
 
 ---
 

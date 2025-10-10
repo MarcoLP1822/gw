@@ -66,10 +66,15 @@ model Project {
   // Generation Progress (stored as JSON)
   generationProgress Json? @default("{\"status\":\"idle\",\"progress\":0,\"chaptersComplete\":0,\"chaptersTotal\":0}")
   
+  // Master Context (aggiornato dopo ogni capitolo)
+  masterContext   Json?    // { characters, terms, numbers, themes }
+  styleGuide      Json?    // Generato dopo cap 2
+  
   // Relations
   outline         Outline?
   chapters        Chapter[]
   generationLogs  GenerationLog[]
+  consistencyReports ConsistencyReport[]
   
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
@@ -117,6 +122,19 @@ model Chapter {
   aiModel     String?
   generatedAt DateTime?
   
+  // Prompt usato per la generazione (per debugging e audit)
+  systemPrompt String?  @db.Text      // System prompt usato
+  userPrompt   String?  @db.Text      // User prompt completo usato
+  
+  // Metadata estratti durante generazione
+  newCharacters String[] @default([])  // Personaggi introdotti in questo cap
+  newTerms      Json?                  // { "termine": "definizione" }
+  keyNumbers    Json?                  // { "metrica": "valore" }
+  
+  // Summary e key points (per context dei capitoli futuri)
+  summary       String?  @db.Text      // Summary generato (500 parole)
+  keyPoints     String[] @default([])  // 3-5 punti chiave del capitolo
+  
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
   
@@ -152,4 +170,22 @@ model GenerationLog {
   @@index([projectId])
   @@index([createdAt])
   @@index([success])
+}
+
+// ============================================================
+// CONSISTENCY REPORTS
+// ============================================================
+
+model ConsistencyReport {
+  id            String   @id @default(cuid())
+  projectId     String
+  project       Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  
+  report        Json     // Report completo dell'AI
+  overallScore  Int      // 0-100
+  
+  createdAt     DateTime @default(now())
+  
+  @@index([projectId])
+  @@index([createdAt])
 }

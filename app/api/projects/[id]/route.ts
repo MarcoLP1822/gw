@@ -81,7 +81,7 @@ export async function PUT(
                 ...(body.company && { company: body.company }),
                 ...(body.industry && { industry: body.industry }),
                 ...(body.bookTitle && { bookTitle: body.bookTitle }),
-                ...(body.bookSubtitle !== undefined && { bookSubtitle: body.bookSubtitle }),
+                ...(body.bookSubtitle !== undefined && { bookSubtitle: body.bookSubtitle || null }),
                 ...(body.targetReaders && { targetReaders: body.targetReaders }),
                 ...(body.currentSituation && { currentSituation: body.currentSituation }),
                 ...(body.challengeFaced && { challengeFaced: body.challengeFaced }),
@@ -90,8 +90,10 @@ export async function PUT(
                 ...(body.lessonLearned && { lessonLearned: body.lessonLearned }),
                 ...(body.businessGoals && { businessGoals: body.businessGoals }),
                 ...(body.uniqueValue && { uniqueValue: body.uniqueValue }),
-                ...(body.estimatedPages !== undefined && { estimatedPages: body.estimatedPages }),
-                ...(body.additionalNotes !== undefined && { additionalNotes: body.additionalNotes }),
+                ...(body.estimatedPages !== undefined && {
+                    estimatedPages: body.estimatedPages ? parseInt(String(body.estimatedPages), 10) : null
+                }),
+                ...(body.additionalNotes !== undefined && { additionalNotes: body.additionalNotes || null }),
                 ...(body.status && { status: body.status }),
             }
         });

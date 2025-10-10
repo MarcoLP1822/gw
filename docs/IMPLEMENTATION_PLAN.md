@@ -190,7 +190,7 @@ Integrare AI per generazione automatica outline e capitoli.
 | Provider | Pro | Contro | Use Case |
 |----------|-----|--------|----------|
 | **OpenAI GPT-4** | Migliore qualità, lungo contesto (128k) | Costoso ($0.03/1k input) | Outline + Capitoli complessi |
-| **OpenAI GPT-4o-mini** | Economico, veloce | Qualità inferiore | Capitoli semplici, bozze |
+| **OpenAI GPT-5o-mini** | Economico, veloce | Qualità inferiore | Capitoli semplici, bozze |
 | **Anthropic Claude 3.5** | Eccellente per long-form, etico | Meno API features | Generazione capitoli lunghi |
 | **Anthropic Claude 3 Haiku** | Velocissimo, economico | Meno creativo | Outline, strutture |
 | **Gemini 1.5 Pro** | Context 2M tokens!, economico | Qualità variabile | Progetti con molto contesto |
@@ -199,7 +199,7 @@ Integrare AI per generazione automatica outline e capitoli.
 **Raccomandazione**:
 - ✅ **Outline Generation**: Claude 3.5 Sonnet (migliore per struttura e pianificazione)
 - ✅ **Chapter Generation**: GPT-4o (bilanciamento qualità/costo) + Claude 3.5 per capitoli chiave
-- ✅ **Fallback**: GPT-4o-mini per iterazioni rapide
+- ✅ **Fallback**: GPT-mini per iterazioni rapide
 
 #### 2.2 Prompt Engineering & Templates
 

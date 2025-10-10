@@ -78,3 +78,86 @@ export interface ContentBlock {
   order: number;
 }
 
+// ============================================================
+// CHAPTER GENERATION
+// ============================================================
+
+export interface ChapterMetadata {
+  newCharacters: string[];     // ["Mario Rossi (CEO)", "Laura (co-founder)"]
+  newTerms: Record<string, string>;  // { "MVP": "Minimum Viable Product" }
+  keyNumbers: Record<string, string>; // { "employees": "50", "revenue": "5M€" }
+}
+
+export interface GeneratedChapter {
+  content: string;              // Markdown content del capitolo
+  metadata: ChapterMetadata;    // Metadata estratti
+  summary?: string;             // Summary del capitolo (500 parole)
+  keyPoints?: string[];         // 3-5 punti chiave
+}
+
+export interface MasterContext {
+  characters: string[];         // Tutti i personaggi introdotti finora
+  terms: Record<string, string>;       // Glossario termini
+  numbers: Record<string, string>;     // Numeri/metriche stabiliti
+  themes: Record<string, number>;      // Tema: progresso % (0-100)
+}
+
+export interface StyleGuide {
+  tone: string;                 // "ispirazionale", "pragmatico", etc.
+  pov: string;                  // "Prima persona singolare"
+  tense: string;                // "Presente e passato prossimo"
+  sentenceLength: string;       // "Brevi-medie (15-25 parole)"
+  paragraphStructure: string;   // "3-5 frasi per paragrafo"
+  vocabularyLevel: string;      // "Business accessible"
+  storytelling: string[];       // Pattern narrativi
+  recurringPhrases: string[];   // Frasi ricorrenti
+  metaphors: string[];          // Metafore usate
+}
+
+export interface ChapterContext {
+  project: ProjectFormData;
+  outline: GeneratedOutline;
+  styleGuide: StyleGuide | null;
+  masterContext: MasterContext;
+  chapters: {
+    previous: string | null;         // Full text ultimo capitolo
+    beforePrevious: string | null;   // Summary penultimo
+    first: string | null;            // Key points primo capitolo
+  };
+  currentChapterInfo: OutlineChapter;
+}
+
+// ============================================================
+// CONSISTENCY CHECK
+// ============================================================
+
+export interface ConsistencyIssue {
+  type: 'contradiction' | 'repetition' | 'style_shift' | 'tone_change' | 'factual_error';
+  severity: 'high' | 'medium' | 'low';
+  chapter?: number;                   // Capitolo dove si verifica
+  description: string;
+  suggestion: string;
+}
+
+export interface QuickCheckResult {
+  hasCriticalIssues: boolean;
+  issues: ConsistencyIssue[];
+}
+
+export interface ConsistencyReport {
+  overallScore: number;               // 0-100
+  narrative: {
+    score: number;
+    issues: ConsistencyIssue[];
+  };
+  style: {
+    score: number;
+    issues: ConsistencyIssue[];
+  };
+  consistency: {
+    score: number;
+    issues: ConsistencyIssue[];
+  };
+  recommendations: string[];
+  createdAt?: Date;
+}

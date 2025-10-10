@@ -58,6 +58,13 @@ export default function ProgettoDetailPage({ params }: { params: { id: string } 
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+
+    // 🚀 GLOBAL GENERATION STATES (persistent across tab changes)
+    const [isGeneratingOutline, setIsGeneratingOutline] = useState(false);
+    const [generatingChapter, setGeneratingChapter] = useState<number | null>(null);
+    const [regeneratingChapter, setRegeneratingChapter] = useState<number | null>(null);
+    const [generationError, setGenerationError] = useState<string | null>(null);
+
     const router = useRouter();
 
     const fetchProject = async () => {
@@ -252,18 +259,38 @@ export default function ProgettoDetailPage({ params }: { params: { id: string } 
 
                 {/* Tab Content */}
                 <div className="flex-1 overflow-auto p-6">
-                    {activeTab === 'overview' && (
+                    {/* Keep all tabs mounted but show/hide with CSS for state persistence */}
+                    <div style={{ display: activeTab === 'overview' ? 'block' : 'none' }}>
                         <OverviewTab project={project} onRefresh={fetchProject} />
-                    )}
-                    {activeTab === 'outline' && (
-                        <OutlineTab project={project} onRefresh={fetchProject} />
-                    )}
-                    {activeTab === 'chapters' && (
-                        <ChaptersTab project={project} onRefresh={fetchProject} />
-                    )}
-                    {activeTab === 'export' && (
+                    </div>
+
+                    <div style={{ display: activeTab === 'outline' ? 'block' : 'none' }}>
+                        <OutlineTab
+                            project={project}
+                            onRefresh={fetchProject}
+                            // Global generation states
+                            isGeneratingOutline={isGeneratingOutline}
+                            setIsGeneratingOutline={setIsGeneratingOutline}
+                            generatingChapter={generatingChapter}
+                            setGeneratingChapter={setGeneratingChapter}
+                            generationError={generationError}
+                            setGenerationError={setGenerationError}
+                        />
+                    </div>
+
+                    <div style={{ display: activeTab === 'chapters' ? 'block' : 'none' }}>
+                        <ChaptersTab
+                            project={project}
+                            onRefresh={fetchProject}
+                            // Global generation states for regeneration
+                            regeneratingChapter={regeneratingChapter}
+                            setRegeneratingChapter={setRegeneratingChapter}
+                        />
+                    </div>
+
+                    <div style={{ display: activeTab === 'export' ? 'block' : 'none' }}>
                         <ExportTab project={project} />
-                    )}
+                    </div>
                 </div>
             </div>
 
@@ -400,16 +427,36 @@ function InfoField({ label, value, multiline = false }: { label: string; value: 
 }
 
 // ============================================================
-// OUTLINE TAB (Sprint 3 - AI Generation)
+// OUTLINE TAB (Sprint 3 - AI Generation + Sprint 4 Chapter Triggers)
 // ============================================================
 
-function OutlineTab({ project, onRefresh }: { project: ProjectDetail; onRefresh: () => void }) {
-    const [isGenerating, setIsGenerating] = useState(false);
-    const [error, setError] = useState<string | null>(null);
+interface OutlineTabProps {
+    project: ProjectDetail;
+    onRefresh: () => void;
+    // Global generation states (persistent across tab changes)
+    isGeneratingOutline: boolean;
+    setIsGeneratingOutline: (value: boolean) => void;
+    generatingChapter: number | null;
+    setGeneratingChapter: (value: number | null) => void;
+    generationError: string | null;
+    setGenerationError: (value: string | null) => void;
+}
+
+function OutlineTab({
+    project,
+    onRefresh,
+    isGeneratingOutline,
+    setIsGeneratingOutline,
+    generatingChapter,
+    setGeneratingChapter,
+    generationError,
+    setGenerationError
+}: OutlineTabProps) {
+    // Removed local states - now using global ones from parent
 
     const handleGenerateOutline = async () => {
-        setIsGenerating(true);
-        setError(null);
+        setIsGeneratingOutline(true);
+        setGenerationError(null);
 
         try {
             const response = await fetch(`/api/projects/${project.id}/generate-outline`, {
@@ -428,10 +475,70 @@ function OutlineTab({ project, onRefresh }: { project: ProjectDetail; onRefresh:
             onRefresh();
         } catch (err) {
             console.error('Errore:', err);
-            setError(err instanceof Error ? err.message : 'Errore sconosciuto');
+            setGenerationError(err instanceof Error ? err.message : 'Errore sconosciuto');
         } finally {
-            setIsGenerating(false);
+            setIsGeneratingOutline(false);
         }
+    };
+
+    const handleGenerateChapter = async (chapterNumber: number) => {
+        setGeneratingChapter(chapterNumber);
+        setGenerationError(null);
+
+        try {
+            const response = await fetch(
+                `/api/projects/${project.id}/chapters/${chapterNumber}/generate`,
+                { method: 'POST' }
+            );
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.error || 'Errore nella generazione del capitolo');
+            }
+
+            const data = await response.json();
+            console.log(`Capitolo ${chapterNumber} generato:`, data);
+
+            // Ricarica per mostrare il nuovo capitolo
+            onRefresh();
+        } catch (err) {
+            console.error('Errore:', err);
+            setGenerationError(err instanceof Error ? err.message : 'Errore sconosciuto');
+        } finally {
+            setGeneratingChapter(null);
+        }
+    };
+
+    // Funzione per determinare se un capitolo può essere generato
+    const canGenerateChapter = (chapterNumber: number): boolean => {
+        if (chapterNumber === 1) return true;
+
+        // Verifica se il capitolo precedente è completato
+        const previousChapter = project.chapters.find(
+            (ch) => ch.chapterNumber === chapterNumber - 1
+        );
+        return previousChapter?.status === 'completed';
+    };
+
+    // Funzione per determinare lo stato del pulsante
+    const getChapterButtonState = (chapterNumber: number) => {
+        const existingChapter = project.chapters.find(
+            (ch) => ch.chapterNumber === chapterNumber
+        );
+
+        if (existingChapter?.status === 'completed') {
+            return { label: '✅ Generato', disabled: true, generated: true };
+        }
+
+        if (generatingChapter === chapterNumber) {
+            return { label: 'Generazione...', disabled: true, generating: true };
+        }
+
+        if (!canGenerateChapter(chapterNumber)) {
+            return { label: '🔒 Bloccato', disabled: true, locked: true };
+        }
+
+        return { label: '✨ Genera Capitolo', disabled: false };
     };
 
     if (!project.outline) {
@@ -445,18 +552,18 @@ function OutlineTab({ project, onRefresh }: { project: ProjectDetail; onRefresh:
                             L&apos;AI analizzerà le informazioni che hai fornito e creerà una struttura completa per il tuo libro.
                         </p>
 
-                        {error && (
+                        {generationError && (
                             <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
-                                {error}
+                                {generationError}
                             </div>
                         )}
 
                         <button
                             onClick={handleGenerateOutline}
-                            disabled={isGenerating}
+                            disabled={isGeneratingOutline}
                             className="px-6 py-3 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 disabled:bg-indigo-300 disabled:cursor-not-allowed flex items-center gap-2 mx-auto transition-colors"
                         >
-                            {isGenerating ? (
+                            {isGeneratingOutline ? (
                                 <>
                                     <Loader2 size={20} className="animate-spin" />
                                     Generazione in corso...
@@ -480,6 +587,8 @@ function OutlineTab({ project, onRefresh }: { project: ProjectDetail; onRefresh:
 
     // Parse outline structure
     const outline = project.outline.structure as any;
+    const totalChapters = outline.chapters?.length || 0;
+    const completedChapters = project.chapters.filter(ch => ch.status === 'completed').length;
 
     return (
         <div className="max-w-4xl mx-auto space-y-6">
@@ -492,10 +601,10 @@ function OutlineTab({ project, onRefresh }: { project: ProjectDetail; onRefresh:
                     </div>
                     <button
                         onClick={handleGenerateOutline}
-                        disabled={isGenerating}
+                        disabled={isGeneratingOutline}
                         className="px-4 py-2 bg-indigo-600 text-white text-sm rounded-lg hover:bg-indigo-700 disabled:bg-indigo-300 flex items-center gap-2 transition-colors"
                     >
-                        {isGenerating ? (
+                        {isGeneratingOutline ? (
                             <>
                                 <Loader2 size={16} className="animate-spin" />
                                 Rigenera...
@@ -514,7 +623,7 @@ function OutlineTab({ project, onRefresh }: { project: ProjectDetail; onRefresh:
                 <div className="mt-4 flex items-center gap-4 text-sm text-gray-500">
                     <span className="flex items-center gap-1">
                         <BookOpen size={16} />
-                        {outline.chapters?.length || 0} capitoli
+                        {completedChapters}/{totalChapters} capitoli generati
                     </span>
                     <span className="flex items-center gap-1">
                         <Clock size={16} />
@@ -527,43 +636,74 @@ function OutlineTab({ project, onRefresh }: { project: ProjectDetail; onRefresh:
                 </div>
             </Card>
 
-            {/* Lista capitoli */}
+            {/* Lista capitoli con pulsanti di generazione */}
             <div className="space-y-4">
-                {outline.chapters?.map((chapter: any, index: number) => (
-                    <Card key={index}>
-                        <div className="flex items-start gap-4">
-                            <div className="flex-shrink-0 w-12 h-12 bg-indigo-100 rounded-lg flex items-center justify-center">
-                                <span className="text-lg font-bold text-indigo-600">{chapter.number}</span>
-                            </div>
-                            <div className="flex-1">
-                                <h3 className="text-lg font-semibold text-gray-900 mb-1">{chapter.title}</h3>
-                                <p className="text-sm text-gray-600 mb-3">{chapter.description}</p>
+                {outline.chapters?.map((chapter: any, index: number) => {
+                    const buttonState = getChapterButtonState(chapter.number);
 
-                                <div className="mb-3">
-                                    <h4 className="text-xs font-semibold text-gray-500 uppercase mb-2">Punti chiave:</h4>
-                                    <ul className="space-y-1">
-                                        {chapter.keyPoints?.map((point: string, idx: number) => (
-                                            <li key={idx} className="text-sm text-gray-700 flex items-start gap-2">
-                                                <span className="text-indigo-600">•</span>
-                                                <span>{point}</span>
-                                            </li>
-                                        ))}
-                                    </ul>
+                    return (
+                        <Card key={index}>
+                            <div className="flex items-start gap-4">
+                                <div className="flex-shrink-0 w-12 h-12 bg-indigo-100 rounded-lg flex items-center justify-center">
+                                    <span className="text-lg font-bold text-indigo-600">{chapter.number}</span>
                                 </div>
+                                <div className="flex-1">
+                                    <h3 className="text-lg font-semibold text-gray-900 mb-1">{chapter.title}</h3>
+                                    <p className="text-sm text-gray-600 mb-3">{chapter.description}</p>
 
-                                <div className="inline-flex items-center gap-1 px-3 py-1 bg-purple-50 text-purple-700 text-xs rounded-full">
-                                    <Sparkles size={12} />
-                                    {chapter.heroJourneyPhase}
+                                    <div className="mb-3">
+                                        <h4 className="text-xs font-semibold text-gray-500 uppercase mb-2">Punti chiave:</h4>
+                                        <ul className="space-y-1">
+                                            {chapter.keyPoints?.map((point: string, idx: number) => (
+                                                <li key={idx} className="text-sm text-gray-700 flex items-start gap-2">
+                                                    <span className="text-indigo-600">•</span>
+                                                    <span>{point}</span>
+                                                </li>
+                                            ))}
+                                        </ul>
+                                    </div>
+
+                                    <div className="flex items-center gap-3">
+                                        <div className="inline-flex items-center gap-1 px-3 py-1 bg-purple-50 text-purple-700 text-xs rounded-full">
+                                            <Sparkles size={12} />
+                                            {chapter.heroJourneyPhase}
+                                        </div>
+
+                                        {/* Pulsante generazione capitolo */}
+                                        <button
+                                            onClick={() => handleGenerateChapter(chapter.number)}
+                                            disabled={buttonState.disabled}
+                                            className={`px-4 py-1.5 text-sm rounded-lg transition-colors flex items-center gap-2 ${buttonState.generated
+                                                ? 'bg-green-50 text-green-700 border border-green-200'
+                                                : buttonState.locked
+                                                    ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                                                    : buttonState.generating
+                                                        ? 'bg-blue-50 text-blue-700 border border-blue-200'
+                                                        : 'bg-indigo-600 text-white hover:bg-indigo-700'
+                                                }`}
+                                        >
+                                            {buttonState.generating && (
+                                                <Loader2 size={14} className="animate-spin" />
+                                            )}
+                                            {buttonState.label}
+                                        </button>
+                                    </div>
+
+                                    {!canGenerateChapter(chapter.number) && chapter.number > 1 && (
+                                        <p className="text-xs text-gray-500 mt-2">
+                                            Completa prima il Capitolo {chapter.number - 1}
+                                        </p>
+                                    )}
                                 </div>
                             </div>
-                        </div>
-                    </Card>
-                ))}
+                        </Card>
+                    );
+                })}
             </div>
 
-            {error && (
+            {generationError && (
                 <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
-                    {error}
+                    {generationError}
                 </div>
             )}
         </div>
@@ -571,10 +711,118 @@ function OutlineTab({ project, onRefresh }: { project: ProjectDetail; onRefresh:
 }
 
 // ============================================================
-// CHAPTERS TAB (Placeholder per Sprint 4)
+// CHAPTERS TAB (Sprint 4 - Chapter Management & Consistency Check)
 // ============================================================
 
-function ChaptersTab({ project, onRefresh }: { project: ProjectDetail; onRefresh: () => void }) {
+interface ChaptersTabProps {
+    project: ProjectDetail;
+    onRefresh: () => void;
+    // Global regeneration state (persistent across tab changes)
+    regeneratingChapter: number | null;
+    setRegeneratingChapter: (value: number | null) => void;
+}
+
+function ChaptersTab({
+    project,
+    onRefresh,
+    regeneratingChapter,
+    setRegeneratingChapter
+}: ChaptersTabProps) {
+    const [editingChapter, setEditingChapter] = useState<number | null>(null);
+    const [editContent, setEditContent] = useState('');
+    const [saving, setSaving] = useState(false);
+    // Removed local regenerating state - now using global one
+    const [runningCheck, setRunningCheck] = useState(false);
+    const [consistencyReport, setConsistencyReport] = useState<any>(null);
+    const [hasExistingReport, setHasExistingReport] = useState(false);
+
+    // Calcolo variabili necessarie per l'useEffect
+    const completedChapters = project.chapters.filter(ch => ch.status === 'completed').length;
+    const allChaptersComplete = project.outline &&
+        completedChapters === (project.outline.structure as any).chapters?.length;
+
+    // Check se esiste già un consistency report
+    useEffect(() => {
+        const checkExistingReport = async () => {
+            try {
+                const response = await fetch(`/api/projects/${project.id}/consistency-check`);
+                if (response.ok) {
+                    const data = await response.json();
+                    if (data.report) {
+                        setHasExistingReport(true);
+                        setConsistencyReport(data.report);
+                    }
+                }
+            } catch (error) {
+                console.error('Error checking existing report:', error);
+            }
+        };
+
+        if (allChaptersComplete) {
+            checkExistingReport();
+        }
+    }, [project.id, allChaptersComplete]);
+
+    const handleEdit = (chapter: any) => {
+        setEditingChapter(chapter.chapterNumber);
+        setEditContent(chapter.content);
+    };
+
+    const handleSave = async (chapterNumber: number) => {
+        setSaving(true);
+        try {
+            await fetch(`/api/projects/${project.id}/chapters/${chapterNumber}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ content: editContent }),
+            });
+
+            setEditingChapter(null);
+            onRefresh();
+        } catch (error) {
+            console.error('Error saving chapter:', error);
+            alert('Errore durante il salvataggio');
+        } finally {
+            setSaving(false);
+        }
+    };
+
+    const handleRegenerate = async (chapterNumber: number) => {
+        if (!confirm(`Rigenerare il Capitolo ${chapterNumber}? Il contenuto attuale verrà sostituito.`)) {
+            return;
+        }
+
+        setRegeneratingChapter(chapterNumber);
+        try {
+            await fetch(`/api/projects/${project.id}/chapters/${chapterNumber}/generate`, {
+                method: 'POST',
+            });
+            onRefresh();
+        } catch (error) {
+            console.error('Error regenerating chapter:', error);
+            alert('Errore durante la rigenerazione');
+        } finally {
+            setRegeneratingChapter(null);
+        }
+    };
+
+    const handleConsistencyCheck = async () => {
+        setRunningCheck(true);
+        try {
+            const response = await fetch(`/api/projects/${project.id}/consistency-check`, {
+                method: 'POST',
+            });
+            const data = await response.json();
+            setConsistencyReport(data.report);
+            setHasExistingReport(true); // Marca come esistente dopo la generazione
+        } catch (error) {
+            console.error('Error running consistency check:', error);
+            alert('Errore durante il consistency check');
+        } finally {
+            setRunningCheck(false);
+        }
+    };
+
     if (project.chapters.length === 0) {
         return (
             <div className="max-w-4xl mx-auto">
@@ -586,7 +834,7 @@ function ChaptersTab({ project, onRefresh }: { project: ProjectDetail; onRefresh
                             I capitoli del libro non sono ancora stati generati con l&apos;AI.
                         </p>
                         <p className="text-sm text-gray-500">
-                            Prima devi generare l&apos;outline, poi potrai generare i capitoli (Sprint 4)
+                            Vai al tab &quot;Outline&quot; per generare i capitoli sequenzialmente
                         </p>
                     </div>
                 </Card>
@@ -594,21 +842,231 @@ function ChaptersTab({ project, onRefresh }: { project: ProjectDetail; onRefresh
         );
     }
 
+    const totalWords = project.chapters.reduce((sum, ch) => sum + ch.wordCount, 0);
+
     return (
-        <div className="max-w-4xl mx-auto space-y-4">
-            {project.chapters.map((chapter) => (
-                <Card key={chapter.id}>
-                    <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                        Capitolo {chapter.chapterNumber}: {chapter.title}
-                    </h3>
-                    <p className="text-sm text-gray-500 mb-2">
-                        {chapter.wordCount} parole • Status: {chapter.status}
-                    </p>
-                    <div className="bg-gray-50 p-4 rounded-md">
-                        <p className="text-gray-700 line-clamp-3">{chapter.content}</p>
+        <div className="max-w-4xl mx-auto space-y-6">
+            {/* Header con statistiche e consistency check */}
+            <Card>
+                <div className="flex items-center justify-between mb-4">
+                    <div>
+                        <h2 className="text-xl font-bold text-gray-900 mb-1">Capitoli Generati</h2>
+                        <div className="flex items-center gap-4 text-sm text-gray-500">
+                            <span>{completedChapters} capitoli</span>
+                            <span>•</span>
+                            <span>{totalWords.toLocaleString()} parole totali</span>
+                        </div>
+                    </div>
+
+                    {allChaptersComplete && (
+                        <button
+                            onClick={handleConsistencyCheck}
+                            disabled={runningCheck || hasExistingReport}
+                            className={`px-4 py-2 text-white text-sm rounded-lg flex items-center gap-2 transition-colors ${hasExistingReport
+                                ? 'bg-gray-400 cursor-not-allowed'
+                                : 'bg-purple-600 hover:bg-purple-700 disabled:bg-purple-300'
+                                }`}
+                        >
+                            {runningCheck ? (
+                                <>
+                                    <Loader2 size={16} className="animate-spin" />
+                                    Analisi...
+                                </>
+                            ) : hasExistingReport ? (
+                                <>
+                                    <AlertCircle size={16} />
+                                    Report Già Generato
+                                </>
+                            ) : (
+                                <>
+                                    <AlertCircle size={16} />
+                                    Consistency Check
+                                </>
+                            )}
+                        </button>
+                    )}
+                </div>
+
+                {!allChaptersComplete && (
+                    <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg text-blue-700 text-sm">
+                        💡 Completa tutti i capitoli per eseguire il consistency check finale
+                    </div>
+                )}
+            </Card>
+
+            {/* Consistency Report (se disponibile) */}
+            {consistencyReport && (
+                <Card>
+                    <div className="flex items-start gap-3 mb-4">
+                        <AlertCircle className="text-purple-600 flex-shrink-0" size={24} />
+                        <div className="flex-1">
+                            <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                                Consistency Report
+                            </h3>
+                            <div className="flex items-center gap-4 mb-4">
+                                <div className="text-3xl font-bold text-purple-600">
+                                    {consistencyReport.overallScore || 0}/100
+                                </div>
+                                <div className="text-sm text-gray-600">
+                                    Punteggio Generale
+                                </div>
+                            </div>
+
+                            {/* Score breakdown */}
+                            {consistencyReport.narrative && consistencyReport.style && consistencyReport.consistency && (
+                                <div className="grid grid-cols-3 gap-4 mb-4">
+                                    <div>
+                                        <div className="text-xs text-gray-500 mb-1">Narrativa</div>
+                                        <div className="text-lg font-semibold">{consistencyReport.narrative.score || 0}/100</div>
+                                    </div>
+                                    <div>
+                                        <div className="text-xs text-gray-500 mb-1">Stile</div>
+                                        <div className="text-lg font-semibold">{consistencyReport.style.score || 0}/100</div>
+                                    </div>
+                                    <div>
+                                        <div className="text-xs text-gray-500 mb-1">Coerenza</div>
+                                        <div className="text-lg font-semibold">{consistencyReport.consistency.score || 0}/100</div>
+                                    </div>
+                                </div>
+                            )}
+
+                            {/* Issues */}
+                            {consistencyReport.narrative?.issues || consistencyReport.style?.issues || consistencyReport.consistency?.issues ? (
+                                <div className="mb-4">
+                                    <h4 className="text-sm font-semibold text-gray-700 mb-2">Issues Rilevati:</h4>
+                                    <div className="space-y-2">
+                                        {[
+                                            ...(consistencyReport.narrative?.issues || []),
+                                            ...(consistencyReport.style?.issues || []),
+                                            ...(consistencyReport.consistency?.issues || [])
+                                        ].map((issue: any, idx: number) => (
+                                            <div key={idx} className={`p-2 rounded text-sm ${issue.severity === 'high' ? 'bg-red-50 border-l-2 border-red-500' :
+                                                    issue.severity === 'medium' ? 'bg-yellow-50 border-l-2 border-yellow-500' :
+                                                        'bg-gray-50 border-l-2 border-gray-300'
+                                                }`}>
+                                                <div className="font-medium">
+                                                    {issue.chapter && `Cap. ${issue.chapter}: `}
+                                                    {issue.description}
+                                                </div>
+                                                <div className="text-gray-600 mt-1">💡 {issue.suggestion}</div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            ) : null}
+
+                            {/* Recommendations */}
+                            {consistencyReport.recommendations && consistencyReport.recommendations.length > 0 && (
+                                <div>
+                                    <h4 className="text-sm font-semibold text-gray-700 mb-2">Raccomandazioni:</h4>
+                                    <ul className="space-y-1">
+                                        {consistencyReport.recommendations.map((rec: string, idx: number) => (
+                                            <li key={idx} className="text-sm text-gray-700 flex items-start gap-2">
+                                                <span className="text-purple-600">•</span>
+                                                <span>{rec}</span>
+                                            </li>
+                                        ))}
+                                    </ul>
+                                </div>
+                            )}
+                        </div>
                     </div>
                 </Card>
-            ))}
+            )}            {/* Lista capitoli */}
+            <div className="space-y-4">
+                {project.chapters.map((chapter) => (
+                    <Card key={chapter.id}>
+                        <div className="flex items-start justify-between mb-3">
+                            <div>
+                                <h3 className="text-lg font-semibold text-gray-900 mb-1">
+                                    Capitolo {chapter.chapterNumber}: {chapter.title.replace(/^Capitolo\s+\d+:\s*/i, '')}
+                                </h3>
+                                <div className="flex items-center gap-3 text-sm text-gray-500">
+                                    <span>{chapter.wordCount} parole</span>
+                                    <span>•</span>
+                                    <span>{chapter.aiModel}</span>
+                                    {chapter.generatedAt && (
+                                        <>
+                                            <span>•</span>
+                                            <span>{new Date(chapter.generatedAt).toLocaleDateString('it-IT')}</span>
+                                        </>
+                                    )}
+                                </div>
+                            </div>
+                            <div className="flex items-center gap-2">
+                                {editingChapter === chapter.chapterNumber ? (
+                                    <>
+                                        <button
+                                            onClick={() => {
+                                                setEditingChapter(null);
+                                                setEditContent('');
+                                            }}
+                                            disabled={saving}
+                                            className="px-3 py-1.5 bg-gray-600 text-white text-sm rounded-lg hover:bg-gray-700 disabled:bg-gray-300 flex items-center gap-1"
+                                        >
+                                            <ArrowLeft size={14} />
+                                            Annulla
+                                        </button>
+                                        <button
+                                            onClick={() => handleSave(chapter.chapterNumber)}
+                                            disabled={saving}
+                                            className="px-3 py-1.5 bg-green-600 text-white text-sm rounded-lg hover:bg-green-700 disabled:bg-green-300"
+                                        >
+                                            {saving ? 'Salvataggio...' : 'Salva'}
+                                        </button>
+                                    </>
+                                ) : (
+                                    <button
+                                        onClick={() => handleEdit(chapter)}
+                                        className="px-3 py-1.5 bg-blue-600 text-white text-sm rounded-lg hover:bg-blue-700 flex items-center gap-1"
+                                    >
+                                        <Edit2 size={14} />
+                                        Modifica
+                                    </button>
+                                )}
+                                <button
+                                    onClick={() => handleRegenerate(chapter.chapterNumber)}
+                                    disabled={regeneratingChapter === chapter.chapterNumber}
+                                    className="px-3 py-1.5 bg-indigo-600 text-white text-sm rounded-lg hover:bg-indigo-700 disabled:bg-indigo-300 flex items-center gap-1"
+                                >
+                                    {regeneratingChapter === chapter.chapterNumber ? (
+                                        <>
+                                            <Loader2 size={14} className="animate-spin" />
+                                            Rigenera...
+                                        </>
+                                    ) : (
+                                        <>
+                                            <Sparkles size={14} />
+                                            Rigenera
+                                        </>
+                                    )}
+                                </button>
+                            </div>
+                        </div>
+
+                        {editingChapter === chapter.chapterNumber ? (
+                            <textarea
+                                value={editContent}
+                                onChange={(e) => setEditContent(e.target.value)}
+                                className="w-full h-96 p-3 border border-gray-300 rounded-lg font-mono text-sm"
+                                placeholder="Contenuto del capitolo in Markdown..."
+                            />
+                        ) : (
+                            <div className="prose max-w-none bg-gray-50 p-4 rounded-lg">
+                                <div className="text-gray-700 whitespace-pre-wrap line-clamp-6">
+                                    {chapter.content}
+                                </div>
+                                <button
+                                    onClick={() => handleEdit(chapter)}
+                                    className="text-blue-600 text-sm mt-2 hover:underline"
+                                >
+                                    Leggi tutto / Modifica →
+                                </button>
+                            </div>
+                        )}
+                    </Card>
+                ))}
+            </div>
         </div>
     );
 }
