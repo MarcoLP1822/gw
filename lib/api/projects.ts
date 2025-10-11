@@ -185,4 +185,47 @@ export const projectsApi = {
 
         return response.json();
     },
+
+    // ============================================================
+    // DOCUMENT EXPORT
+    // ============================================================
+
+    // Esporta progetto come DOCX
+    async exportDocx(projectId: string) {
+        const response = await fetch(`/api/projects/${projectId}/export`, {
+            method: 'GET',
+        });
+
+        if (!response.ok) {
+            const error = await response.json();
+            throw new Error(error.error || 'Errore durante l\'esportazione del documento');
+        }
+
+        // Ottieni il blob del file
+        const blob = await response.blob();
+        
+        // Ottieni il nome del file dall'header Content-Disposition
+        const contentDisposition = response.headers.get('Content-Disposition');
+        let fileName = 'libro.docx';
+        if (contentDisposition) {
+            const match = contentDisposition.match(/filename="(.+)"/);
+            if (match) {
+                fileName = match[1];
+            }
+        }
+
+        // Crea un link temporaneo per il download
+        const url = window.URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = fileName;
+        document.body.appendChild(link);
+        link.click();
+        
+        // Cleanup
+        document.body.removeChild(link);
+        window.URL.revokeObjectURL(url);
+
+        return { success: true, fileName };
+    },
 };

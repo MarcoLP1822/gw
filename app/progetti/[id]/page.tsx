@@ -1072,28 +1072,171 @@ function ChaptersTab({
 }
 
 // ============================================================
-// EXPORT TAB (Placeholder per Sprint 5)
+// EXPORT TAB ✅
 // ============================================================
 
 function ExportTab({ project }: { project: ProjectDetail }) {
+    const [isExporting, setIsExporting] = useState(false);
+    const [exportError, setExportError] = useState<string | null>(null);
+    const [exportSuccess, setExportSuccess] = useState(false);
+
+    const hasChapters = project.chapters && project.chapters.length > 0;
+    const allChaptersGenerated = project.outline?.chapters?.every(
+        (outlineChapter: any) =>
+            project.chapters.some(
+                (chapter: any) =>
+                    chapter.chapterNumber === outlineChapter.number &&
+                    chapter.status === 'completed'
+            )
+    );
+
+    const handleExport = async () => {
+        try {
+            setIsExporting(true);
+            setExportError(null);
+            setExportSuccess(false);
+
+            await projectsApi.exportDocx(project.id);
+
+            setExportSuccess(true);
+            setTimeout(() => setExportSuccess(false), 3000);
+        } catch (err) {
+            setExportError(err instanceof Error ? err.message : 'Errore durante l\'esportazione');
+            console.error('Export error:', err);
+        } finally {
+            setIsExporting(false);
+        }
+    };
+
     return (
-        <div className="max-w-4xl mx-auto">
+        <div className="max-w-4xl mx-auto space-y-6">
+            {/* Status Card */}
             <Card>
-                <div className="text-center py-12">
-                    <Download className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-                    <h3 className="text-xl font-semibold text-gray-900 mb-2">Esportazione Documento</h3>
-                    <p className="text-gray-600 mb-6">
-                        L&apos;esportazione in DOCX sarà disponibile dopo aver generato i capitoli.
+                <h3 className="text-lg font-semibold text-gray-900 mb-4">📄 Esporta Documento</h3>
+
+                <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
+                    <div className="flex items-start gap-3">
+                        <FileText className="w-5 h-5 text-blue-600 mt-0.5" />
+                        <div className="flex-1">
+                            <h4 className="font-medium text-blue-900 mb-1">
+                                Formato: Microsoft Word (DOCX)
+                            </h4>
+                            <p className="text-sm text-blue-700">
+                                Il documento include: copertina, indice, tutti i capitoli e biografia dell&apos;autore.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                {/* Project Stats */}
+                <div className="grid grid-cols-3 gap-4 mb-6">
+                    <div className="bg-gray-50 rounded-lg p-4">
+                        <div className="text-2xl font-bold text-gray-900">
+                            {project.chapters?.length || 0}
+                        </div>
+                        <div className="text-sm text-gray-600">Capitoli generati</div>
+                    </div>
+                    <div className="bg-gray-50 rounded-lg p-4">
+                        <div className="text-2xl font-bold text-gray-900">
+                            {project.chapters?.reduce((sum: number, ch: any) => sum + (ch.wordCount || 0), 0).toLocaleString() || 0}
+                        </div>
+                        <div className="text-sm text-gray-600">Parole totali</div>
+                    </div>
+                    <div className="bg-gray-50 rounded-lg p-4">
+                        <div className="text-2xl font-bold text-gray-900">
+                            {Math.ceil((project.chapters?.reduce((sum: number, ch: any) => sum + (ch.wordCount || 0), 0) || 0) / 250)}
+                        </div>
+                        <div className="text-sm text-gray-600">Pagine stimate</div>
+                    </div>
+                </div>
+
+                {/* Export Button */}
+                <div className="flex flex-col items-center">
+                    {!hasChapters && (
+                        <div className="text-center py-8">
+                            <AlertCircle className="w-12 h-12 text-gray-300 mx-auto mb-3" />
+                            <p className="text-gray-600 mb-4">
+                                Nessun capitolo disponibile per l&apos;esportazione
+                            </p>
+                            <p className="text-sm text-gray-500">
+                                Prima devi generare l&apos;outline e i capitoli
+                            </p>
+                        </div>
+                    )}
+
+                    {hasChapters && !allChaptersGenerated && (
+                        <div className="text-center py-4 mb-4">
+                            <AlertCircle className="w-10 h-10 text-amber-500 mx-auto mb-2" />
+                            <p className="text-amber-700 text-sm">
+                                ⚠️ Non tutti i capitoli sono stati generati. Il documento sarà incompleto.
+                            </p>
+                        </div>
+                    )}
+
+                    {hasChapters && (
+                        <button
+                            onClick={handleExport}
+                            disabled={isExporting}
+                            className={`flex items-center gap-2 px-8 py-4 rounded-lg font-medium transition-all ${isExporting
+                                ? 'bg-blue-400 cursor-not-allowed'
+                                : 'bg-blue-600 hover:bg-blue-700 shadow-lg hover:shadow-xl'
+                                } text-white`}
+                        >
+                            {isExporting ? (
+                                <>
+                                    <Loader2 className="animate-spin" size={24} />
+                                    <span>Generazione DOCX...</span>
+                                </>
+                            ) : (
+                                <>
+                                    <Download size={24} />
+                                    <span>Scarica DOCX</span>
+                                </>
+                            )}
+                        </button>
+                    )}
+
+                    {/* Success Message */}
+                    {exportSuccess && (
+                        <div className="mt-4 bg-green-50 border border-green-200 rounded-lg p-4 flex items-center gap-3">
+                            <div className="text-green-600">✅</div>
+                            <p className="text-green-800 font-medium">
+                                Documento esportato con successo!
+                            </p>
+                        </div>
+                    )}
+
+                    {/* Error Message */}
+                    {exportError && (
+                        <div className="mt-4 bg-red-50 border border-red-200 rounded-lg p-4 flex items-start gap-3">
+                            <AlertCircle className="w-5 h-5 text-red-600 mt-0.5" />
+                            <div className="flex-1">
+                                <p className="text-red-800 font-medium mb-1">Errore durante l&apos;esportazione</p>
+                                <p className="text-red-700 text-sm">{exportError}</p>
+                            </div>
+                        </div>
+                    )}
+                </div>
+            </Card>
+
+            {/* Info Card */}
+            <Card>
+                <h3 className="text-lg font-semibold text-gray-900 mb-3">ℹ️ Informazioni sull&apos;Export</h3>
+                <div className="space-y-2 text-sm text-gray-700">
+                    <p>
+                        <strong>Formato:</strong> Microsoft Word (.docx) compatibile con Word 2013+
                     </p>
-                    <button
-                        disabled
-                        className="px-6 py-3 bg-gray-300 text-gray-500 rounded-lg cursor-not-allowed flex items-center gap-2 mx-auto"
-                    >
-                        <Download size={20} />
-                        Scarica DOCX (Coming Soon)
-                    </button>
-                    <p className="text-sm text-gray-500 mt-4">
-                        Questa funzionalità sarà disponibile nello Sprint 5
+                    <p>
+                        <strong>Contenuto:</strong> Copertina personalizzata, copyright, indice automatico, 
+                        tutti i capitoli formattati, biografia autore
+                    </p>
+                    <p>
+                        <strong>Formattazione:</strong> Pronto per impaginazione professionale, con stili 
+                        tipografici standard
+                    </p>
+                    <p>
+                        <strong>Editing:</strong> Puoi modificare ulteriormente il documento in Microsoft Word, 
+                        Google Docs o LibreOffice
                     </p>
                 </div>
             </Card>
