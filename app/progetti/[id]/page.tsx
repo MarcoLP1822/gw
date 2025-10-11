@@ -941,8 +941,8 @@ function ChaptersTab({
                                             ...(consistencyReport.consistency?.issues || [])
                                         ].map((issue: any, idx: number) => (
                                             <div key={idx} className={`p-2 rounded text-sm ${issue.severity === 'high' ? 'bg-red-50 border-l-2 border-red-500' :
-                                                    issue.severity === 'medium' ? 'bg-yellow-50 border-l-2 border-yellow-500' :
-                                                        'bg-gray-50 border-l-2 border-gray-300'
+                                                issue.severity === 'medium' ? 'bg-yellow-50 border-l-2 border-yellow-500' :
+                                                    'bg-gray-50 border-l-2 border-gray-300'
                                                 }`}>
                                                 <div className="font-medium">
                                                     {issue.chapter && `Cap. ${issue.chapter}: `}
@@ -1081,14 +1081,13 @@ function ExportTab({ project }: { project: ProjectDetail }) {
     const [exportSuccess, setExportSuccess] = useState(false);
 
     const hasChapters = project.chapters && project.chapters.length > 0;
-    const allChaptersGenerated = project.outline?.chapters?.every(
-        (outlineChapter: any) =>
-            project.chapters.some(
-                (chapter: any) =>
-                    chapter.chapterNumber === outlineChapter.number &&
-                    chapter.status === 'completed'
-            )
-    );
+
+    // Verifica se tutti i capitoli previsti nell'outline sono stati generati
+    // L'outline è salvato come JSON nel campo structure
+    const outlineStructure = project.outline?.structure as any;
+    const totalChaptersExpected = outlineStructure?.chapters?.length || 0;
+    const chaptersGenerated = project.chapters?.length || 0;
+    const allChaptersGenerated = totalChaptersExpected > 0 && chaptersGenerated >= totalChaptersExpected;
 
     const handleExport = async () => {
         try {
@@ -1227,15 +1226,15 @@ function ExportTab({ project }: { project: ProjectDetail }) {
                         <strong>Formato:</strong> Microsoft Word (.docx) compatibile con Word 2013+
                     </p>
                     <p>
-                        <strong>Contenuto:</strong> Copertina personalizzata, copyright, indice automatico, 
+                        <strong>Contenuto:</strong> Copertina personalizzata, copyright, indice automatico,
                         tutti i capitoli formattati, biografia autore
                     </p>
                     <p>
-                        <strong>Formattazione:</strong> Pronto per impaginazione professionale, con stili 
+                        <strong>Formattazione:</strong> Pronto per impaginazione professionale, con stili
                         tipografici standard
                     </p>
                     <p>
-                        <strong>Editing:</strong> Puoi modificare ulteriormente il documento in Microsoft Word, 
+                        <strong>Editing:</strong> Puoi modificare ulteriormente il documento in Microsoft Word,
                         Google Docs o LibreOffice
                     </p>
                 </div>

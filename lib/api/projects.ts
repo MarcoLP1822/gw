@@ -1,4 +1,5 @@
 import { ProjectFormData } from '@/types';
+import { saveAs } from 'file-saver';
 
 // ============================================================
 // API CLIENT per Projects
@@ -192,40 +193,40 @@ export const projectsApi = {
 
     // Esporta progetto come DOCX
     async exportDocx(projectId: string) {
-        const response = await fetch(`/api/projects/${projectId}/export`, {
-            method: 'GET',
-        });
+        try {
+            const response = await fetch(`/api/projects/${projectId}/export`, {
+                method: 'GET',
+            });
 
-        if (!response.ok) {
-            const error = await response.json();
-            throw new Error(error.error || 'Errore durante l\'esportazione del documento');
-        }
-
-        // Ottieni il blob del file
-        const blob = await response.blob();
-        
-        // Ottieni il nome del file dall'header Content-Disposition
-        const contentDisposition = response.headers.get('Content-Disposition');
-        let fileName = 'libro.docx';
-        if (contentDisposition) {
-            const match = contentDisposition.match(/filename="(.+)"/);
-            if (match) {
-                fileName = match[1];
+            if (!response.ok) {
+                const error = await response.json();
+                throw new Error(error.error || 'Errore durante l\'esportazione del documento');
             }
+
+            // Ottieni il blob del file
+            const blob = await response.blob();
+
+            console.log('Blob received:', blob.size, 'bytes', blob.type);
+
+            // Ottieni il nome del file dall'header Content-Disposition
+            const contentDisposition = response.headers.get('Content-Disposition');
+            let fileName = 'libro.docx';
+            if (contentDisposition) {
+                const match = contentDisposition.match(/filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/);
+                if (match && match[1]) {
+                    fileName = match[1].replace(/['"]/g, '');
+                }
+            }
+
+            console.log('Downloading as:', fileName);
+
+            // Usa file-saver per un download più affidabile
+            saveAs(blob, fileName);
+
+            return { success: true, fileName };
+        } catch (error) {
+            console.error('Export error:', error);
+            throw error;
         }
-
-        // Crea un link temporaneo per il download
-        const url = window.URL.createObjectURL(blob);
-        const link = document.createElement('a');
-        link.href = url;
-        link.download = fileName;
-        document.body.appendChild(link);
-        link.click();
-        
-        // Cleanup
-        document.body.removeChild(link);
-        window.URL.revokeObjectURL(url);
-
-        return { success: true, fileName };
     },
 };
