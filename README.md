@@ -49,12 +49,20 @@ Una piattaforma completa per la creazione automatizzata di libri di business e c
 - ✅ **Edit Manuale**: Modifica inline del contenuto con textarea
 - ✅ **Rigenerazione Capitoli**: Rigenera capitoli singoli illimitatamente
 - ✅ **Report Visuale**: Score 0-100 con issues dettagliati e raccomandazioni
+- ✅ **AI Settings Personalizzabili**: Temperatura, modelli, lunghezza per progetto
 
-### �📊 Dashboard & Analytics
+### 📊 Dashboard & Analytics
 - ✅ **Lista Progetti**: Overview con ricerca e filtri
 - ✅ **Status Management**: Draft, In Progress, Review, Completed
 - ✅ **Conteggio Capitoli**: Tracking progresso per progetto
 - ✅ **Progress Visualization**: X/Y capitoli generati
+- ✅ **Analytics Dashboard**: Statistiche e metriche in tempo reale
+- ✅ **Recent Activity**: Log delle attività recenti
+
+### 📄 Sprint 5: Export & Publishing
+- ✅ **Export DOCX**: Esportazione in formato Word con formattazione
+- ✅ **Formattazione Professionale**: Layout e stili automatici
+- ✅ **Metadata Management**: Titolo, autore, copyright
 
 ---
 
@@ -149,13 +157,15 @@ Vedi `prisma/schema.prisma` per lo schema completo.
 
 ## 🤖 AI Integration
 
-### Modello Utilizzato
-**gpt-4o-mini** - Il modello più economico di OpenAI
+### Modelli Utilizzati
+- **gpt-4o-mini** - Per outline e capitoli (economico e veloce)
+- **gpt-4o** - Per consistency check finale (più accurato)
 
-**Costi**:
-- Input: $0.15 per 1M tokens
-- Output: $0.60 per 1M tokens
-- **Outline generation**: ~$0.003 (meno di 1 centesimo!)
+**Costi Medi per Libro**:
+- Outline generation: ~$0.003
+- Chapter generation (10-15 capitoli): ~$0.10-0.15
+- Consistency check: ~$0.02-0.05
+- **Totale: ~$0.15-0.20 per libro completo**
 
 ### Prompt Strategy
 - System prompt per guidare il comportamento
@@ -222,31 +232,26 @@ OPENAI_API_KEY=sk-proj-...
 
 ## 📖 Documentazione
 
-Documentazione dettagliata disponibile in `/docs`:
+### 📋 Essential Docs
+- **[PROJECT_SUMMARY.md](./PROJECT_SUMMARY.md)** - Complete project overview & current status
+- **[IMPLEMENTATION_COMPLETE.md](./IMPLEMENTATION_COMPLETE.md)** - Latest features implementation report
+- **[TROUBLESHOOTING_GUIDE.md](./TROUBLESHOOTING_GUIDE.md)** - Common issues & solutions
 
-- `DATABASE_SETUP.md` - Setup database Supabase
-- `API_DOCUMENTATION.md` - Documentazione API endpoints
-- `SPRINT1_COMPLETE.md` - Sprint 1 features
-- `SPRINT2_COMPLETE.md` - Sprint 2 features
-- `SPRINT3_COMPLETE.md` - Sprint 3 AI integration
-- `PROJECT_EDIT_FEATURE.md` - Feature modifica progetti
-- `TROUBLESHOOTING_PGBOUNCER.md` - Fix problemi database
+### 🔧 Technical Documentation (`/docs` folder)
+- **[docs/API_DOCUMENTATION.md](./docs/API_DOCUMENTATION.md)** - Complete API reference with examples
+- **[docs/ARCHITECTURE.md](./docs/ARCHITECTURE.md)** - System architecture and design patterns
+- **[docs/COMPONENTS.md](./docs/COMPONENTS.md)** - React components documentation
+- **[docs/DATABASE_SETUP.md](./docs/DATABASE_SETUP.md)** - Database setup guide & schema
+- **[docs/CHANGELOG.md](./docs/CHANGELOG.md)** - Version history and updates
+- **[docs/TROUBLESHOOTING_PGBOUNCER.md](./docs/TROUBLESHOOTING_PGBOUNCER.md)** - PgBouncer specific issues
+
+### 🎨 Feature-Specific Guides
+- **README_AI_SETTINGS.md** - AI configuration system comprehensive guide
+- **DASHBOARD_REAL_DATA.md** - Dashboard implementation with real-time data
 
 ---
 
 ## 🔮 Roadmap
-
-### Sprint 4: Chapter Generation (Prossimo)
-- [ ] API per generazione singoli capitoli
-- [ ] Progress bar per generazione multipla
-- [ ] Preview e edit capitoli
-- [ ] Salvataggio in database
-
-### Sprint 5: Export & Publishing
-- [ ] Export DOCX (Word)
-- [ ] Export PDF
-- [ ] Formattazione professionale
-- [ ] Template personalizzabili
 
 ### Future Features
 - [ ] Autenticazione con Clerk/Auth.js
@@ -254,6 +259,8 @@ Documentazione dettagliata disponibile in `/docs`:
 - [ ] Collaboration features
 - [ ] Advanced analytics
 - [ ] Payment integration (Stripe)
+- [ ] Miglioramenti AI (modelli più avanzati)
+- [ ] Template personalizzabili per export
 
 ---
 
