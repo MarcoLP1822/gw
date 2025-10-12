@@ -8,6 +8,7 @@ import Card from '@/components/Card';
 import NewProjectModal from '@/components/NewProjectModal';
 import { ProjectFormData } from '@/types';
 import { projectsApi } from '@/lib/api/projects';
+import { toast } from '@/lib/ui/toast';
 import { FileText, Users, Clock, CheckCircle, Plus, Loader2 } from 'lucide-react';
 
 export default function Home() {
@@ -39,17 +40,18 @@ export default function Home() {
       // Salva il progetto nel database tramite API
       const response = await projectsApi.create(projectData);
 
-      console.log('Progetto creato con successo:', response);
-
       // Chiudi il modal
       setIsModalOpen(false);
+
+      // Mostra notifica di successo
+      toast.success('Progetto creato con successo!');
 
       // Naviga alla pagina del progetto appena creato
       router.push(`/progetti/${response.project.id}`);
 
     } catch (error) {
       console.error('Errore durante la creazione del progetto:', error);
-      alert('Errore durante la creazione del progetto. Riprova.');
+      toast.error('Errore durante la creazione del progetto. Riprova.');
     } finally {
       setIsSubmitting(false);
     }

@@ -5,6 +5,7 @@ import { Search, Filter, Calendar, Eye, Loader2, AlertCircle } from 'lucide-reac
 import { useRouter } from 'next/navigation';
 import Card from '@/components/Card';
 import { projectsApi } from '@/lib/api/projects';
+import { ProjectTableSkeleton } from '@/components/ui/Skeleton';
 
 interface ProjectListItem {
     id: string;
@@ -87,11 +88,8 @@ export default function ProjectTableV2() {
     // Loading State
     if (loading) {
         return (
-            <div className="flex-1 flex items-center justify-center">
-                <div className="text-center">
-                    <Loader2 className="w-8 h-8 animate-spin text-blue-600 mx-auto mb-4" />
-                    <p className="text-gray-600">Caricamento progetti...</p>
-                </div>
+            <div className="flex-1 flex flex-col">
+                <ProjectTableSkeleton rows={6} />
             </div>
         );
     }

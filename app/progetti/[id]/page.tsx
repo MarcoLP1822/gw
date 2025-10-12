@@ -8,6 +8,8 @@ import EditProjectModal from '@/components/EditProjectModal';
 import AISettingsTab from '@/components/AISettingsTab';
 import { projectsApi } from '@/lib/api/projects';
 import { ProjectFormData } from '@/types';
+import { toast } from '@/lib/ui/toast';
+import { ProjectDetailPageSkeleton } from '@/components/ui/Skeleton';
 import {
     ArrowLeft,
     Loader2,
@@ -95,9 +97,10 @@ export default function ProgettoDetailPage({ params }: { params: { id: string } 
 
         try {
             await projectsApi.delete(params.id);
+            toast.success('Progetto eliminato con successo');
             router.push('/progetti');
         } catch (err) {
-            alert('Errore durante l\'eliminazione del progetto');
+            toast.error('Errore durante l\'eliminazione del progetto');
             console.error('Error deleting project:', err);
         }
     };
@@ -150,17 +153,7 @@ export default function ProgettoDetailPage({ params }: { params: { id: string } 
 
     // Loading State
     if (loading) {
-        return (
-            <div className="flex h-screen bg-gray-50">
-                <Sidebar collapsed={sidebarCollapsed} onToggleAction={() => setSidebarCollapsed(!sidebarCollapsed)} />
-                <div className="flex-1 flex items-center justify-center">
-                    <div className="text-center">
-                        <Loader2 className="w-12 h-12 animate-spin text-blue-600 mx-auto mb-4" />
-                        <p className="text-gray-600">Caricamento progetto...</p>
-                    </div>
-                </div>
-            </div>
-        );
+        return <ProjectDetailPageSkeleton />;
     }
 
     // Error State
@@ -476,13 +469,15 @@ function OutlineTab({
             }
 
             const data = await response.json();
-            console.log('Outline generato:', data);
+            toast.success('✨ Outline generato con successo!');
 
             // Ricarica i dati del progetto per mostrare l'outline
             onRefresh();
         } catch (err) {
             console.error('Errore:', err);
-            setGenerationError(err instanceof Error ? err.message : 'Errore sconosciuto');
+            const errorMessage = err instanceof Error ? err.message : 'Errore sconosciuto';
+            setGenerationError(errorMessage);
+            toast.error(`Errore nella generazione: ${errorMessage}`);
         } finally {
             setIsGeneratingOutline(false);
         }
@@ -504,13 +499,15 @@ function OutlineTab({
             }
 
             const data = await response.json();
-            console.log(`Capitolo ${chapterNumber} generato:`, data);
+            toast.success(`✨ Capitolo ${chapterNumber} generato con successo!`);
 
             // Ricarica per mostrare il nuovo capitolo
             onRefresh();
         } catch (err) {
             console.error('Errore:', err);
-            setGenerationError(err instanceof Error ? err.message : 'Errore sconosciuto');
+            const errorMessage = err instanceof Error ? err.message : 'Errore sconosciuto';
+            setGenerationError(errorMessage);
+            toast.error(`Errore nella generazione: ${errorMessage}`);
         } finally {
             setGeneratingChapter(null);
         }
@@ -808,12 +805,14 @@ function ChaptersTab({
                 method: 'POST',
             });
 
+            toast.success(`Capitolo ${chapterNumber} rigenerato con successo!`);
+            
             // Marca che il contenuto è cambiato - il report è obsoleto
             setContentChanged(true);
             onRefresh();
         } catch (error) {
             console.error('Error regenerating chapter:', error);
-            alert('Errore durante la rigenerazione');
+            toast.error('Errore durante la rigenerazione del capitolo');
         } finally {
             setRegeneratingChapter(null);
         }
@@ -829,9 +828,10 @@ function ChaptersTab({
             setConsistencyReport(data.report);
             setHasExistingReport(true);
             setContentChanged(false); // Reset: il report è aggiornato
+            toast.success('✅ Consistency check completato!');
         } catch (error) {
             console.error('Error running consistency check:', error);
-            alert('Errore durante il consistency check');
+            toast.error('Errore durante il consistency check');
         } finally {
             setRunningCheck(false);
         }
@@ -1132,9 +1132,12 @@ function ExportTab({ project }: { project: ProjectDetail }) {
             await projectsApi.exportDocx(project.id);
 
             setExportSuccess(true);
+            toast.success('📄 Documento esportato con successo!');
             setTimeout(() => setExportSuccess(false), 3000);
         } catch (err) {
-            setExportError(err instanceof Error ? err.message : 'Errore durante l\'esportazione');
+            const errorMessage = err instanceof Error ? err.message : 'Errore durante l\'esportazione';
+            setExportError(errorMessage);
+            toast.error(`Errore nell'esportazione: ${errorMessage}`);
             console.error('Export error:', err);
         } finally {
             setIsExporting(false);
