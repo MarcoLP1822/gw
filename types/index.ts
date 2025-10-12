@@ -161,3 +161,55 @@ export interface ConsistencyReport {
   recommendations: string[];
   createdAt?: Date;
 }
+
+// ============================================================
+// AI CONFIGURATION - Technical Parameters Only
+// ============================================================
+
+export type AIModel = 'gpt-4o-mini' | 'gpt-4o' | 'gpt-4-turbo';
+
+export interface ProjectAIConfig {
+  id: string;
+  projectId: string;
+
+  // Technical AI Parameters
+  model: AIModel;
+  temperature: number;
+  maxTokens: number;
+  topP: number;
+  frequencyPenalty: number;
+  presencePenalty: number;
+
+  // Chapter Generation Settings
+  targetWordsPerChapter: number;
+
+  // Custom Prompts
+  useCustomPrompts: boolean;
+  customSystemPrompt?: string;
+  customOutlineInstructions?: string;
+  customChapterInstructions?: string;
+
+  // Testing
+  lastTestAt?: Date;
+  testOutput?: string;
+
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface AIConfigFormData {
+  model?: AIModel;
+  temperature?: number;
+  maxTokens?: number;
+  topP?: number;
+  frequencyPenalty?: number;
+  presencePenalty?: number;
+
+  targetWordsPerChapter?: number;
+
+  useCustomPrompts?: boolean;
+  customSystemPrompt?: string;
+  customOutlineInstructions?: string;
+  customChapterInstructions?: string;
+}
+

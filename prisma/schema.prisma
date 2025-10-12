@@ -6,8 +6,8 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
   directUrl = env("DIRECT_URL")
 }
 
@@ -16,13 +16,13 @@ datasource db {
 // ============================================================
 
 model User {
-  id        String   @id @default(cuid())
-  email     String   @unique
+  id        String    @id @default(cuid())
+  email     String    @unique
   name      String
-  role      String   @default("ghost_writer") // "ghost_writer" | "admin" | "author"
+  role      String    @default("ghost_writer") // "ghost_writer" | "admin" | "author"
   projects  Project[]
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
 
   @@index([email])
 }
@@ -32,52 +32,53 @@ model User {
 // ============================================================
 
 model Project {
-  id              String   @id @default(cuid())
-  userId          String
-  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  
+  id     String @id @default(cuid())
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
   // Form Data (dal NewProjectModal)
-  authorName      String
-  authorRole      String
-  company         String
-  industry        String
-  bookTitle       String
-  bookSubtitle    String?
-  targetReaders   String   @db.Text
-  
+  authorName    String
+  authorRole    String
+  company       String
+  industry      String
+  bookTitle     String
+  bookSubtitle  String?
+  targetReaders String  @db.Text
+
   // Hero's Journey Data
-  currentSituation String  @db.Text
-  challengeFaced   String  @db.Text
-  transformation   String  @db.Text
-  achievement      String  @db.Text
-  lessonLearned    String  @db.Text
-  
+  currentSituation String @db.Text
+  challengeFaced   String @db.Text
+  transformation   String @db.Text
+  achievement      String @db.Text
+  lessonLearned    String @db.Text
+
   // Business Goals
-  businessGoals   String   @db.Text
-  uniqueValue     String   @db.Text
-  
+  businessGoals String @db.Text
+  uniqueValue   String @db.Text
+
   // Technical
   estimatedPages  Int?
-  additionalNotes String?  @db.Text
-  
+  additionalNotes String? @db.Text
+
   // Status & Generation
-  status          String   @default("draft") // draft, generating_outline, generating_chapters, completed, error
-  
+  status String @default("draft") // draft, generating_outline, generating_chapters, completed, error
+
   // Generation Progress (stored as JSON)
   generationProgress Json? @default("{\"status\":\"idle\",\"progress\":0,\"chaptersComplete\":0,\"chaptersTotal\":0}")
-  
+
   // Master Context (aggiornato dopo ogni capitolo)
-  masterContext   Json?    // { characters, terms, numbers, themes }
-  styleGuide      Json?    // Generato dopo cap 2
-  
+  masterContext Json? // { characters, terms, numbers, themes }
+  styleGuide    Json? // Generato dopo cap 2
+
   // Relations
-  outline         Outline?
-  chapters        Chapter[]
-  generationLogs  GenerationLog[]
+  outline            Outline?
+  chapters           Chapter[]
+  generationLogs     GenerationLog[]
   consistencyReports ConsistencyReport[]
-  
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
+  aiConfig           ProjectAIConfig?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@index([userId])
   @@index([status])
@@ -89,55 +90,55 @@ model Project {
 // ============================================================
 
 model Outline {
-  id          String   @id @default(cuid())
-  projectId   String   @unique
-  project     Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
-  
-  structure   Json     // Struttura JSON completa dell'outline
-  totalChapters Int
+  id        String  @id @default(cuid())
+  projectId String  @unique
+  project   Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  structure      Json // Struttura JSON completa dell'outline
+  totalChapters  Int
   estimatedWords Int
-  
-  aiModel     String   // "gpt-4", "gpt-4o", "claude-3-5-sonnet", etc.
+
+  aiModel     String // "gpt-4", "gpt-4o", "claude-3-5-sonnet", etc.
   generatedAt DateTime @default(now())
-  
-  chapters    Chapter[]
+
+  chapters Chapter[]
 
   @@index([projectId])
 }
 
 model Chapter {
-  id          String   @id @default(cuid())
-  projectId   String
-  project     Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
-  outlineId   String?
-  outline     Outline? @relation(fields: [outlineId], references: [id], onDelete: SetNull)
-  
+  id        String   @id @default(cuid())
+  projectId String
+  project   Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  outlineId String?
+  outline   Outline? @relation(fields: [outlineId], references: [id], onDelete: SetNull)
+
   chapterNumber Int
-  title       String
-  content     String   @db.Text
-  wordCount   Int      @default(0)
-  
-  status      String   @default("pending") // pending, generating, completed, error
-  
+  title         String
+  content       String @db.Text
+  wordCount     Int    @default(0)
+
+  status String @default("pending") // pending, generating, completed, error
+
   aiModel     String?
   generatedAt DateTime?
-  
+
   // Prompt usato per la generazione (per debugging e audit)
-  systemPrompt String?  @db.Text      // System prompt usato
-  userPrompt   String?  @db.Text      // User prompt completo usato
-  
+  systemPrompt String? @db.Text // System prompt usato
+  userPrompt   String? @db.Text // User prompt completo usato
+
   // Metadata estratti durante generazione
-  newCharacters String[] @default([])  // Personaggi introdotti in questo cap
-  newTerms      Json?                  // { "termine": "definizione" }
-  keyNumbers    Json?                  // { "metrica": "valore" }
-  
+  newCharacters String[] @default([]) // Personaggi introdotti in questo cap
+  newTerms      Json? // { "termine": "definizione" }
+  keyNumbers    Json? // { "metrica": "valore" }
+
   // Summary e key points (per context dei capitoli futuri)
-  summary       String?  @db.Text      // Summary generato (500 parole)
-  keyPoints     String[] @default([])  // 3-5 punti chiave del capitolo
-  
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-  
+  summary   String?  @db.Text // Summary generato (500 parole)
+  keyPoints String[] @default([]) // 3-5 punti chiave del capitolo
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
   @@unique([projectId, chapterNumber])
   @@index([projectId])
   @@index([status])
@@ -148,24 +149,24 @@ model Chapter {
 // ============================================================
 
 model GenerationLog {
-  id          String   @id @default(cuid())
-  projectId   String
-  project     Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
-  
-  step        String   // "outline", "chapter_1", "chapter_2", etc.
-  aiModel     String
-  
+  id        String  @id @default(cuid())
+  projectId String
+  project   Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  step    String // "outline", "chapter_1", "chapter_2", etc.
+  aiModel String
+
   promptTokens     Int
   completionTokens Int
   totalTokens      Int
-  
-  cost        Float?   // USD
-  duration    Int      // milliseconds
-  
-  success     Boolean
+
+  cost     Float? // USD
+  duration Int // milliseconds
+
+  success      Boolean
   errorMessage String? @db.Text
-  
-  createdAt   DateTime @default(now())
+
+  createdAt DateTime @default(now())
 
   @@index([projectId])
   @@index([createdAt])
@@ -177,15 +178,54 @@ model GenerationLog {
 // ============================================================
 
 model ConsistencyReport {
-  id            String   @id @default(cuid())
-  projectId     String
-  project       Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
-  
-  report        Json     // Report completo dell'AI
-  overallScore  Int      // 0-100
-  
-  createdAt     DateTime @default(now())
-  
+  id        String  @id @default(cuid())
+  projectId String
+  project   Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  report       Json // Report completo dell'AI
+  overallScore Int // 0-100
+
+  createdAt DateTime @default(now())
+
   @@index([projectId])
   @@index([createdAt])
+}
+
+// ============================================================
+// AI CONFIGURATION (per progetto)
+// Technical parameters only - style and content defined in project onboarding
+// ============================================================
+
+model ProjectAIConfig {
+  id        String  @id @default(cuid())
+  projectId String  @unique
+  project   Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  // AI Model Parameters
+  model String @default("gpt-4o-mini")
+  // Options: "gpt-4o-mini" | "gpt-4o" | "gpt-4-turbo"
+
+  temperature      Float @default(0.7) // 0.0 - 2.0
+  maxTokens        Int   @default(4000) // Max tokens per generation
+  topP             Float @default(0.95) // 0.0 - 1.0
+  frequencyPenalty Float @default(0.3) // -2.0 to 2.0
+  presencePenalty  Float @default(0.3) // -2.0 to 2.0
+
+  // Chapter Generation Settings
+  targetWordsPerChapter Int @default(2000)
+
+  // Custom Prompts (Optional overrides)
+  useCustomPrompts          Boolean @default(false)
+  customSystemPrompt        String? @db.Text
+  customOutlineInstructions String? @db.Text
+  customChapterInstructions String? @db.Text
+
+  // Testing & Metadata
+  lastTestAt DateTime?
+  testOutput String?   @db.Text
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([projectId])
 }

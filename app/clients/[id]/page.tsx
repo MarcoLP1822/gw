@@ -29,7 +29,7 @@ export default function ClientDetailPage({ params }: { params: { id: string } })
             {/* Sidebar Navigation */}
             <Sidebar
                 collapsed={sidebarCollapsed}
-                onToggle={() => setSidebarCollapsed(!sidebarCollapsed)}
+                onToggleAction={() => setSidebarCollapsed(!sidebarCollapsed)}
             />
 
             {/* Main Content */}

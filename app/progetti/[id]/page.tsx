@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import Sidebar from '@/components/Sidebar';
 import Card from '@/components/Card';
 import EditProjectModal from '@/components/EditProjectModal';
+import AISettingsTab from '@/components/AISettingsTab';
 import { projectsApi } from '@/lib/api/projects';
 import { ProjectFormData } from '@/types';
 import {
@@ -17,10 +18,11 @@ import {
     FileText,
     Download,
     Sparkles,
-    Clock
+    Clock,
+    Settings
 } from 'lucide-react';
 
-type TabType = 'overview' | 'outline' | 'chapters' | 'export';
+type TabType = 'overview' | 'outline' | 'chapters' | 'ai-settings' | 'export';
 
 interface ProjectDetail {
     id: string;
@@ -112,6 +114,7 @@ export default function ProgettoDetailPage({ params }: { params: { id: string } 
 
     const tabs = [
         { id: 'overview' as TabType, label: 'Panoramica', icon: BookOpen },
+        { id: 'ai-settings' as TabType, label: 'AI Settings', icon: Settings },
         { id: 'outline' as TabType, label: 'Outline', icon: FileText },
         { id: 'chapters' as TabType, label: 'Capitoli', icon: FileText },
         { id: 'export' as TabType, label: 'Esporta', icon: Download },
@@ -149,7 +152,7 @@ export default function ProgettoDetailPage({ params }: { params: { id: string } 
     if (loading) {
         return (
             <div className="flex h-screen bg-gray-50">
-                <Sidebar collapsed={sidebarCollapsed} onToggle={() => setSidebarCollapsed(!sidebarCollapsed)} />
+                <Sidebar collapsed={sidebarCollapsed} onToggleAction={() => setSidebarCollapsed(!sidebarCollapsed)} />
                 <div className="flex-1 flex items-center justify-center">
                     <div className="text-center">
                         <Loader2 className="w-12 h-12 animate-spin text-blue-600 mx-auto mb-4" />
@@ -164,7 +167,7 @@ export default function ProgettoDetailPage({ params }: { params: { id: string } 
     if (error || !project) {
         return (
             <div className="flex h-screen bg-gray-50">
-                <Sidebar collapsed={sidebarCollapsed} onToggle={() => setSidebarCollapsed(!sidebarCollapsed)} />
+                <Sidebar collapsed={sidebarCollapsed} onToggleAction={() => setSidebarCollapsed(!sidebarCollapsed)} />
                 <div className="flex-1 flex items-center justify-center p-6">
                     <Card className="max-w-md">
                         <div className="text-center">
@@ -187,7 +190,7 @@ export default function ProgettoDetailPage({ params }: { params: { id: string } 
     return (
         <div className="flex h-screen bg-gray-50">
             {/* Sidebar */}
-            <Sidebar collapsed={sidebarCollapsed} onToggle={() => setSidebarCollapsed(!sidebarCollapsed)} />
+            <Sidebar collapsed={sidebarCollapsed} onToggleAction={() => setSidebarCollapsed(!sidebarCollapsed)} />
 
             {/* Main Content */}
             <div className="flex-1 flex flex-col overflow-hidden">
@@ -262,6 +265,10 @@ export default function ProgettoDetailPage({ params }: { params: { id: string } 
                     {/* Keep all tabs mounted but show/hide with CSS for state persistence */}
                     <div style={{ display: activeTab === 'overview' ? 'block' : 'none' }}>
                         <OverviewTab project={project} onRefresh={fetchProject} />
+                    </div>
+
+                    <div style={{ display: activeTab === 'ai-settings' ? 'block' : 'none' }}>
+                        <AISettingsTab projectId={project.id} onRefresh={fetchProject} />
                     </div>
 
                     <div style={{ display: activeTab === 'outline' ? 'block' : 'none' }}>
@@ -735,6 +742,7 @@ function ChaptersTab({
     const [runningCheck, setRunningCheck] = useState(false);
     const [consistencyReport, setConsistencyReport] = useState<any>(null);
     const [hasExistingReport, setHasExistingReport] = useState(false);
+    const [contentChanged, setContentChanged] = useState(false); // Nuovo: traccia se il contenuto è cambiato
 
     // Calcolo variabili necessarie per l'useEffect
     const completedChapters = project.chapters.filter(ch => ch.status === 'completed').length;
@@ -778,6 +786,8 @@ function ChaptersTab({
             });
 
             setEditingChapter(null);
+            // Marca che il contenuto è cambiato - il report è obsoleto
+            setContentChanged(true);
             onRefresh();
         } catch (error) {
             console.error('Error saving chapter:', error);
@@ -797,6 +807,9 @@ function ChaptersTab({
             await fetch(`/api/projects/${project.id}/chapters/${chapterNumber}/generate`, {
                 method: 'POST',
             });
+
+            // Marca che il contenuto è cambiato - il report è obsoleto
+            setContentChanged(true);
             onRefresh();
         } catch (error) {
             console.error('Error regenerating chapter:', error);
@@ -814,7 +827,8 @@ function ChaptersTab({
             });
             const data = await response.json();
             setConsistencyReport(data.report);
-            setHasExistingReport(true); // Marca come esistente dopo la generazione
+            setHasExistingReport(true);
+            setContentChanged(false); // Reset: il report è aggiornato
         } catch (error) {
             console.error('Error running consistency check:', error);
             alert('Errore durante il consistency check');
@@ -861,10 +875,12 @@ function ChaptersTab({
                     {allChaptersComplete && (
                         <button
                             onClick={handleConsistencyCheck}
-                            disabled={runningCheck || hasExistingReport}
-                            className={`px-4 py-2 text-white text-sm rounded-lg flex items-center gap-2 transition-colors ${hasExistingReport
-                                ? 'bg-gray-400 cursor-not-allowed'
-                                : 'bg-purple-600 hover:bg-purple-700 disabled:bg-purple-300'
+                            disabled={runningCheck}
+                            className={`px-4 py-2 text-white text-sm rounded-lg flex items-center gap-2 transition-colors ${contentChanged
+                                ? 'bg-orange-600 hover:bg-orange-700 disabled:bg-orange-300'
+                                : hasExistingReport
+                                    ? 'bg-green-600 hover:bg-green-700 disabled:bg-green-300'
+                                    : 'bg-purple-600 hover:bg-purple-700 disabled:bg-purple-300'
                                 }`}
                         >
                             {runningCheck ? (
@@ -872,10 +888,15 @@ function ChaptersTab({
                                     <Loader2 size={16} className="animate-spin" />
                                     Analisi...
                                 </>
+                            ) : contentChanged ? (
+                                <>
+                                    <AlertCircle size={16} />
+                                    ⚠️ Rigenera Check
+                                </>
                             ) : hasExistingReport ? (
                                 <>
                                     <AlertCircle size={16} />
-                                    Report Già Generato
+                                    ✅ Rigenera Check
                                 </>
                             ) : (
                                 <>
@@ -892,17 +913,30 @@ function ChaptersTab({
                         💡 Completa tutti i capitoli per eseguire il consistency check finale
                     </div>
                 )}
+
+                {contentChanged && (
+                    <div className="p-3 bg-orange-50 border border-orange-200 rounded-lg text-orange-700 text-sm">
+                        ⚠️ Hai modificato o rigenerato dei capitoli. Il report precedente potrebbe essere obsoleto - considera di rigenerarlo.
+                    </div>
+                )}
             </Card>
 
             {/* Consistency Report (se disponibile) */}
             {consistencyReport && (
                 <Card>
                     <div className="flex items-start gap-3 mb-4">
-                        <AlertCircle className="text-purple-600 flex-shrink-0" size={24} />
+                        <AlertCircle className={`flex-shrink-0 ${contentChanged ? 'text-orange-600' : 'text-purple-600'}`} size={24} />
                         <div className="flex-1">
-                            <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                                Consistency Report
-                            </h3>
+                            <div className="flex items-center justify-between mb-2">
+                                <h3 className="text-lg font-semibold text-gray-900">
+                                    Consistency Report
+                                </h3>
+                                {contentChanged && (
+                                    <span className="text-xs bg-orange-100 text-orange-700 px-2 py-1 rounded">
+                                        ⚠️ Potrebbe essere obsoleto
+                                    </span>
+                                )}
+                            </div>
                             <div className="flex items-center gap-4 mb-4">
                                 <div className="text-3xl font-bold text-purple-600">
                                     {consistencyReport.overallScore || 0}/100

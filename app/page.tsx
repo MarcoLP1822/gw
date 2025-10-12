@@ -60,7 +60,7 @@ export default function Home() {
       {/* Sidebar Navigation */}
       <Sidebar
         collapsed={sidebarCollapsed}
-        onToggle={() => setSidebarCollapsed(!sidebarCollapsed)}
+        onToggleAction={() => setSidebarCollapsed(!sidebarCollapsed)}
       />
 
       {/* Dashboard Content */}

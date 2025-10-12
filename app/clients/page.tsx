@@ -13,7 +13,7 @@ export default function ClientiPage() {
             {/* Sidebar Navigation */}
             <Sidebar
                 collapsed={sidebarCollapsed}
-                onToggle={() => setSidebarCollapsed(!sidebarCollapsed)}
+                onToggleAction={() => setSidebarCollapsed(!sidebarCollapsed)}
             />
 
             {/* Client Table */}

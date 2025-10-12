@@ -17,6 +17,8 @@ import {
     QuickCheckResult,
     ConsistencyReport,
 } from '@/types';
+import { AIConfigService } from '@/lib/ai/config/ai-config-service';
+import { PromptBuilder } from '@/lib/ai/prompt-builder';
 
 /**
  * Service per la generazione dei capitoli con AI
@@ -36,7 +38,7 @@ export class ChapterGenerationService {
             const context = await this.buildContext(projectId, chapterNumber);
 
             // 3. GENERA il capitolo con AI
-            const result = await this.generateWithAI(context, chapterNumber);
+            const result = await this.generateWithAI(projectId, context, chapterNumber);
 
             // 4. MINI CONSISTENCY CHECK (se c'è un capitolo precedente)
             if (context.chapters.previous) {
@@ -72,7 +74,10 @@ export class ChapterGenerationService {
                 await this.refineStyleGuide(projectId);
             }
 
-            // 8. LOG della generazione
+            // 8. AGGIORNA status del progetto
+            await this.updateProjectStatus(projectId);
+
+            // 9. LOG della generazione
             const duration = Date.now() - startTime;
             await this.logGeneration(projectId, chapterNumber, result, duration, true);
 
@@ -229,29 +234,45 @@ export class ChapterGenerationService {
     /**
      * Genera capitolo con AI
      */
-    private async generateWithAI(context: ChapterContext, chapterNumber: number) {
-        const prompt = generateChapterPrompt(context);
+    private async generateWithAI(projectId: string, context: ChapterContext, chapterNumber: number) {
+        // 🎯 CARICA LA CONFIGURAZIONE AI DEL PROGETTO
+        const aiConfig = await AIConfigService.getOrCreate(projectId);
 
-        console.log(`🤖 Generating chapter ${chapterNumber} with AI...`);
+        // 🎨 USA IL PROMPT BUILDER per costruire prompts intelligenti
+        const { systemPrompt, userPrompt: chapterInstructions } =
+            PromptBuilder.buildCompleteChapterPrompt(context.project, aiConfig, context);
+
+        // Costruisci il prompt completo con il context
+        const fullUserPrompt = `
+${chapterInstructions}
+
+${generateChapterPrompt(context)}
+`;
+
+        console.log(`🤖 Generating chapter ${chapterNumber} with AI Config...`);
         console.log('\n' + '='.repeat(80));
-        console.log('📝 SYSTEM PROMPT:');
+        console.log('📝 SYSTEM PROMPT (Dynamic from AI Config):');
         console.log('='.repeat(80));
-        console.log(CHAPTER_SYSTEM_PROMPT);
+        console.log(systemPrompt);
         console.log('\n' + '='.repeat(80));
         console.log('📝 USER PROMPT:');
         console.log('='.repeat(80));
-        console.log(prompt);
+        console.log(fullUserPrompt);
         console.log('='.repeat(80) + '\n');
 
+        // 🔧 USA I PARAMETRI AI DALLA CONFIGURAZIONE
         const response = await openai.chat.completions.create({
-            model: DEFAULT_MODEL,
+            model: aiConfig.model as any || DEFAULT_MODEL,
             messages: [
-                { role: 'system', content: CHAPTER_SYSTEM_PROMPT },
-                { role: 'user', content: prompt },
+                { role: 'system', content: systemPrompt },
+                { role: 'user', content: fullUserPrompt },
             ],
             response_format: { type: 'json_object' },
-            temperature: 0.7,
-            max_tokens: 4000,
+            temperature: aiConfig.temperature,
+            max_tokens: aiConfig.maxTokens,
+            top_p: aiConfig.topP,
+            frequency_penalty: aiConfig.frequencyPenalty,
+            presence_penalty: aiConfig.presencePenalty,
         });
 
         const parsed = JSON.parse(response.choices[0].message.content || '{}');
@@ -262,9 +283,9 @@ export class ChapterGenerationService {
             summary: parsed.summary || '',
             keyPoints: parsed.keyPoints || [],
             usage: response.usage,
-            // Salviamo i prompt usati
-            systemPrompt: CHAPTER_SYSTEM_PROMPT,
-            userPrompt: prompt,
+            // Salviamo i prompt usati (ora dinamici!)
+            systemPrompt: systemPrompt,
+            userPrompt: fullUserPrompt,
         };
     }
 
@@ -477,6 +498,48 @@ Rigenera il capitolo applicando queste correzioni.`;
         });
 
         console.log('✅ Style guide refined and saved');
+    }
+
+    /**
+     * Aggiorna lo status del progetto in base ai capitoli completati
+     */
+    private async updateProjectStatus(projectId: string) {
+        const project = await prisma.project.findUnique({
+            where: { id: projectId },
+            include: {
+                outline: true,
+                chapters: true,
+            },
+        });
+
+        if (!project || !project.outline) return;
+
+        const outlineStructure = project.outline.structure as any;
+        const totalChapters = outlineStructure.chapters?.length || 0;
+        const completedChapters = project.chapters.filter(
+            ch => ch.status === 'completed'
+        ).length;
+
+        let newStatus = project.status;
+
+        if (completedChapters === 0) {
+            // Nessun capitolo completato ma outline presente
+            newStatus = 'generating_outline';
+        } else if (completedChapters < totalChapters) {
+            // Generazione capitoli in corso
+            newStatus = 'generating_chapters';
+        } else if (completedChapters === totalChapters) {
+            // Tutti i capitoli completati
+            newStatus = 'completed';
+        }
+
+        if (newStatus !== project.status) {
+            await prisma.project.update({
+                where: { id: projectId },
+                data: { status: newStatus },
+            });
+            console.log(`✅ Project status updated: ${project.status} → ${newStatus}`);
+        }
     }
 
     /**

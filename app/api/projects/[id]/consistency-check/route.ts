@@ -72,3 +72,37 @@ export async function GET(
         );
     }
 }
+
+/**
+ * DELETE /api/projects/[id]/consistency-check
+ * Cancella tutti i consistency report per il progetto
+ * (Da usare quando si modifica o rigenera un capitolo)
+ */
+export async function DELETE(
+    request: NextRequest,
+    { params }: { params: { id: string } }
+) {
+    try {
+        const { prisma } = await import('@/lib/db');
+        const projectId = params.id;
+
+        const deleted = await prisma.consistencyReport.deleteMany({
+            where: { projectId },
+        });
+
+        console.log(`🗑️ Deleted ${deleted.count} consistency report(s) for project ${projectId}`);
+
+        return NextResponse.json({
+            success: true,
+            deleted: deleted.count,
+            message: 'Consistency report cancellato - rigenerabile dopo le modifiche',
+        });
+    } catch (error: any) {
+        console.error('Error deleting consistency report:', error);
+
+        return NextResponse.json(
+            { error: 'Errore durante la cancellazione del report' },
+            { status: 500 }
+        );
+    }
+}

@@ -13,7 +13,7 @@ export default function ProgettiPage() {
             {/* Sidebar Navigation */}
             <Sidebar
                 collapsed={sidebarCollapsed}
-                onToggle={() => setSidebarCollapsed(!sidebarCollapsed)}
+                onToggleAction={() => setSidebarCollapsed(!sidebarCollapsed)}
             />
 
             {/* Project Table */}

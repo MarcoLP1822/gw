@@ -6,6 +6,7 @@ import {
   Users,
   Settings,
   BarChart,
+  BookOpen,
   ChevronLeft,
   ChevronRight
 } from 'lucide-react';
@@ -13,7 +14,7 @@ import clsx from 'clsx';
 
 interface SidebarProps {
   collapsed: boolean;
-  onToggle: () => void;
+  onToggleAction: () => void;
 }
 
 const menuItems = [
@@ -21,10 +22,11 @@ const menuItems = [
   { icon: FileText, label: 'Progetti', href: '/progetti' },
   { icon: Users, label: 'Clienti', href: '/clients' },
   { icon: BarChart, label: 'Analytics', href: '/analytics' },
+  { icon: BookOpen, label: 'Istruzioni', href: '/istruzioni' },
   { icon: Settings, label: 'Impostazioni', href: '/settings' },
 ];
 
-export default function Sidebar({ collapsed, onToggle }: SidebarProps) {
+export default function Sidebar({ collapsed, onToggleAction }: SidebarProps) {
   return (
     <div
       className={clsx(
@@ -38,7 +40,7 @@ export default function Sidebar({ collapsed, onToggle }: SidebarProps) {
           <h1 className="text-xl font-bold">Ghost Writing</h1>
         )}
         <button
-          onClick={onToggle}
+          onClick={onToggleAction}
           className="p-2 hover:bg-gray-800 rounded-lg transition-colors"
           aria-label="Toggle sidebar"
         >
@@ -79,8 +81,8 @@ export default function Sidebar({ collapsed, onToggle }: SidebarProps) {
           </div>
           {!collapsed && (
             <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium truncate">John Doe</p>
-              <p className="text-xs text-gray-400 truncate">john@example.com</p>
+              <p className="text-sm font-medium truncate">Marco LP</p>
+              <p className="text-xs text-gray-400 truncate">marco.lp@example.com</p>
             </div>
           )}
         </div>

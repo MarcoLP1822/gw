@@ -59,7 +59,7 @@ export default function AnalyticsPage() {
             {/* Sidebar Navigation */}
             <Sidebar
                 collapsed={sidebarCollapsed}
-                onToggle={() => setSidebarCollapsed(!sidebarCollapsed)}
+                onToggleAction={() => setSidebarCollapsed(!sidebarCollapsed)}
             />
 
             {/* Analytics Content */}

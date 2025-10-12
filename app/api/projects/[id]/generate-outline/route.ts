@@ -92,6 +92,12 @@ export async function POST(
             },
         });
 
+        // 5b. Aggiorna lo status del progetto
+        await prisma.project.update({
+            where: { id: projectId },
+            data: { status: 'generating_outline' },
+        });
+
         // 6. Log della generazione per tracking costi
         await prisma.generationLog.create({
             data: {

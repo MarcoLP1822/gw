@@ -12,8 +12,8 @@ export default function ImpostazioniPage() {
     // Mock state per le impostazioni
     const [settings, setSettings] = useState({
         // Profilo
-        name: 'John Doe',
-        email: 'john@example.com',
+        name: 'Marco LP',
+        email: 'marco.lp@example.com',
         phone: '+39 123 456 7890',
 
         // Notifiche
@@ -34,7 +34,7 @@ export default function ImpostazioniPage() {
             {/* Sidebar Navigation */}
             <Sidebar
                 collapsed={sidebarCollapsed}
-                onToggle={() => setSidebarCollapsed(!sidebarCollapsed)}
+                onToggleAction={() => setSidebarCollapsed(!sidebarCollapsed)}
             />
 
             {/* Settings Content */}
