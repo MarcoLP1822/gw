@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Toaster } from 'sonner';
+import { TooltipProvider } from '@/components/ui/Tooltip';
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -15,9 +16,11 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className="antialiased">
-        {children}
-        <Toaster 
-          position="top-right" 
+        <TooltipProvider>
+          {children}
+        </TooltipProvider>
+        <Toaster
+          position="top-right"
           expand={false}
           richColors
           closeButton

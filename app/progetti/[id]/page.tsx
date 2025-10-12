@@ -4,12 +4,14 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Sidebar from '@/components/Sidebar';
 import Card from '@/components/Card';
-import EditProjectModal from '@/components/EditProjectModal';
+import NewProjectModal from '@/components/NewProjectModal';
 import AISettingsTab from '@/components/AISettingsTab';
+import WorkflowStepper from '@/components/WorkflowStepper';
 import { projectsApi } from '@/lib/api/projects';
 import { ProjectFormData } from '@/types';
 import { toast } from '@/lib/ui/toast';
 import { ProjectDetailPageSkeleton } from '@/components/ui/Skeleton';
+import { GenerationStateManager } from '@/lib/generation-state';
 import {
     ArrowLeft,
     Loader2,
@@ -68,6 +70,7 @@ export default function ProgettoDetailPage({ params }: { params: { id: string } 
     const [generatingChapter, setGeneratingChapter] = useState<number | null>(null);
     const [regeneratingChapter, setRegeneratingChapter] = useState<number | null>(null);
     const [generationError, setGenerationError] = useState<string | null>(null);
+    const [stopBatchGeneration, setStopBatchGeneration] = useState(false);
 
     const router = useRouter();
 
@@ -87,6 +90,15 @@ export default function ProgettoDetailPage({ params }: { params: { id: string } 
 
     useEffect(() => {
         fetchProject();
+
+        // Ripristina lo stato della generazione se esiste
+        const savedState = GenerationStateManager.getForProject(params.id);
+        if (savedState && savedState.isGenerating) {
+            setGeneratingChapter(savedState.currentChapter);
+            setStopBatchGeneration(savedState.stopRequested);
+            toast.info(`Generazione in corso ripristinata: Capitolo ${savedState.currentChapter}`);
+        }
+
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [params.id]);
 
@@ -126,8 +138,8 @@ export default function ProgettoDetailPage({ params }: { params: { id: string } 
     const getStatusBadge = (status: string) => {
         const statusConfig: Record<string, { label: string; color: string }> = {
             draft: { label: 'Bozza', color: 'bg-gray-100 text-gray-800' },
-            generating_outline: { label: 'Generando Outline', color: 'bg-blue-100 text-blue-800' },
-            generating_chapters: { label: 'Generando Capitoli', color: 'bg-purple-100 text-purple-800' },
+            generating_outline: { label: 'Outline', color: 'bg-blue-100 text-blue-800' },
+            generating_chapters: { label: 'Capitoli', color: 'bg-purple-100 text-purple-800' },
             completed: { label: 'Completato', color: 'bg-green-100 text-green-800' },
             error: { label: 'Errore', color: 'bg-red-100 text-red-800' },
         };
@@ -153,7 +165,12 @@ export default function ProgettoDetailPage({ params }: { params: { id: string } 
 
     // Loading State
     if (loading) {
-        return <ProjectDetailPageSkeleton />;
+        return (
+            <div className="flex h-screen bg-gray-50">
+                <Sidebar collapsed={sidebarCollapsed} onToggleAction={() => setSidebarCollapsed(!sidebarCollapsed)} />
+                <ProjectDetailPageSkeleton />
+            </div>
+        );
     }
 
     // Error State
@@ -187,48 +204,48 @@ export default function ProgettoDetailPage({ params }: { params: { id: string } 
 
             {/* Main Content */}
             <div className="flex-1 flex flex-col overflow-hidden">
-                {/* Header */}
-                <div className="bg-white border-b border-gray-200 px-6 py-4">
-                    <div className="flex items-center justify-between mb-4">
+                {/* Header - Compatto */}
+                <div className="bg-white border-b border-gray-200 px-6 py-3">
+                    <div className="flex items-center justify-between mb-3">
                         <button
                             onClick={() => router.push('/progetti')}
-                            className="flex items-center gap-2 text-gray-600 hover:text-gray-900 transition-colors"
+                            className="flex items-center gap-2 text-gray-600 hover:text-gray-900 transition-colors text-sm"
                         >
-                            <ArrowLeft size={20} />
+                            <ArrowLeft size={18} />
                             <span>Torna ai Progetti</span>
                         </button>
-
-                        <div className="flex items-center gap-3">
-                            {getStatusBadge(project.status)}
-                            <button
-                                onClick={() => setIsEditModalOpen(true)}
-                                className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-                                title="Modifica progetto"
-                            >
-                                <Edit2 size={18} />
-                                <span>Modifica</span>
-                            </button>
-                            <button
-                                onClick={handleDelete}
-                                className="p-2 text-red-600 hover:bg-red-50 rounded-md transition-colors"
-                                title="Elimina progetto"
-                            >
-                                <Trash2 size={20} />
-                            </button>
-                        </div>
                     </div>
 
-                    <div className="mb-4">
-                        <h1 className="text-2xl font-bold text-gray-900 mb-1">{project.bookTitle}</h1>
+                    <div className="mb-3">
+                        <h1 className="text-xl font-bold text-gray-900 mb-0.5">{project.bookTitle}</h1>
                         {project.bookSubtitle && (
-                            <p className="text-lg text-gray-600">{project.bookSubtitle}</p>
+                            <p className="text-sm text-gray-600">{project.bookSubtitle}</p>
                         )}
-                        <div className="flex items-center gap-4 mt-2 text-sm text-gray-500">
+                        <div className="flex items-center gap-3 mt-1.5 text-xs text-gray-500">
                             <span>Autore: <span className="font-medium">{project.authorName}</span></span>
                             <span>•</span>
                             <span>{project.company}</span>
                             <span>•</span>
                             <span>{project._count.chapters} capitoli</span>
+
+                            {/* Indicatore generazione in corso con pulsante Stop */}
+                            {generatingChapter !== null && (
+                                <>
+                                    <span>•</span>
+                                    <span className="flex items-center gap-2 text-blue-600 font-medium">
+                                        <Loader2 size={14} className="animate-spin" />
+                                        Generando Cap. {generatingChapter}
+                                        <button
+                                            onClick={() => setStopBatchGeneration(true)}
+                                            disabled={stopBatchGeneration}
+                                            className="ml-1 px-2 py-0.5 text-xs bg-red-600 text-white rounded hover:bg-red-700 disabled:bg-red-300 transition-colors"
+                                            title="Interrompi generazione batch"
+                                        >
+                                            {stopBatchGeneration ? 'Fermando...' : 'Stop'}
+                                        </button>
+                                    </span>
+                                </>
+                            )}
                         </div>
                     </div>
 
@@ -253,11 +270,27 @@ export default function ProgettoDetailPage({ params }: { params: { id: string } 
                     </div>
                 </div>
 
+                {/* Workflow Stepper */}
+                <WorkflowStepper
+                    currentStep={activeTab === 'overview' ? 'info' : activeTab}
+                    projectData={{
+                        hasAIConfig: true, // Assuming AI config exists (can be enhanced)
+                        hasOutline: !!project.outline,
+                        chaptersCompleted: project.chapters.filter(ch => ch.status === 'completed').length,
+                        totalChapters: project.outline?.structure ? (project.outline.structure as any).chapters?.length || 0 : 0,
+                        hasConsistencyCheck: false // Can be enhanced with actual check
+                    }}
+                />
+
                 {/* Tab Content */}
                 <div className="flex-1 overflow-auto p-6">
                     {/* Keep all tabs mounted but show/hide with CSS for state persistence */}
                     <div style={{ display: activeTab === 'overview' ? 'block' : 'none' }}>
-                        <OverviewTab project={project} onRefresh={fetchProject} />
+                        <OverviewTab
+                            project={project}
+                            onRefresh={fetchProject}
+                            onEdit={() => setIsEditModalOpen(true)}
+                        />
                     </div>
 
                     <div style={{ display: activeTab === 'ai-settings' ? 'block' : 'none' }}>
@@ -275,6 +308,8 @@ export default function ProgettoDetailPage({ params }: { params: { id: string } 
                             setGeneratingChapter={setGeneratingChapter}
                             generationError={generationError}
                             setGenerationError={setGenerationError}
+                            stopBatchGeneration={stopBatchGeneration}
+                            setStopBatchGeneration={setStopBatchGeneration}
                         />
                     </div>
 
@@ -285,6 +320,8 @@ export default function ProgettoDetailPage({ params }: { params: { id: string } 
                             // Global generation states for regeneration
                             regeneratingChapter={regeneratingChapter}
                             setRegeneratingChapter={setRegeneratingChapter}
+                            // Global batch generation state to disable buttons
+                            generatingChapter={generatingChapter}
                         />
                     </div>
 
@@ -295,10 +332,11 @@ export default function ProgettoDetailPage({ params }: { params: { id: string } 
             </div>
 
             {/* Edit Project Modal */}
-            <EditProjectModal
+            <NewProjectModal
                 isOpen={isEditModalOpen}
-                onClose={() => setIsEditModalOpen(false)}
-                onSubmit={handleUpdateProject}
+                onCloseAction={() => setIsEditModalOpen(false)}
+                onSubmitAction={handleUpdateProject}
+                mode="edit"
                 initialData={{
                     authorName: project.authorName,
                     authorRole: project.authorRole,
@@ -326,7 +364,11 @@ export default function ProgettoDetailPage({ params }: { params: { id: string } 
 // OVERVIEW TAB
 // ============================================================
 
-function OverviewTab({ project, onRefresh }: { project: ProjectDetail; onRefresh: () => void }) {
+function OverviewTab({ project, onRefresh, onEdit }: {
+    project: ProjectDetail;
+    onRefresh: () => void;
+    onEdit: () => void;
+}) {
     return (
         <div className="max-w-4xl mx-auto space-y-6">
             {/* Informazioni Autore */}
@@ -347,6 +389,10 @@ function OverviewTab({ project, onRefresh }: { project: ProjectDetail; onRefresh
             <Card>
                 <h2 className="text-xl font-semibold text-gray-900 mb-4">Informazioni Libro</h2>
                 <div className="space-y-4">
+                    <InfoField label="Titolo Libro" value={project.bookTitle} />
+                    {project.bookSubtitle && (
+                        <InfoField label="Sottotitolo" value={project.bookSubtitle} />
+                    )}
                     <InfoField label="Target Lettori" value={project.targetReaders} />
                     {project.estimatedPages && (
                         <InfoField label="Pagine Stimate" value={project.estimatedPages.toString()} />
@@ -440,6 +486,8 @@ interface OutlineTabProps {
     setGeneratingChapter: (value: number | null) => void;
     generationError: string | null;
     setGenerationError: (value: string | null) => void;
+    stopBatchGeneration: boolean;
+    setStopBatchGeneration: (value: boolean) => void;
 }
 
 function OutlineTab({
@@ -450,7 +498,9 @@ function OutlineTab({
     generatingChapter,
     setGeneratingChapter,
     generationError,
-    setGenerationError
+    setGenerationError,
+    stopBatchGeneration,
+    setStopBatchGeneration
 }: OutlineTabProps) {
     // Removed local states - now using global ones from parent
 
@@ -511,6 +561,193 @@ function OutlineTab({
         } finally {
             setGeneratingChapter(null);
         }
+    };
+
+    // Batch generation: Generate all remaining chapters
+    const handleBatchGenerateAll = async () => {
+        const outline = project.outline?.structure as any;
+        const totalChapters = outline?.chapters?.length || 0;
+        const existingChapters = project.chapters.map(ch => ch.chapterNumber);
+        const remaining = Array.from({ length: totalChapters }, (_, i) => i + 1)
+            .filter(num => !existingChapters.includes(num));
+
+        if (remaining.length === 0) {
+            toast.info('Tutti i capitoli sono già stati generati');
+            return;
+        }
+
+        if (!confirm(`Vuoi generare tutti i ${remaining.length} capitoli rimanenti? Questa operazione potrebbe richiedere diversi minuti.`)) {
+            return;
+        }
+
+        // Reset stop flag
+        setStopBatchGeneration(false);
+
+        let completedCount = 0;
+        const totalCount = remaining.length;
+
+        // Salva stato iniziale
+        GenerationStateManager.save({
+            projectId: project.id,
+            isGenerating: true,
+            currentChapter: null,
+            totalChapters: totalCount,
+            completedChapters: 0,
+            startedAt: Date.now(),
+            stopRequested: false
+        });
+
+        // Show initial toast
+        const toastId = toast.loading(`Generazione batch: 0/${totalCount} completati`);
+
+        for (const chapterNum of remaining) {
+            // Check if stop was requested
+            if (stopBatchGeneration) {
+                toast.info(`⏸️ Generazione interrotta. Completati ${completedCount}/${totalCount} capitoli`);
+                break;
+            }
+
+            setGeneratingChapter(chapterNum);
+
+            // Aggiorna stato persistente
+            GenerationStateManager.update({
+                currentChapter: chapterNum,
+                completedChapters: completedCount,
+                stopRequested: stopBatchGeneration
+            });
+
+            try {
+                const response = await fetch(
+                    `/api/projects/${project.id}/chapters/${chapterNum}/generate`,
+                    { method: 'POST' }
+                );
+
+                if (!response.ok) {
+                    throw new Error(`Errore capitolo ${chapterNum}`);
+                }
+
+                completedCount++;
+                toast.loading(`Generazione batch: ${completedCount}/${totalCount} completati`, { id: toastId });
+
+                // Refresh per aggiornare lo stato del capitolo appena generato
+                await onRefresh();
+
+            } catch (error) {
+                console.error(`Error generating chapter ${chapterNum}:`, error);
+                // Continue with next chapters even if one fails
+            }
+
+            // Small delay to avoid rate limiting
+            if (chapterNum !== remaining[remaining.length - 1]) {
+                await new Promise(resolve => setTimeout(resolve, 1000));
+            }
+        }
+
+        setGeneratingChapter(null);
+        setStopBatchGeneration(false); // Reset flag
+        toast.dismiss(toastId);
+
+        // Pulisci stato persistente
+        GenerationStateManager.clear();
+
+        if (stopBatchGeneration) {
+            toast.success(`⏸️ Generazione interrotta: ${completedCount}/${totalCount} capitoli completati`);
+        } else {
+            toast.success(`✨ Batch completato! ${completedCount}/${totalCount} capitoli generati`);
+        }
+        onRefresh();
+    };
+
+    // Batch generation: Generate next N chapters
+    const handleBatchGenerateNext = async (count: number) => {
+        const outline = project.outline?.structure as any;
+        const totalChapters = outline?.chapters?.length || 0;
+        const existingChapters = project.chapters.map(ch => ch.chapterNumber);
+        const remaining = Array.from({ length: totalChapters }, (_, i) => i + 1)
+            .filter(num => !existingChapters.includes(num))
+            .slice(0, count);
+
+        if (remaining.length === 0) {
+            toast.info('Nessun capitolo da generare');
+            return;
+        }
+
+        // Reset stop flag
+        setStopBatchGeneration(false);
+
+        let completedCount = 0;
+        const totalCount = remaining.length;
+
+        // Salva stato iniziale
+        GenerationStateManager.save({
+            projectId: project.id,
+            isGenerating: true,
+            currentChapter: null,
+            totalChapters: totalCount,
+            completedChapters: 0,
+            startedAt: Date.now(),
+            stopRequested: false
+        });
+
+        // Show initial toast
+        const toastId = toast.loading(`Generazione: 0/${totalCount} completati`);
+
+        for (const chapterNum of remaining) {
+            // Check if stop was requested
+            if (stopBatchGeneration) {
+                toast.info(`⏸️ Generazione interrotta. Completati ${completedCount}/${totalCount} capitoli`);
+                break;
+            }
+
+            setGeneratingChapter(chapterNum);
+
+            // Aggiorna stato persistente
+            GenerationStateManager.update({
+                currentChapter: chapterNum,
+                completedChapters: completedCount,
+                stopRequested: stopBatchGeneration
+            });
+
+            try {
+                const response = await fetch(
+                    `/api/projects/${project.id}/chapters/${chapterNum}/generate`,
+                    { method: 'POST' }
+                );
+
+                if (!response.ok) {
+                    throw new Error(`Errore capitolo ${chapterNum}`);
+                }
+
+                completedCount++;
+                toast.loading(`Generazione: ${completedCount}/${totalCount} completati`, { id: toastId });
+
+                // Refresh per aggiornare lo stato del capitolo appena generato
+                await onRefresh();
+
+            } catch (error) {
+                console.error(`Error generating chapter ${chapterNum}:`, error);
+                // Continue with next chapters
+            }
+
+            // Small delay
+            if (chapterNum !== remaining[remaining.length - 1]) {
+                await new Promise(resolve => setTimeout(resolve, 1000));
+            }
+        }
+
+        setGeneratingChapter(null);
+        setStopBatchGeneration(false); // Reset flag
+        toast.dismiss(toastId);
+
+        // Pulisci stato persistente
+        GenerationStateManager.clear();
+
+        if (stopBatchGeneration) {
+            toast.success(`⏸️ Generazione interrotta: ${completedCount}/${totalCount} capitoli completati`);
+        } else {
+            toast.success(`✨ Completato! ${completedCount}/${totalCount} capitoli generati`);
+        }
+        onRefresh();
     };
 
     // Funzione per determinare se un capitolo può essere generato
@@ -640,6 +877,40 @@ function OutlineTab({
                 </div>
             </Card>
 
+            {/* Batch Generation Controls */}
+            {totalChapters > completedChapters && (
+                <Card>
+                    <div className="flex items-center justify-between">
+                        <div>
+                            <h3 className="text-lg font-semibold text-gray-900 mb-1">Generazione Multipla</h3>
+                            <p className="text-sm text-gray-600">
+                                Genera più capitoli in sequenza automaticamente
+                            </p>
+                        </div>
+                        <div className="flex gap-3">
+                            {totalChapters - completedChapters > 1 && (
+                                <button
+                                    onClick={() => handleBatchGenerateNext(3)}
+                                    disabled={generatingChapter !== null}
+                                    className="px-4 py-2 bg-blue-600 text-white text-sm rounded-lg hover:bg-blue-700 disabled:bg-blue-300 flex items-center gap-2 transition-colors"
+                                >
+                                    <Sparkles size={16} />
+                                    Genera Prossimi 3
+                                </button>
+                            )}
+                            <button
+                                onClick={handleBatchGenerateAll}
+                                disabled={generatingChapter !== null}
+                                className="px-4 py-2 bg-indigo-600 text-white text-sm rounded-lg hover:bg-indigo-700 disabled:bg-indigo-300 flex items-center gap-2 transition-colors"
+                            >
+                                <Sparkles size={16} />
+                                Genera Tutti ({totalChapters - completedChapters})
+                            </button>
+                        </div>
+                    </div>
+                </Card>
+            )}
+
             {/* Lista capitoli con pulsanti di generazione */}
             <div className="space-y-4">
                 {outline.chapters?.map((chapter: any, index: number) => {
@@ -724,13 +995,16 @@ interface ChaptersTabProps {
     // Global regeneration state (persistent across tab changes)
     regeneratingChapter: number | null;
     setRegeneratingChapter: (value: number | null) => void;
+    // Global batch generation state (to disable buttons during batch operations)
+    generatingChapter: number | null;
 }
 
 function ChaptersTab({
     project,
     onRefresh,
     regeneratingChapter,
-    setRegeneratingChapter
+    setRegeneratingChapter,
+    generatingChapter
 }: ChaptersTabProps) {
     const [editingChapter, setEditingChapter] = useState<number | null>(null);
     const [editContent, setEditContent] = useState('');
@@ -739,12 +1013,18 @@ function ChaptersTab({
     const [runningCheck, setRunningCheck] = useState(false);
     const [consistencyReport, setConsistencyReport] = useState<any>(null);
     const [hasExistingReport, setHasExistingReport] = useState(false);
-    const [contentChanged, setContentChanged] = useState(false); // Nuovo: traccia se il contenuto è cambiato
+    const [lastReportDate, setLastReportDate] = useState<Date | null>(null);
 
     // Calcolo variabili necessarie per l'useEffect
     const completedChapters = project.chapters.filter(ch => ch.status === 'completed').length;
     const allChaptersComplete = project.outline &&
         completedChapters === (project.outline.structure as any).chapters?.length;
+
+    // Verifica se ci sono capitoli modificati dopo l'ultimo report
+    const contentChanged = lastReportDate !== null && project.chapters.some((chapter: any) => {
+        const chapterUpdated = new Date(chapter.updatedAt);
+        return chapterUpdated > lastReportDate;
+    });
 
     // Check se esiste già un consistency report
     useEffect(() => {
@@ -756,6 +1036,10 @@ function ChaptersTab({
                     if (data.report) {
                         setHasExistingReport(true);
                         setConsistencyReport(data.report);
+                        // Salva la data dell'ultimo report per confronto
+                        if (data.createdAt) {
+                            setLastReportDate(new Date(data.createdAt));
+                        }
                     }
                 }
             } catch (error) {
@@ -783,8 +1067,7 @@ function ChaptersTab({
             });
 
             setEditingChapter(null);
-            // Marca che il contenuto è cambiato - il report è obsoleto
-            setContentChanged(true);
+            // Il refresh aggiornerà updatedAt del capitolo, causando contentChanged = true automaticamente
             onRefresh();
         } catch (error) {
             console.error('Error saving chapter:', error);
@@ -806,9 +1089,8 @@ function ChaptersTab({
             });
 
             toast.success(`Capitolo ${chapterNumber} rigenerato con successo!`);
-            
-            // Marca che il contenuto è cambiato - il report è obsoleto
-            setContentChanged(true);
+
+            // Il refresh aggiornerà updatedAt del capitolo, causando contentChanged = true automaticamente
             onRefresh();
         } catch (error) {
             console.error('Error regenerating chapter:', error);
@@ -827,7 +1109,8 @@ function ChaptersTab({
             const data = await response.json();
             setConsistencyReport(data.report);
             setHasExistingReport(true);
-            setContentChanged(false); // Reset: il report è aggiornato
+            // Aggiorna la data dell'ultimo report - questo farà diventare contentChanged = false automaticamente
+            setLastReportDate(new Date());
             toast.success('✅ Consistency check completato!');
         } catch (error) {
             console.error('Error running consistency check:', error);
@@ -875,8 +1158,8 @@ function ChaptersTab({
                     {allChaptersComplete && (
                         <button
                             onClick={handleConsistencyCheck}
-                            disabled={runningCheck}
-                            className={`px-4 py-2 text-white text-sm rounded-lg flex items-center gap-2 transition-colors ${contentChanged
+                            disabled={runningCheck || regeneratingChapter !== null || generatingChapter !== null}
+                            className={`px-4 py-2 text-white text-sm rounded-lg flex items-center gap-2 transition-colors disabled:cursor-not-allowed ${contentChanged
                                 ? 'bg-orange-600 hover:bg-orange-700 disabled:bg-orange-300'
                                 : hasExistingReport
                                     ? 'bg-green-600 hover:bg-green-700 disabled:bg-green-300'
@@ -1052,7 +1335,8 @@ function ChaptersTab({
                                 ) : (
                                     <button
                                         onClick={() => handleEdit(chapter)}
-                                        className="px-3 py-1.5 bg-blue-600 text-white text-sm rounded-lg hover:bg-blue-700 flex items-center gap-1"
+                                        disabled={regeneratingChapter !== null || generatingChapter !== null}
+                                        className="px-3 py-1.5 bg-blue-600 text-white text-sm rounded-lg hover:bg-blue-700 disabled:bg-blue-300 disabled:cursor-not-allowed flex items-center gap-1"
                                     >
                                         <Edit2 size={14} />
                                         Modifica
@@ -1060,8 +1344,8 @@ function ChaptersTab({
                                 )}
                                 <button
                                     onClick={() => handleRegenerate(chapter.chapterNumber)}
-                                    disabled={regeneratingChapter === chapter.chapterNumber}
-                                    className="px-3 py-1.5 bg-indigo-600 text-white text-sm rounded-lg hover:bg-indigo-700 disabled:bg-indigo-300 flex items-center gap-1"
+                                    disabled={regeneratingChapter !== null || generatingChapter !== null}
+                                    className="px-3 py-1.5 bg-indigo-600 text-white text-sm rounded-lg hover:bg-indigo-700 disabled:bg-indigo-300 disabled:cursor-not-allowed flex items-center gap-1"
                                 >
                                     {regeneratingChapter === chapter.chapterNumber ? (
                                         <>

@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { Settings, Sliders, Save, RotateCcw, AlertCircle, CheckCircle2, Loader2 } from 'lucide-react';
+import { FormFieldTooltip, tooltipContent } from '@/components/ui/Tooltip';
 import type { ProjectAIConfig } from '@prisma/client';
 
 interface AISettingsTabProps {
@@ -95,16 +96,10 @@ export default function AISettingsTab({ projectId, onRefresh }: AISettingsTabPro
     if (!config) return <div className="text-center py-12"><AlertCircle className="w-12 h-12 text-red-500 mx-auto mb-4" /><p className="text-gray-600">Errore caricamento</p></div>;
 
     return (
-        <div className="max-w-5xl mx-auto space-y-6">
-            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-                <div className="flex items-center gap-3 mb-2">
-                    <Settings className="w-6 h-6 text-blue-600" />
-                    <h2 className="text-2xl font-bold text-gray-900">AI Settings</h2>
-                </div>
-                <p className="text-gray-600">Parametri tecnici AI.</p>
-                {error && <div className="mt-4 p-4 bg-red-50 border border-red-200 rounded-lg flex items-start gap-3"><AlertCircle className="w-5 h-5 text-red-600" /><p className="text-sm text-red-800">{error}</p></div>}
-                {successMessage && <div className="mt-4 p-4 bg-green-50 border border-green-200 rounded-lg flex items-start gap-3"><CheckCircle2 className="w-5 h-5 text-green-600" /><p className="text-sm text-green-800">{successMessage}</p></div>}
-            </div>
+        <div className="max-w-4xl mx-auto space-y-6">
+            {/* Messaggi di errore/successo */}
+            {error && <div className="p-4 bg-red-50 border border-red-200 rounded-lg flex items-start gap-3"><AlertCircle className="w-5 h-5 text-red-600" /><p className="text-sm text-red-800">{error}</p></div>}
+            {successMessage && <div className="p-4 bg-green-50 border border-green-200 rounded-lg flex items-start gap-3"><CheckCircle2 className="w-5 h-5 text-green-600" /><p className="text-sm text-green-800">{successMessage}</p></div>}
 
             <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
                 <div className="flex items-center gap-3 mb-6">
@@ -121,12 +116,19 @@ export default function AISettingsTab({ projectId, onRefresh }: AISettingsTabPro
                         </select>
                     </div>
                     <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">Temperature <span className="ml-2 text-gray-500 font-normal">({config.temperature})</span></label>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                            Temperature
+                            <FormFieldTooltip content={tooltipContent.temperature} />
+                            <span className="ml-2 text-gray-500 font-normal">({config.temperature})</span>
+                        </label>
                         <input type="range" min="0" max="1" step="0.1" value={config.temperature || 0.7} onChange={(e) => updateConfig('temperature', parseFloat(e.target.value))} className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-blue-600" />
                         <div className="flex justify-between text-xs text-gray-500 mt-1"><span>Preciso</span><span>Creativo</span></div>
                     </div>
                     <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">Max Tokens</label>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                            Max Tokens
+                            <FormFieldTooltip content={tooltipContent.maxTokens} />
+                        </label>
                         <input type="number" min="1000" max="16000" step="500" value={config.maxTokens || 4000} onChange={(e) => updateConfig('maxTokens', parseInt(e.target.value))} className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500" />
                     </div>
                     <div>
@@ -134,15 +136,27 @@ export default function AISettingsTab({ projectId, onRefresh }: AISettingsTabPro
                         <input type="number" min="500" max="5000" step="100" value={config.targetWordsPerChapter || 2000} onChange={(e) => updateConfig('targetWordsPerChapter', parseInt(e.target.value))} className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500" />
                     </div>
                     <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">Top P <span className="ml-2 text-gray-500 font-normal">({config.topP})</span></label>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                            Top P
+                            <FormFieldTooltip content={tooltipContent.topP} />
+                            <span className="ml-2 text-gray-500 font-normal">({config.topP})</span>
+                        </label>
                         <input type="range" min="0" max="1" step="0.05" value={config.topP || 0.95} onChange={(e) => updateConfig('topP', parseFloat(e.target.value))} className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-blue-600" />
                     </div>
                     <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">Frequency Penalty <span className="ml-2 text-gray-500 font-normal">({config.frequencyPenalty})</span></label>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                            Frequency Penalty
+                            <FormFieldTooltip content={tooltipContent.frequencyPenalty} />
+                            <span className="ml-2 text-gray-500 font-normal">({config.frequencyPenalty})</span>
+                        </label>
                         <input type="range" min="0" max="2" step="0.1" value={config.frequencyPenalty || 0.3} onChange={(e) => updateConfig('frequencyPenalty', parseFloat(e.target.value))} className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-blue-600" />
                     </div>
                     <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">Presence Penalty <span className="ml-2 text-gray-500 font-normal">({config.presencePenalty})</span></label>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                            Presence Penalty
+                            <FormFieldTooltip content={tooltipContent.presencePenalty} />
+                            <span className="ml-2 text-gray-500 font-normal">({config.presencePenalty})</span>
+                        </label>
                         <input type="range" min="0" max="2" step="0.1" value={config.presencePenalty || 0.3} onChange={(e) => updateConfig('presencePenalty', parseFloat(e.target.value))} className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-blue-600" />
                     </div>
                 </div>

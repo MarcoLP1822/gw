@@ -1,21 +1,34 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Search, Filter, Calendar, Eye, Loader2, AlertCircle } from 'lucide-react';
+import { Search, Filter, Calendar, Edit2, Trash2, Loader2, AlertCircle } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import Card from '@/components/Card';
+import NewProjectModal from '@/components/NewProjectModal';
 import { projectsApi } from '@/lib/api/projects';
 import { ProjectTableSkeleton } from '@/components/ui/Skeleton';
+import { toast } from '@/lib/ui/toast';
+import { ProjectFormData } from '@/types';
 
 interface ProjectListItem {
     id: string;
     bookTitle: string;
     bookSubtitle?: string | null;
     authorName: string;
+    authorRole: string;
     company: string;
     industry: string;
-    status: string;
+    targetReaders: string;
+    currentSituation: string;
+    challengeFaced: string;
+    transformation: string;
+    achievement: string;
+    lessonLearned: string;
+    businessGoals: string;
+    uniqueValue: string;
     estimatedPages?: number | null;
+    additionalNotes?: string | null;
+    status: string;
     createdAt: Date;
     updatedAt: Date;
     _count: {
@@ -27,6 +40,8 @@ export default function ProjectTableV2() {
     const [projects, setProjects] = useState<ProjectListItem[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
+    const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+    const [editingProject, setEditingProject] = useState<ProjectListItem | null>(null);
     const [searchTerm, setSearchTerm] = useState('');
     const router = useRouter();
 
@@ -59,11 +74,60 @@ export default function ProjectTableV2() {
         router.push(`/progetti/${projectId}`);
     };
 
+    const handleDelete = async (projectId: string, projectTitle: string, e: React.MouseEvent) => {
+        e.stopPropagation(); // Previeni la navigazione al progetto
+
+        if (!confirm(`Sei sicuro di voler eliminare il progetto "${projectTitle}"?\n\nQuesta azione è irreversibile e eliminerà:\n- Tutte le informazioni del progetto\n- L'outline generato\n- Tutti i capitoli\n- I report di consistenza\n\nContinuare?`)) {
+            return;
+        }
+
+        try {
+            await projectsApi.delete(projectId);
+            toast.success('✅ Progetto eliminato con successo');
+            // Ricarica la lista progetti
+            fetchProjects();
+        } catch (err) {
+            toast.error('❌ Errore durante l\'eliminazione del progetto');
+            console.error('Error deleting project:', err);
+        }
+    };
+
+    const handleEditClick = async (projectId: string, e: React.MouseEvent) => {
+        e.stopPropagation();
+        try {
+            // Fetch full project details
+            const response = await projectsApi.getById(projectId);
+            const projectDetail = response.project; // Estrae il progetto dalla response
+            console.log('Loaded project details:', projectDetail); // Debug
+            setEditingProject(projectDetail as any);
+            // Aspetta che lo stato sia aggiornato prima di aprire il modal
+            setTimeout(() => setIsEditModalOpen(true), 0);
+        } catch (err) {
+            toast.error('❌ Errore nel caricamento del progetto');
+            console.error('Error loading project:', err);
+        }
+    };
+
+    const handleUpdateProject = async (formData: ProjectFormData) => {
+        if (!editingProject) return;
+
+        try {
+            await projectsApi.update(editingProject.id, formData);
+            toast.success('✅ Progetto aggiornato con successo');
+            setIsEditModalOpen(false);
+            setEditingProject(null);
+            fetchProjects(); // Ricarica la lista
+        } catch (err) {
+            toast.error('❌ Errore durante l\'aggiornamento del progetto');
+            console.error('Error updating project:', err);
+        }
+    };
+
     const getStatusBadge = (status: string) => {
         const statusConfig = {
             draft: { label: 'Bozza', color: 'bg-gray-100 text-gray-800' },
-            generating_outline: { label: 'Generando Outline', color: 'bg-blue-100 text-blue-800' },
-            generating_chapters: { label: 'Generando Capitoli', color: 'bg-purple-100 text-purple-800' },
+            generating_outline: { label: 'Outline', color: 'bg-blue-100 text-blue-800' },
+            generating_chapters: { label: 'Capitoli', color: 'bg-purple-100 text-purple-800' },
             completed: { label: 'Completato', color: 'bg-green-100 text-green-800' },
             error: { label: 'Errore', color: 'bg-red-100 text-red-800' },
         };
@@ -206,15 +270,22 @@ export default function ProjectTableV2() {
                                         {formatDate(project.createdAt)}
                                     </td>
                                     <td className="py-3 px-4 text-center">
-                                        <button
-                                            onClick={(e) => {
-                                                e.stopPropagation();
-                                                handleProjectClick(project.id);
-                                            }}
-                                            className="text-blue-600 hover:text-blue-800"
-                                        >
-                                            <Eye size={18} />
-                                        </button>
+                                        <div className="flex items-center justify-center gap-2">
+                                            <button
+                                                onClick={(e) => handleEditClick(project.id, e)}
+                                                className="p-2 text-blue-600 hover:bg-blue-50 hover:scale-110 rounded-md transition-all duration-200"
+                                                title="Modifica progetto"
+                                            >
+                                                <Edit2 size={18} />
+                                            </button>
+                                            <button
+                                                onClick={(e) => handleDelete(project.id, project.bookTitle, e)}
+                                                className="p-2 text-red-600 hover:bg-red-50 hover:scale-110 rounded-md transition-all duration-200"
+                                                title="Elimina progetto"
+                                            >
+                                                <Trash2 size={18} />
+                                            </button>
+                                        </div>
                                     </td>
                                 </tr>
                             ))}
@@ -229,6 +300,37 @@ export default function ProjectTableV2() {
                     </div>
                 </div>
             </Card>
+
+            {/* Edit Project Modal */}
+            {editingProject && (
+                <NewProjectModal
+                    isOpen={isEditModalOpen}
+                    onCloseAction={() => {
+                        setIsEditModalOpen(false);
+                        setEditingProject(null);
+                    }}
+                    onSubmitAction={handleUpdateProject}
+                    mode="edit"
+                    initialData={{
+                        authorName: editingProject.authorName || '',
+                        authorRole: editingProject.authorRole || '',
+                        company: editingProject.company || '',
+                        industry: editingProject.industry || '',
+                        bookTitle: editingProject.bookTitle || '',
+                        bookSubtitle: editingProject.bookSubtitle || '',
+                        targetReaders: editingProject.targetReaders || '',
+                        currentSituation: editingProject.currentSituation || '',
+                        challengeFaced: editingProject.challengeFaced || '',
+                        transformation: editingProject.transformation || '',
+                        achievement: editingProject.achievement || '',
+                        lessonLearned: editingProject.lessonLearned || '',
+                        businessGoals: editingProject.businessGoals || '',
+                        uniqueValue: editingProject.uniqueValue || '',
+                        estimatedPages: editingProject.estimatedPages || undefined,
+                        additionalNotes: editingProject.additionalNotes || '',
+                    }}
+                />
+            )}
         </div>
     );
 }

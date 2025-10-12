@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Modal from './Modal';
 import { User, Building2, Target, BookOpen, Lightbulb, Users as UsersIcon, TrendingUp, AlertCircle } from 'lucide-react';
 import { ProjectFormData } from '@/types';
@@ -9,10 +9,18 @@ interface NewProjectModalProps {
     isOpen: boolean;
     onCloseAction: () => void;
     onSubmitAction: (projectData: ProjectFormData) => void;
+    initialData?: ProjectFormData;
+    mode?: 'create' | 'edit';
 }
 
-export default function NewProjectModal({ isOpen, onCloseAction, onSubmitAction }: NewProjectModalProps) {
-    const [formData, setFormData] = useState<ProjectFormData>({
+export default function NewProjectModal({
+    isOpen,
+    onCloseAction,
+    onSubmitAction,
+    initialData,
+    mode = 'create'
+}: NewProjectModalProps) {
+    const [formData, setFormData] = useState<ProjectFormData>(initialData || {
         authorName: '',
         authorRole: '',
         company: '',
@@ -32,6 +40,13 @@ export default function NewProjectModal({ isOpen, onCloseAction, onSubmitAction 
         additionalNotes: '',
     });
 
+    // Aggiorna formData quando initialData cambia (modalità edit)
+    useEffect(() => {
+        if (initialData) {
+            setFormData(initialData);
+        }
+    }, [initialData]);
+
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
         onSubmitAction(formData);
@@ -45,8 +60,11 @@ export default function NewProjectModal({ isOpen, onCloseAction, onSubmitAction 
         }));
     };
 
+    const modalTitle = mode === 'edit' ? 'Modifica Progetto' : 'Nuovo Progetto Ghost Writing';
+    const submitButtonText = mode === 'edit' ? 'Salva Modifiche' : 'Crea Progetto';
+
     return (
-        <Modal isOpen={isOpen} onCloseAction={onCloseAction} title="Nuovo Progetto Ghost Writing" size="xl">
+        <Modal isOpen={isOpen} onCloseAction={onCloseAction} title={modalTitle} size="xl">
             <form onSubmit={handleSubmit} className="space-y-6">
                 {/* Sezione 1: Informazioni Autore */}
                 <div className="space-y-4">
@@ -362,7 +380,7 @@ export default function NewProjectModal({ isOpen, onCloseAction, onSubmitAction 
                         type="submit"
                         className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium"
                     >
-                        Crea Progetto
+                        {submitButtonText}
                     </button>
                 </div>
             </form>
