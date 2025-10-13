@@ -6,7 +6,7 @@ import { ProjectAIConfig } from '@/types';
  */
 export const DEFAULT_AI_CONFIG = {
     // AI Model Parameters
-    model: 'gpt-4o-mini' as const,
+    model: 'gpt-5-mini-2025-08-07' as const,
     temperature: 0.7,
     maxTokens: 4000,
     topP: 0.95,
@@ -62,8 +62,8 @@ export const AI_CONFIG_LIMITS = {
         default: 0.3,
     },
     targetWordsPerChapter: {
-        min: 500,
-        max: 5000,
+        min: 1000,
+        max: 7000,
         step: 100,
         default: 2000,
     },

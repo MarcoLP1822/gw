@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
-import { openai, DEFAULT_CONFIG } from '@/lib/ai/openai-client';
+import { openai, DEFAULT_CONFIG, logAPICall } from '@/lib/ai/openai-client';
 import { generateOutlinePrompt, SYSTEM_PROMPT } from '@/lib/ai/prompts/outline-generator';
 import { GeneratedOutline } from '@/types';
 
@@ -52,6 +52,13 @@ export async function POST(
         // 3. Chiama OpenAI API
         const startTime = Date.now();
 
+        // 📊 LOG: Quale modello stiamo usando
+        console.log(`\n🎯 GENERATING OUTLINE WITH MODEL: ${DEFAULT_CONFIG.model}`);
+        console.log(`   Temperature: ${DEFAULT_CONFIG.temperature}`);
+        console.log(`   Max Tokens: ${DEFAULT_CONFIG.max_tokens}\n`);
+
+        logAPICall('Generate Outline', DEFAULT_CONFIG.model);
+
         const completion = await openai.chat.completions.create({
             model: DEFAULT_CONFIG.model,
             messages: [
@@ -64,6 +71,13 @@ export async function POST(
         });
 
         const generationTime = Date.now() - startTime;
+
+        // 📊 LOG: Risposta ricevuta
+        console.log(`✅ Outline response received from model: ${completion.model}`);
+        console.log(`   Tokens used: ${completion.usage?.total_tokens || 'N/A'}`);
+        console.log(`   Generation time: ${(generationTime / 1000).toFixed(2)}s\n`);
+
+        logAPICall('Outline Generated', completion.model, completion.usage?.total_tokens);
 
         // 4. Parse della risposta
         const responseContent = completion.choices[0].message.content;

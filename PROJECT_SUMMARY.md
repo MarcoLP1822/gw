@@ -32,7 +32,7 @@
 
 #### 2. **AI Outline Generation** ✅
 - Automatic outline generation (10-15 chapters)
-- Model: OpenAI gpt-4o-mini
+- Model: OpenAI gpt-5-mini-2025-08-07
 - Time: ~20 seconds
 - Cost: ~$0.003 per outline
 - Unlimited regeneration
@@ -153,7 +153,7 @@
                   │
 ┌─────────────────▼───────────────────────────┐
 │      EXTERNAL SERVICES                      │
-│   ├─ OpenAI API (GPT-4o, GPT-4o-mini)     │
+│   ├─ OpenAI API (GPT-4o, GPT-5-mini)     │
 │   ├─ Supabase (PostgreSQL hosting)         │
 │   └─ Vercel (deployment ready)             │
 └─────────────────────────────────────────────┘
@@ -266,7 +266,7 @@ npm run dev
 
 ## 📊 Cost Estimates
 
-Based on OpenAI pricing (GPT-4o-mini):
+Based on OpenAI pricing (GPT-5-mini):
 
 | Operation | Cost | Time |
 |-----------|------|------|

@@ -14,7 +14,7 @@ CREATE TABLE "ProjectAIConfig" (
     "sentenceComplexity" TEXT NOT NULL DEFAULT 'medium',
     "paragraphLength" TEXT NOT NULL DEFAULT 'medium',
     "isAdvancedMode" BOOLEAN NOT NULL DEFAULT false,
-    "model" TEXT NOT NULL DEFAULT 'gpt-4o-mini',
+    "model" TEXT NOT NULL DEFAULT 'gpt-5-mini-2025-08-07',
     "temperature" DOUBLE PRECISION NOT NULL DEFAULT 0.7,
     "maxTokens" INTEGER NOT NULL DEFAULT 4000,
     "topP" DOUBLE PRECISION NOT NULL DEFAULT 0.95,

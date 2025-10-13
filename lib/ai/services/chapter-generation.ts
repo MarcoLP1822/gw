@@ -1,5 +1,5 @@
 import { prisma } from '@/lib/db';
-import { openai, DEFAULT_MODEL } from '@/lib/ai/openai-client';
+import { openai, DEFAULT_MODEL, logAPICall } from '@/lib/ai/openai-client';
 import {
     generateChapterPrompt,
     generateStyleGuidePrompt,
@@ -268,9 +268,19 @@ ${generateChapterPrompt(context)}
         console.log('='.repeat(80) + '\n');
 
         // 🔧 USA I PARAMETRI AI DALLA CONFIGURAZIONE
+        const modelToUse = aiConfig.model as any || DEFAULT_MODEL;
+
+        // 📊 LOG: Quale modello stiamo usando
+        console.log(`\n🎯 USING AI MODEL: ${modelToUse}`);
+        console.log(`   Temperature: ${aiConfig.temperature}`);
+        console.log(`   Max Tokens: ${aiConfig.maxTokens}`);
+        console.log(`   Top P: ${aiConfig.topP}\n`);
+
+        logAPICall(`Generate Chapter ${chapterNumber}`, modelToUse);
+
         try {
             const response = await openai.chat.completions.create({
-                model: aiConfig.model as any || DEFAULT_MODEL,
+                model: modelToUse,
                 messages: [
                     { role: 'system', content: systemPrompt },
                     { role: 'user', content: fullUserPrompt },
@@ -282,6 +292,11 @@ ${generateChapterPrompt(context)}
                 frequency_penalty: aiConfig.frequencyPenalty,
                 presence_penalty: aiConfig.presencePenalty,
             });
+
+            // 📊 LOG: Risposta ricevuta con info sul modello
+            console.log(`✅ Response received from model: ${response.model}`);
+            console.log(`   Tokens used: ${response.usage?.total_tokens || 'N/A'}`);
+            logAPICall(`Chapter ${chapterNumber} Generated`, response.model, response.usage?.total_tokens);
 
             const parsed = JSON.parse(response.choices[0].message.content || '{}');
 
@@ -311,6 +326,8 @@ ${generateChapterPrompt(context)}
     ): Promise<QuickCheckResult> {
         const prompt = generateQuickCheckPrompt(newChapter, previousChapter, chapterNumber);
 
+        logAPICall(`Quick Validation Chapter ${chapterNumber}`, DEFAULT_MODEL);
+
         const response = await openai.chat.completions.create({
             model: DEFAULT_MODEL,
             messages: [{ role: 'user', content: prompt }],
@@ -318,6 +335,8 @@ ${generateChapterPrompt(context)}
             temperature: 0.3,
             max_tokens: 500,
         });
+
+        console.log(`✅ Quick validation response from model: ${response.model}`);
 
         return JSON.parse(response.choices[0].message.content || '{}');
     }

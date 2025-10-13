@@ -14,7 +14,9 @@
     "db:studio": "prisma studio",
     "db:seed": "prisma db seed",
     "db:reset": "prisma migrate reset",
-    "seed:test": "ts-node --compiler-options \"{\\\"module\\\":\\\"commonjs\\\"}\" scripts/seed-test-data.ts"
+    "seed:test": "ts-node --compiler-options \"{\\\"module\\\":\\\"commonjs\\\"}\" scripts/seed-test-data.ts",
+    "verify:model": "node scripts/verify-ai-model.js",
+    "update:model": "node scripts/update-ai-configs.js"
   },
   "dependencies": {
     "@prisma/client": "^6.17.0",

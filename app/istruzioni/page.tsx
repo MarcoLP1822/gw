@@ -215,7 +215,7 @@ const instructions: InstructionSection[] = [
             {
                 title: 'Modalità Avanzata (Opzionale)',
                 steps: [
-                    'Modello AI: scegli tra GPT-4o-mini (veloce), GPT-4o, o GPT-4-turbo',
+                    'Modello AI: scegli tra gpt-5-mini-2025-08-07 (veloce), GPT-4o, o GPT-4-turbo',
                     'Temperature: creatività (0.0 = preciso, 2.0 = creativo)',
                     'Max Tokens: limite massimo per capitolo (default 4000)',
                     'Target Words: parole target per capitolo (default 2000)',
@@ -487,10 +487,10 @@ const instructions: InstructionSection[] = [
             {
                 title: 'Scelta del Modello AI',
                 steps: [
-                    '🚀 GPT-4o-mini: veloce ed economico, ottimo per la maggior parte dei casi',
+                    '🚀 GPT-5-mini: veloce ed economico, ottimo per la maggior parte dei casi',
                     '⚡ GPT-4o: bilanciamento tra qualità e velocità',
                     '💎 GPT-4-turbo: massima qualità, più lento e costoso',
-                    'Tip: inizia con gpt-4o-mini, passa a modelli superiori se serve più qualità',
+                    'Tip: inizia con gpt-5-mini, passa a modelli superiori se serve più qualità',
                 ],
             },
             {
@@ -629,7 +629,7 @@ export default function IstruzioniPage() {
                                     <div>
                                         <h3 className="font-bold text-gray-900 mb-2">Generazione AI Avanzata</h3>
                                         <p className="text-sm text-gray-700">
-                                            GPT-4o-mini per velocità, GPT-4o per qualità superiore.
+                                            GPT-5-mini per velocità, GPT-4o per qualità superiore.
                                             Context window espanso e style guide automatico.
                                         </p>
                                     </div>

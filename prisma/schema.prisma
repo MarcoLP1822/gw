@@ -202,8 +202,8 @@ model ProjectAIConfig {
   project   Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
 
   // AI Model Parameters
-  model String @default("gpt-4o-mini")
-  // Options: "gpt-4o-mini" | "gpt-4o" | "gpt-4-turbo"
+  model String @default("gpt-5-mini-2025-08-07")
+  // Options: "gpt-5-mini-2025-08-07" | "gpt-4o" | "gpt-4-turbo"
 
   temperature      Float @default(0.7) // 0.0 - 2.0
   maxTokens        Int   @default(4000) // Max tokens per generation

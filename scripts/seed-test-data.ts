@@ -130,7 +130,7 @@ async function main() {
                             content: `Contenuto del capitolo ${i}. `.repeat(100),
                             wordCount: Math.floor(Math.random() * 1000) + 1500, // 1500-2500 parole
                             status: 'completed',
-                            aiModel: 'gpt-4o-mini',
+                            aiModel: 'gpt-5-mini-2025-08-07',
                             generatedAt: new Date(Date.now() - Math.random() * 30 * 24 * 60 * 60 * 1000) // Ultimi 30 giorni
                         }
                     });
@@ -141,7 +141,7 @@ async function main() {
                     data: {
                         projectId: project.id,
                         step: 'outline',
-                        aiModel: 'gpt-4o-mini',
+                        aiModel: 'gpt-5-mini-2025-08-07',
                         promptTokens: 2000,
                         completionTokens: 1500,
                         totalTokens: 3500,
@@ -156,7 +156,7 @@ async function main() {
                         data: {
                             projectId: project.id,
                             step: `chapter_${i}`,
-                            aiModel: 'gpt-4o-mini',
+                            aiModel: 'gpt-5-mini-2025-08-07',
                             promptTokens: 3000,
                             completionTokens: 2500,
                             totalTokens: 5500,
@@ -180,7 +180,7 @@ async function main() {
                             content: `Contenuto parziale del capitolo ${i}. `.repeat(50),
                             wordCount: Math.floor(Math.random() * 500) + 1000,
                             status: 'completed',
-                            aiModel: 'gpt-4o-mini',
+                            aiModel: 'gpt-5-mini-2025-08-07',
                             generatedAt: new Date()
                         }
                     });

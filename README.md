@@ -33,7 +33,7 @@ Una piattaforma completa per la creazione automatizzata di libri di business e c
 - ✅ **Modifica Progetti**: Aggiorna dati dopo la creazione
 
 ### 🤖 Sprint 3: AI Outline Generation
-- ✅ **Generazione Outline con AI**: OpenAI gpt-4o-mini
+- ✅ **Generazione Outline con AI**: OpenAI gpt-5-mini-2025-08-07
 - ✅ **Prompt Engineering**: Template personalizzati per outline
 - ✅ **Rigenerazione Illimitata**: Migliora l'outline infinite volte
 - ✅ **Visualizzazione Professionale**: Card design per capitoli
@@ -81,7 +81,7 @@ Una piattaforma completa per la creazione automatizzata di libri di business e c
 - **pgBouncer** - Connection pooling
 
 ### AI
-- **OpenAI API** - gpt-4o-mini
+- **OpenAI API** - gpt-5-mini-2025-08-07
 - **JSON Mode** - Structured output
 - **Custom Prompts** - Tailored for book writing
 
@@ -158,7 +158,7 @@ Vedi `prisma/schema.prisma` per lo schema completo.
 ## 🤖 AI Integration
 
 ### Modelli Utilizzati
-- **gpt-4o-mini** - Per outline e capitoli (economico e veloce)
+- **gpt-5-mini-2025-08-07** - Per outline e capitoli (economico e veloce)
 - **gpt-4o** - Per consistency check finale (più accurato)
 
 **Costi Medi per Libro**:

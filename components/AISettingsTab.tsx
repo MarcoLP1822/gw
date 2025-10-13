@@ -109,8 +109,8 @@ export default function AISettingsTab({ projectId, onRefresh }: AISettingsTabPro
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div className="md:col-span-2">
                         <label className="block text-sm font-medium text-gray-700 mb-2">AI Model</label>
-                        <select value={config.model || 'gpt-4o-mini'} onChange={(e) => updateConfig('model', e.target.value)} className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500">
-                            <option value="gpt-4o-mini">GPT-4o Mini</option>
+                        <select value={config.model || 'gpt-5-mini'} onChange={(e) => updateConfig('model', e.target.value)} className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500">
+                            <option value="gpt-5-mini">GPT-5 Mini</option>
                             <option value="gpt-4o">GPT-4o</option>
                             <option value="gpt-4-turbo">GPT-4 Turbo</option>
                         </select>

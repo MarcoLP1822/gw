@@ -166,7 +166,7 @@ export interface ConsistencyReport {
 // AI CONFIGURATION - Technical Parameters Only
 // ============================================================
 
-export type AIModel = 'gpt-4o-mini' | 'gpt-4o' | 'gpt-4-turbo';
+export type AIModel = 'gpt-5-mini-2025-08-07' | 'gpt-4o' | 'gpt-4-turbo';
 
 export interface ProjectAIConfig {
   id: string;
