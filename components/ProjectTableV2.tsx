@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Search, Filter, Calendar, Edit2, Trash2, Loader2, AlertCircle } from 'lucide-react';
+import { Search, Filter, Calendar, Edit2, Trash2, Loader2, AlertCircle, ArrowUpDown, ArrowUp, ArrowDown } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import Card from '@/components/Card';
 import NewProjectModal from '@/components/NewProjectModal';
@@ -9,6 +9,9 @@ import { projectsApi } from '@/lib/api/projects';
 import { ProjectTableSkeleton } from '@/components/ui/Skeleton';
 import { toast } from '@/lib/ui/toast';
 import { ProjectFormData } from '@/types';
+
+type SortField = 'bookTitle' | 'authorName' | 'company' | 'industry' | 'status' | 'chapters' | 'createdAt';
+type SortDirection = 'asc' | 'desc' | null;
 
 interface ProjectListItem {
     id: string;
@@ -43,6 +46,10 @@ export default function ProjectTableV2() {
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
     const [editingProject, setEditingProject] = useState<ProjectListItem | null>(null);
     const [searchTerm, setSearchTerm] = useState('');
+    const [statusFilter, setStatusFilter] = useState('');
+    const [dateFrom, setDateFrom] = useState('');
+    const [sortField, setSortField] = useState<SortField>('createdAt');
+    const [sortDirection, setSortDirection] = useState<SortDirection>('desc');
     const router = useRouter();
 
     // Fetch progetti dal database
@@ -64,11 +71,89 @@ export default function ProjectTableV2() {
         }
     };
 
-    const filteredProjects = projects.filter(project =>
-        project.bookTitle.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        project.authorName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        project.company.toLowerCase().includes(searchTerm.toLowerCase())
-    );
+    const filteredProjects = projects.filter(project => {
+        const matchesSearch = project.bookTitle.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            project.authorName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            project.company.toLowerCase().includes(searchTerm.toLowerCase());
+
+        const matchesStatus = !statusFilter || project.status === statusFilter;
+
+        const matchesDate = !dateFrom || new Date(project.createdAt) >= new Date(dateFrom);
+
+        return matchesSearch && matchesStatus && matchesDate;
+    });
+
+    // Sort projects
+    const sortedProjects = [...filteredProjects].sort((a, b) => {
+        if (!sortDirection) return 0;
+
+        let aValue: any;
+        let bValue: any;
+
+        switch (sortField) {
+            case 'bookTitle':
+                aValue = a.bookTitle.toLowerCase();
+                bValue = b.bookTitle.toLowerCase();
+                break;
+            case 'authorName':
+                aValue = a.authorName.toLowerCase();
+                bValue = b.authorName.toLowerCase();
+                break;
+            case 'company':
+                aValue = a.company.toLowerCase();
+                bValue = b.company.toLowerCase();
+                break;
+            case 'industry':
+                aValue = a.industry.toLowerCase();
+                bValue = b.industry.toLowerCase();
+                break;
+            case 'status':
+                aValue = a.status;
+                bValue = b.status;
+                break;
+            case 'chapters':
+                aValue = a._count.chapters;
+                bValue = b._count.chapters;
+                break;
+            case 'createdAt':
+                aValue = new Date(a.createdAt).getTime();
+                bValue = new Date(b.createdAt).getTime();
+                break;
+            default:
+                return 0;
+        }
+
+        if (aValue < bValue) return sortDirection === 'asc' ? -1 : 1;
+        if (aValue > bValue) return sortDirection === 'asc' ? 1 : -1;
+        return 0;
+    });
+
+    const handleSort = (field: SortField) => {
+        if (sortField === field) {
+            // Cycle through: asc -> desc -> null
+            if (sortDirection === 'asc') setSortDirection('desc');
+            else if (sortDirection === 'desc') {
+                setSortDirection(null);
+                setSortField('createdAt');
+            }
+        } else {
+            setSortField(field);
+            setSortDirection('asc');
+        }
+    };
+
+    const SortIcon = ({ field }: { field: SortField }) => {
+        if (sortField !== field) return <ArrowUpDown size={14} className="ml-1 text-gray-400" />;
+        if (sortDirection === 'asc') return <ArrowUp size={14} className="ml-1 text-blue-600" />;
+        if (sortDirection === 'desc') return <ArrowDown size={14} className="ml-1 text-blue-600" />;
+        return <ArrowUpDown size={14} className="ml-1 text-gray-400" />;
+    };
+
+    const clearFilters = () => {
+        setSearchTerm('');
+        setStatusFilter('');
+        setDateFrom('');
+    };
 
     const handleProjectClick = (projectId: string) => {
         router.push(`/progetti/${projectId}`);
@@ -202,88 +287,181 @@ export default function ProjectTableV2() {
         <div className="flex-1 flex flex-col">
             {/* Filtri Card */}
             <Card className="mb-6">
-                <div className="flex items-center gap-4">
-                    <div className="flex-1">
+                {/* Filtri */}
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-4">
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Cerca:</label>
                         <div className="relative">
                             <input
                                 type="text"
-                                placeholder="Cerca per titolo, autore o azienda..."
+                                placeholder="Titolo, autore o azienda..."
                                 value={searchTerm}
                                 onChange={(e) => setSearchTerm(e.target.value)}
-                                className="w-full px-4 py-2 pl-10 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-md"
                             />
-                            <Search className="absolute left-3 top-2.5 text-gray-400" size={18} />
+                            <Search className="absolute right-3 top-2.5 text-gray-400" size={18} />
                         </div>
                     </div>
-                    <button className="flex items-center gap-2 px-4 py-2 text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50">
-                        <Filter size={18} />
-                        Filtri
-                    </button>
+
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Data creazione da:</label>
+                        <div className="relative">
+                            <input
+                                type="date"
+                                value={dateFrom}
+                                onChange={(e) => setDateFrom(e.target.value)}
+                                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-md"
+                            />
+                            <Calendar className="absolute right-3 top-2.5 text-gray-400 pointer-events-none" size={18} />
+                        </div>
+                    </div>
+
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Stato:</label>
+                        <select
+                            value={statusFilter}
+                            onChange={(e) => setStatusFilter(e.target.value)}
+                            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-md"
+                        >
+                            <option value="">Tutti</option>
+                            <option value="draft">Bozza</option>
+                            <option value="generating_outline">Generando Outline</option>
+                            <option value="generating_chapters">Generando Capitoli</option>
+                            <option value="completed">Completato</option>
+                            <option value="error">Errore</option>
+                        </select>
+                    </div>
                 </div>
 
-                {searchTerm && (
-                    <div className="mt-3 text-sm text-gray-600">
-                        Trovati <span className="font-semibold">{filteredProjects.length}</span> progetti
-                    </div>
-                )}
+                {/* Pulsanti filtro */}
+                <div className="flex gap-2">
+                    <button
+                        onClick={() => { /* Filtri già applicati in real-time */ }}
+                        className="px-4 py-2 bg-gray-800 dark:bg-gray-700 text-white rounded-md hover:bg-gray-700 dark:hover:bg-gray-600 flex items-center gap-2"
+                    >
+                        <Filter size={18} />
+                        Filtra
+                    </button>
+                    <button
+                        onClick={clearFilters}
+                        className="px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-md hover:bg-gray-300 dark:hover:bg-gray-600"
+                    >
+                        Annulla filtro
+                    </button>
+                </div>
             </Card>
 
-            {/* Projects Table */}
-            <Card>
-                <div className="overflow-x-auto">
+            {/* Tabella progetti Card */}
+            <Card padding="none" className="flex-1 overflow-hidden flex flex-col">
+                <div className="overflow-auto flex-1">
                     <table className="w-full">
-                        <thead>
-                            <tr className="border-b border-gray-200">
-                                <th className="text-left py-3 px-4 font-medium text-gray-700">Titolo Libro</th>
-                                <th className="text-left py-3 px-4 font-medium text-gray-700">Autore</th>
-                                <th className="text-left py-3 px-4 font-medium text-gray-700">Azienda</th>
-                                <th className="text-left py-3 px-4 font-medium text-gray-700">Settore</th>
-                                <th className="text-left py-3 px-4 font-medium text-gray-700">Status</th>
-                                <th className="text-left py-3 px-4 font-medium text-gray-700">Capitoli</th>
-                                <th className="text-left py-3 px-4 font-medium text-gray-700">Data Creazione</th>
-                                <th className="text-center py-3 px-4 font-medium text-gray-700">Azioni</th>
+                        <thead className="bg-gray-100 dark:bg-gray-700 sticky top-0">
+                            <tr>
+                                <th
+                                    className="px-4 py-3 text-left text-sm font-semibold text-gray-700 dark:text-gray-300 cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-600"
+                                    onClick={() => handleSort('bookTitle')}
+                                >
+                                    <div className="flex items-center">
+                                        Titolo Libro
+                                        <SortIcon field="bookTitle" />
+                                    </div>
+                                </th>
+                                <th
+                                    className="px-4 py-3 text-left text-sm font-semibold text-gray-700 dark:text-gray-300 cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-600"
+                                    onClick={() => handleSort('authorName')}
+                                >
+                                    <div className="flex items-center">
+                                        Autore
+                                        <SortIcon field="authorName" />
+                                    </div>
+                                </th>
+                                <th
+                                    className="px-4 py-3 text-left text-sm font-semibold text-gray-700 dark:text-gray-300 cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-600"
+                                    onClick={() => handleSort('company')}
+                                >
+                                    <div className="flex items-center">
+                                        Azienda
+                                        <SortIcon field="company" />
+                                    </div>
+                                </th>
+                                <th
+                                    className="px-4 py-3 text-left text-sm font-semibold text-gray-700 dark:text-gray-300 cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-600"
+                                    onClick={() => handleSort('industry')}
+                                >
+                                    <div className="flex items-center">
+                                        Settore
+                                        <SortIcon field="industry" />
+                                    </div>
+                                </th>
+                                <th
+                                    className="px-4 py-3 text-left text-sm font-semibold text-gray-700 dark:text-gray-300 cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-600"
+                                    onClick={() => handleSort('status')}
+                                >
+                                    <div className="flex items-center">
+                                        Status
+                                        <SortIcon field="status" />
+                                    </div>
+                                </th>
+                                <th
+                                    className="px-4 py-3 text-left text-sm font-semibold text-gray-700 dark:text-gray-300 cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-600"
+                                    onClick={() => handleSort('chapters')}
+                                >
+                                    <div className="flex items-center">
+                                        Capitoli
+                                        <SortIcon field="chapters" />
+                                    </div>
+                                </th>
+                                <th
+                                    className="px-4 py-3 text-left text-sm font-semibold text-gray-700 dark:text-gray-300 cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-600"
+                                    onClick={() => handleSort('createdAt')}
+                                >
+                                    <div className="flex items-center">
+                                        Data Creazione
+                                        <SortIcon field="createdAt" />
+                                    </div>
+                                </th>
+                                <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700 dark:text-gray-300">Azioni</th>
                             </tr>
                         </thead>
                         <tbody>
-                            {filteredProjects.map((project) => (
+                            {sortedProjects.map((project, index) => (
                                 <tr
                                     key={project.id}
-                                    className="border-b border-gray-100 hover:bg-gray-50 cursor-pointer transition-colors"
+                                    className={`border-b border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer ${index % 2 === 0 ? 'bg-white dark:bg-gray-800' : 'bg-blue-50 dark:bg-gray-750'
+                                        }`}
                                     onClick={() => handleProjectClick(project.id)}
                                 >
-                                    <td className="py-3 px-4">
-                                        <div>
-                                            <div className="font-medium text-gray-900">{project.bookTitle}</div>
-                                            {project.bookSubtitle && (
-                                                <div className="text-sm text-gray-500">{project.bookSubtitle}</div>
-                                            )}
-                                        </div>
+                                    <td className="px-4 py-3">
+                                        <div className="font-medium text-gray-900 dark:text-gray-200">{project.bookTitle}</div>
+                                        {project.bookSubtitle && (
+                                            <div className="text-xs text-gray-500 dark:text-gray-400">{project.bookSubtitle}</div>
+                                        )}
                                     </td>
-                                    <td className="py-3 px-4 text-gray-700">{project.authorName}</td>
-                                    <td className="py-3 px-4 text-gray-700">{project.company}</td>
-                                    <td className="py-3 px-4 text-gray-600 text-sm">{project.industry}</td>
-                                    <td className="py-3 px-4">{getStatusBadge(project.status)}</td>
-                                    <td className="py-3 px-4 text-center text-gray-700">
-                                        {project._count.chapters || 0}
+                                    <td className="px-4 py-3 text-sm dark:text-gray-300">{project.authorName}</td>
+                                    <td className="px-4 py-3 text-sm dark:text-gray-300">{project.company}</td>
+                                    <td className="px-4 py-3 text-sm dark:text-gray-300">{project.industry}</td>
+                                    <td className="px-4 py-3 text-sm">{getStatusBadge(project.status)}</td>
+                                    <td className="px-4 py-3 text-sm text-center">
+                                        <span className="inline-block px-2 py-1 bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 rounded-full text-xs font-semibold">
+                                            {project._count.chapters || 0}
+                                        </span>
                                     </td>
-                                    <td className="py-3 px-4 text-gray-600 text-sm">
-                                        {formatDate(project.createdAt)}
-                                    </td>
-                                    <td className="py-3 px-4 text-center">
-                                        <div className="flex items-center justify-center gap-2">
+                                    <td className="px-4 py-3 text-sm dark:text-gray-300">{formatDate(project.createdAt)}</td>
+                                    <td className="px-4 py-3">
+                                        <div className="flex items-center gap-2">
                                             <button
                                                 onClick={(e) => handleEditClick(project.id, e)}
-                                                className="p-2 text-blue-600 hover:bg-blue-50 hover:scale-110 rounded-md transition-all duration-200"
+                                                className="p-2 hover:bg-gray-200 dark:hover:bg-gray-600 rounded"
                                                 title="Modifica progetto"
                                             >
-                                                <Edit2 size={18} />
+                                                <Edit2 size={18} className="text-blue-600 dark:text-blue-400" />
                                             </button>
                                             <button
                                                 onClick={(e) => handleDelete(project.id, project.bookTitle, e)}
-                                                className="p-2 text-red-600 hover:bg-red-50 hover:scale-110 rounded-md transition-all duration-200"
+                                                className="p-2 hover:bg-gray-200 dark:hover:bg-gray-600 rounded"
                                                 title="Elimina progetto"
                                             >
-                                                <Trash2 size={18} />
+                                                <Trash2 size={18} className="text-red-600 dark:text-red-400" />
                                             </button>
                                         </div>
                                     </td>
@@ -293,10 +471,10 @@ export default function ProjectTableV2() {
                     </table>
                 </div>
 
-                {/* Pagination placeholder */}
-                <div className="mt-4 flex items-center justify-between">
-                    <div className="text-sm text-gray-600">
-                        Totale: {filteredProjects.length} progetti
+                {/* Footer con contatore */}
+                <div className="px-4 py-3 bg-gray-50 dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700">
+                    <div className="text-sm text-gray-600 dark:text-gray-400">
+                        Totale: <span className="font-semibold">{sortedProjects.length}</span> progetti
                     </div>
                 </div>
             </Card>
