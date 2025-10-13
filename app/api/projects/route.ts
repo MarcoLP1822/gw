@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
 import { ProjectFormData } from '@/types';
+import { handleApiError, ApiErrors } from '@/lib/errors/api-errors';
 
 // POST /api/projects - Crea un nuovo progetto
 export async function POST(request: NextRequest) {
@@ -9,10 +10,10 @@ export async function POST(request: NextRequest) {
 
         // Validazione base
         if (!body.authorName || !body.bookTitle || !body.company) {
-            return NextResponse.json(
-                { error: 'Campi obbligatori mancanti: authorName, bookTitle, company' },
-                { status: 400 }
+            const error = ApiErrors.validation(
+                'Campi obbligatori mancanti: authorName, bookTitle, company'
             );
+            return NextResponse.json(error.toJSON(), { status: error.statusCode });
         }
 
         // TODO: In futuro, prendere userId dalla sessione (NextAuth)
@@ -68,10 +69,8 @@ export async function POST(request: NextRequest) {
 
     } catch (error) {
         console.error('Error creating project:', error);
-        return NextResponse.json(
-            { error: 'Errore durante la creazione del progetto' },
-            { status: 500 }
-        );
+        const apiError = handleApiError(error);
+        return NextResponse.json(apiError.toJSON(), { status: apiError.statusCode });
     }
 }
 

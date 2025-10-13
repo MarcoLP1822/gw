@@ -19,6 +19,7 @@ import {
 } from '@/types';
 import { AIConfigService } from '@/lib/ai/config/ai-config-service';
 import { PromptBuilder } from '@/lib/ai/prompt-builder';
+import { ApiErrors, parseOpenAIError } from '@/lib/errors/api-errors';
 
 /**
  * Service per la generazione dei capitoli con AI
@@ -100,11 +101,14 @@ export class ChapterGenerationService {
         });
 
         if (!project) {
-            throw new Error('Progetto non trovato');
+            throw ApiErrors.notFound('Progetto', projectId);
         }
 
         if (!project.outline) {
-            throw new Error("Genera prima l'outline del libro");
+            throw ApiErrors.prerequisiteNotMet(
+                "Genera prima l'outline del libro",
+                { projectId, chapterNumber }
+            );
         }
 
         // Cap 1: Solo outline necessario
@@ -123,7 +127,10 @@ export class ChapterGenerationService {
         });
 
         if (!previousChapter || previousChapter.status !== 'completed') {
-            throw new Error(`Completa prima il Capitolo ${chapterNumber - 1}`);
+            throw ApiErrors.prerequisiteNotMet(
+                `Completa prima il Capitolo ${chapterNumber - 1}`,
+                { projectId, chapterNumber, previousChapter: chapterNumber - 1 }
+            );
         }
     }
 
@@ -141,7 +148,7 @@ export class ChapterGenerationService {
         });
 
         if (!project || !project.outline) {
-            throw new Error('Progetto o outline non trovato');
+            throw ApiErrors.notFound('Progetto o outline', projectId);
         }
 
         // Carica style guide (se disponibile)
@@ -261,32 +268,37 @@ ${generateChapterPrompt(context)}
         console.log('='.repeat(80) + '\n');
 
         // 🔧 USA I PARAMETRI AI DALLA CONFIGURAZIONE
-        const response = await openai.chat.completions.create({
-            model: aiConfig.model as any || DEFAULT_MODEL,
-            messages: [
-                { role: 'system', content: systemPrompt },
-                { role: 'user', content: fullUserPrompt },
-            ],
-            response_format: { type: 'json_object' },
-            temperature: aiConfig.temperature,
-            max_tokens: aiConfig.maxTokens,
-            top_p: aiConfig.topP,
-            frequency_penalty: aiConfig.frequencyPenalty,
-            presence_penalty: aiConfig.presencePenalty,
-        });
+        try {
+            const response = await openai.chat.completions.create({
+                model: aiConfig.model as any || DEFAULT_MODEL,
+                messages: [
+                    { role: 'system', content: systemPrompt },
+                    { role: 'user', content: fullUserPrompt },
+                ],
+                response_format: { type: 'json_object' },
+                temperature: aiConfig.temperature,
+                max_tokens: aiConfig.maxTokens,
+                top_p: aiConfig.topP,
+                frequency_penalty: aiConfig.frequencyPenalty,
+                presence_penalty: aiConfig.presencePenalty,
+            });
 
-        const parsed = JSON.parse(response.choices[0].message.content || '{}');
+            const parsed = JSON.parse(response.choices[0].message.content || '{}');
 
-        return {
-            content: parsed.chapter || '',
-            metadata: parsed.metadata || { newCharacters: [], newTerms: {}, keyNumbers: {} },
-            summary: parsed.summary || '',
-            keyPoints: parsed.keyPoints || [],
-            usage: response.usage,
-            // Salviamo i prompt usati (ora dinamici!)
-            systemPrompt: systemPrompt,
-            userPrompt: fullUserPrompt,
-        };
+            return {
+                content: parsed.chapter || '',
+                metadata: parsed.metadata || { newCharacters: [], newTerms: {}, keyNumbers: {} },
+                summary: parsed.summary || '',
+                keyPoints: parsed.keyPoints || [],
+                usage: response.usage,
+                // Salviamo i prompt usati (ora dinamici!)
+                systemPrompt: systemPrompt,
+                userPrompt: fullUserPrompt,
+            };
+        } catch (error) {
+            // Gestisce errori specifici di OpenAI
+            throw parseOpenAIError(error);
+        }
     }
 
     /**

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { chapterGenerationService } from '@/lib/ai/services/chapter-generation';
+import { handleApiError, ApiErrors } from '@/lib/errors/api-errors';
 
 /**
  * POST /api/projects/[id]/chapters/[chapterNumber]/generate
@@ -14,10 +15,8 @@ export async function POST(
         const chapterNumber = parseInt(params.chapterNumber, 10);
 
         if (isNaN(chapterNumber) || chapterNumber < 1) {
-            return NextResponse.json(
-                { error: 'Numero capitolo non valido' },
-                { status: 400 }
-            );
+            const error = ApiErrors.validation('Numero capitolo non valido');
+            return NextResponse.json(error.toJSON(), { status: error.statusCode });
         }
 
         console.log(`🚀 Starting chapter ${chapterNumber} generation for project ${projectId}`);
@@ -35,12 +34,8 @@ export async function POST(
     } catch (error: any) {
         console.error('Error generating chapter:', error);
 
-        return NextResponse.json(
-            {
-                error: error.message || 'Errore durante la generazione del capitolo',
-                details: error.toString(),
-            },
-            { status: 500 }
-        );
+        // Usa l'error handler centralizzato
+        const apiError = handleApiError(error);
+        return NextResponse.json(apiError.toJSON(), { status: apiError.statusCode });
     }
 }

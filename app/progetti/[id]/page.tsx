@@ -515,7 +515,9 @@ function OutlineTab({
 
             if (!response.ok) {
                 const errorData = await response.json();
-                throw new Error(errorData.error || 'Errore nella generazione');
+                // Mostra il messaggio user-friendly se disponibile
+                const errorMsg = errorData.message || errorData.error || 'Errore nella generazione';
+                throw new Error(errorMsg);
             }
 
             const data = await response.json();
@@ -527,7 +529,7 @@ function OutlineTab({
             console.error('Errore:', err);
             const errorMessage = err instanceof Error ? err.message : 'Errore sconosciuto';
             setGenerationError(errorMessage);
-            toast.error(`Errore nella generazione: ${errorMessage}`);
+            toast.error(errorMessage);
         } finally {
             setIsGeneratingOutline(false);
         }
@@ -545,7 +547,9 @@ function OutlineTab({
 
             if (!response.ok) {
                 const errorData = await response.json();
-                throw new Error(errorData.error || 'Errore nella generazione del capitolo');
+                // Mostra il messaggio user-friendly se disponibile
+                const errorMsg = errorData.message || errorData.error || 'Errore nella generazione del capitolo';
+                throw new Error(errorMsg);
             }
 
             const data = await response.json();

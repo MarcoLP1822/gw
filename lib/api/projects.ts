@@ -1,5 +1,81 @@
 import { ProjectFormData } from '@/types';
 import { saveAs } from 'file-saver';
+import { ApiErrorResponse, ErrorType } from '@/lib/errors/api-errors';
+
+// ============================================================
+// ENHANCED ERROR HANDLING
+// ============================================================
+
+/**
+ * Gestisce la risposta di errore dal backend
+ * Estrae informazioni strutturate e fornisce messaggi user-friendly
+ */
+async function handleErrorResponse(response: Response, defaultMessage: string): Promise<never> {
+    try {
+        const errorData: ApiErrorResponse = await response.json();
+
+        // Se il backend ha restituito un errore strutturato
+        if (errorData.code) {
+            const error = new Error(errorData.message || errorData.error || defaultMessage);
+            (error as any).code = errorData.code;
+            (error as any).severity = errorData.severity;
+            (error as any).retryable = errorData.retryable;
+            (error as any).details = errorData.details;
+            throw error;
+        }
+
+        // Altrimenti usa il messaggio generico
+        throw new Error(errorData.error || defaultMessage);
+    } catch (parseError) {
+        // Se non riesce a parsare la risposta, usa il messaggio di default
+        throw new Error(defaultMessage);
+    }
+}
+
+/**
+ * Ottiene un messaggio di errore user-friendly
+ */
+export function getErrorMessage(error: any): string {
+    // Se l'errore ha un code strutturato, usa il messaggio appropriato
+    if (error.code) {
+        // Messaggi user-friendly basati sul codice
+        const friendlyMessages: Record<string, string> = {
+            [ErrorType.API_KEY_INVALID]: '⚠️ API Key non valida. Configura le credenziali nelle impostazioni.',
+            [ErrorType.API_QUOTA_EXCEEDED]: '💳 Credito API esaurito. Ricarica il tuo account o aggiorna la chiave API.',
+            [ErrorType.API_RATE_LIMIT]: '⏱️ Troppi tentativi. Attendi qualche secondo e riprova.',
+            [ErrorType.API_TIMEOUT]: '⏰ L\'operazione sta richiedendo troppo tempo. Riprova.',
+            [ErrorType.API_ERROR]: '🔌 Problema di connessione con il servizio esterno. Riprova tra poco.',
+            [ErrorType.NOT_FOUND]: '🔍 Elemento non trovato.',
+            [ErrorType.PREREQUISITE_NOT_MET]: '📋 Prerequisiti non soddisfatti. Completa i passi precedenti.',
+            [ErrorType.VALIDATION_ERROR]: '⚠️ I dati inseriti non sono validi.',
+            [ErrorType.DATABASE_ERROR]: '💾 Errore nel salvataggio dei dati.',
+            [ErrorType.INTERNAL_ERROR]: '❌ Errore interno del server.',
+        };
+
+        return friendlyMessages[error.code] || error.message || 'Errore imprevisto';
+    }
+
+    // Altrimenti, usa il messaggio dell'errore
+    return error.message || 'Errore imprevisto';
+}
+
+/**
+ * Verifica se un errore è ritentabile
+ */
+export function isRetryableError(error: any): boolean {
+    if (error.retryable !== undefined) {
+        return error.retryable;
+    }
+
+    // Alcuni errori sono ritentabili per natura
+    const retryableCodes = [
+        ErrorType.API_RATE_LIMIT,
+        ErrorType.API_TIMEOUT,
+        ErrorType.NETWORK_ERROR,
+    ];
+
+    return error.code && retryableCodes.includes(error.code);
+}
 
 // ============================================================
 // API CLIENT per Projects
@@ -17,8 +93,7 @@ export const projectsApi = {
         });
 
         if (!response.ok) {
-            const error = await response.json();
-            throw new Error(error.error || 'Errore durante la creazione del progetto');
+            await handleErrorResponse(response, 'Errore durante la creazione del progetto');
         }
 
         return response.json();
@@ -34,8 +109,7 @@ export const projectsApi = {
         });
 
         if (!response.ok) {
-            const error = await response.json();
-            throw new Error(error.error || 'Errore durante il recupero dei progetti');
+            await handleErrorResponse(response, 'Errore durante il recupero dei progetti');
         }
 
         return response.json();
@@ -51,8 +125,7 @@ export const projectsApi = {
         });
 
         if (!response.ok) {
-            const error = await response.json();
-            throw new Error(error.error || 'Errore durante il recupero del progetto');
+            await handleErrorResponse(response, 'Errore durante il recupero del progetto');
         }
 
         return response.json();
@@ -69,8 +142,7 @@ export const projectsApi = {
         });
 
         if (!response.ok) {
-            const error = await response.json();
-            throw new Error(error.error || 'Errore durante l\'aggiornamento del progetto');
+            await handleErrorResponse(response, 'Errore durante l\'aggiornamento del progetto');
         }
 
         return response.json();
@@ -86,8 +158,7 @@ export const projectsApi = {
         });
 
         if (!response.ok) {
-            const error = await response.json();
-            throw new Error(error.error || 'Errore durante l\'eliminazione del progetto');
+            await handleErrorResponse(response, 'Errore durante l\'eliminazione del progetto');
         }
 
         return response.json();
@@ -107,8 +178,7 @@ export const projectsApi = {
         });
 
         if (!response.ok) {
-            const error = await response.json();
-            throw new Error(error.error || 'Errore durante la generazione del capitolo');
+            await handleErrorResponse(response, 'Errore durante la generazione del capitolo');
         }
 
         return response.json();
@@ -124,8 +194,7 @@ export const projectsApi = {
         });
 
         if (!response.ok) {
-            const error = await response.json();
-            throw new Error(error.error || 'Errore durante il recupero del capitolo');
+            await handleErrorResponse(response, 'Errore durante il recupero del capitolo');
         }
 
         return response.json();
@@ -142,8 +211,7 @@ export const projectsApi = {
         });
 
         if (!response.ok) {
-            const error = await response.json();
-            throw new Error(error.error || 'Errore durante l\'aggiornamento del capitolo');
+            await handleErrorResponse(response, 'Errore durante l\'aggiornamento del capitolo');
         }
 
         return response.json();
@@ -163,8 +231,7 @@ export const projectsApi = {
         });
 
         if (!response.ok) {
-            const error = await response.json();
-            throw new Error(error.error || 'Errore durante il consistency check');
+            await handleErrorResponse(response, 'Errore durante il consistency check');
         }
 
         return response.json();
@@ -180,8 +247,7 @@ export const projectsApi = {
         });
 
         if (!response.ok) {
-            const error = await response.json();
-            throw new Error(error.error || 'Errore durante il recupero del report');
+            await handleErrorResponse(response, 'Errore durante il recupero del report');
         }
 
         return response.json();
