@@ -32,6 +32,7 @@ interface AnalyticsData {
 
 export default function AnalyticsPage() {
     const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+    const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
     const [analytics, setAnalytics] = useState<AnalyticsData | null>(null);
     const [loading, setLoading] = useState(true);
 
@@ -116,15 +117,18 @@ export default function AnalyticsPage() {
             <Sidebar
                 collapsed={sidebarCollapsed}
                 onToggleAction={() => setSidebarCollapsed(!sidebarCollapsed)}
+                mobileOpen={mobileMenuOpen}
+                onMobileClose={() => setMobileMenuOpen(false)}
             />
 
             {/* Analytics Content */}
             <PageContainer
                 title="Analytics"
                 description="Analisi e statistiche delle tue attività"
+                onMenuClick={() => setMobileMenuOpen(true)}
             >
                 {/* Stats Cards */}
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mb-6">
                     {stats.map((stat, index) => (
                         <Card key={index} padding="lg">
                             <div className="flex items-start justify-between">
@@ -290,9 +294,9 @@ export default function AnalyticsPage() {
                                 {analytics.topProjects.slice(0, 5).map((project) => (
                                     <div key={project.id} className="flex items-start gap-3 p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
                                         <div className={`w-2 h-2 rounded-full mt-2 ${project.status === 'completed' ? 'bg-green-600' :
-                                                project.status === 'generating_chapters' ? 'bg-blue-600' :
-                                                    project.status === 'error' ? 'bg-red-600' :
-                                                        'bg-gray-600'
+                                            project.status === 'generating_chapters' ? 'bg-blue-600' :
+                                                project.status === 'error' ? 'bg-red-600' :
+                                                    'bg-gray-600'
                                             }`}></div>
                                         <div className="flex-1">
                                             <p className="text-sm font-medium text-gray-900 dark:text-gray-100">{project.title}</p>

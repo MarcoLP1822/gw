@@ -8,6 +8,7 @@ import { User, Bell, Shield, Globe, Save } from 'lucide-react';
 
 export default function ImpostazioniPage() {
     const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+    const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
     // Mock state per le impostazioni
     const [settings, setSettings] = useState({
@@ -35,12 +36,15 @@ export default function ImpostazioniPage() {
             <Sidebar
                 collapsed={sidebarCollapsed}
                 onToggleAction={() => setSidebarCollapsed(!sidebarCollapsed)}
+                mobileOpen={mobileMenuOpen}
+                onMobileClose={() => setMobileMenuOpen(false)}
             />
 
             {/* Settings Content */}
             <PageContainer
                 title="Impostazioni"
                 description="Gestisci le tue preferenze e configurazioni"
+                onMenuClick={() => setMobileMenuOpen(true)}
             >
                 {/* Profile Section */}
                 <Card className="mb-6">

@@ -7,6 +7,7 @@ import ProjectTableV2 from '@/components/ProjectTableV2';
 
 export default function ProgettiPage() {
     const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+    const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
     return (
         <div className="flex h-screen bg-gray-50 dark:bg-gray-900">
@@ -14,12 +15,15 @@ export default function ProgettiPage() {
             <Sidebar
                 collapsed={sidebarCollapsed}
                 onToggleAction={() => setSidebarCollapsed(!sidebarCollapsed)}
+                mobileOpen={mobileMenuOpen}
+                onMobileClose={() => setMobileMenuOpen(false)}
             />
 
             {/* Project Table */}
             <PageContainer
                 title="Progetti"
                 description="Gestisci i tuoi progetti di ghost writing"
+                onMenuClick={() => setMobileMenuOpen(true)}
             >
                 <ProjectTableV2 />
             </PageContainer>

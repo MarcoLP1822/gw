@@ -49,24 +49,24 @@ export default function Modal({ isOpen, onCloseAction, title, children, size = '
             />
 
             {/* Modal Container */}
-            <div className="flex min-h-screen items-center justify-center p-4">
+            <div className="flex min-h-screen items-center justify-center p-2 sm:p-4">
                 <div
-                    className={`relative w-full ${sizeClasses[size]} bg-white rounded-lg shadow-xl transform transition-all`}
+                    className={`relative w-full ${sizeClasses[size]} bg-white rounded-lg shadow-xl transform transition-all max-h-[95vh] flex flex-col`}
                     onClick={(e) => e.stopPropagation()}
                 >
                     {/* Header */}
-                    <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200">
-                        <h2 className="text-xl font-semibold text-gray-900">{title}</h2>
+                    <div className="flex items-center justify-between px-4 sm:px-6 py-3 sm:py-4 border-b border-gray-200 flex-shrink-0">
+                        <h2 className="text-lg sm:text-xl font-semibold text-gray-900 truncate pr-2">{title}</h2>
                         <button
                             onClick={onCloseAction}
-                            className="text-gray-400 hover:text-gray-600 transition-colors"
+                            className="text-gray-400 hover:text-gray-600 transition-colors flex-shrink-0"
                         >
                             <X size={24} />
                         </button>
                     </div>
 
                     {/* Content */}
-                    <div className="px-6 py-4 max-h-[calc(100vh-200px)] overflow-y-auto">
+                    <div className="px-4 sm:px-6 py-3 sm:py-4 overflow-y-auto flex-1">
                         {children}
                     </div>
                 </div>

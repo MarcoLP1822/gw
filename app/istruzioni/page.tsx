@@ -522,6 +522,7 @@ const instructions: InstructionSection[] = [
 
 export default function IstruzioniPage() {
     const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+    const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
     const [expandedSections, setExpandedSections] = useState<string[]>([]);
 
     const toggleSection = (id: string) => {
@@ -556,26 +557,29 @@ export default function IstruzioniPage() {
             <Sidebar
                 collapsed={sidebarCollapsed}
                 onToggleAction={() => setSidebarCollapsed(!sidebarCollapsed)}
+                mobileOpen={mobileMenuOpen}
+                onMobileClose={() => setMobileMenuOpen(false)}
             />
 
             {/* Main Content */}
             <PageContainer
                 title="Istruzioni"
                 description="Guida completa all'utilizzo della piattaforma Ghost Writing AI"
+                onMenuClick={() => setMobileMenuOpen(true)}
             >
-                <div className="max-w-6xl mx-auto space-y-8">
+                <div className="max-w-6xl mx-auto space-y-6 sm:space-y-8">
                     {/* Hero Section */}
                     <Card className="bg-gradient-to-br from-blue-600 to-purple-700 text-white">
-                        <div className="text-center py-12">
-                            <BookOpen className="mx-auto mb-4" size={64} />
-                            <h1 className="text-4xl font-bold mb-4">Benvenuto su Ghost Writing AI</h1>
-                            <p className="text-xl text-blue-100 mb-8 max-w-2xl mx-auto">
+                        <div className="text-center py-8 sm:py-12 px-4">
+                            <BookOpen className="mx-auto mb-4" size={48} />
+                            <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-4">Benvenuto su Ghost Writing AI</h1>
+                            <p className="text-base sm:text-lg md:text-xl text-blue-100 mb-6 sm:mb-8 max-w-2xl mx-auto">
                                 Crea libri professionali in pochi minuti con l&apos;intelligenza artificiale.<br />
                                 Dall&apos;idea al manoscritto completo, tutto in un&apos;unica piattaforma.
                             </p>
 
                             {/* Quick Stats Grid */}
-                            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 max-w-3xl mx-auto">
+                            <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4 max-w-3xl mx-auto">
                                 {quickStats.map((stat, idx) => (
                                     <div key={idx} className="bg-white/10 backdrop-blur rounded-lg p-4">
                                         <stat.icon className="mx-auto mb-2" size={32} />

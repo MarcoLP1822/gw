@@ -59,6 +59,7 @@ interface ProjectDetail {
 
 export default function ProgettoDetailPage({ params }: { params: { id: string } }) {
     const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+    const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
     const [activeTab, setActiveTab] = useState<TabType>('overview');
     const [project, setProject] = useState<ProjectDetail | null>(null);
     const [loading, setLoading] = useState(true);
@@ -167,7 +168,12 @@ export default function ProgettoDetailPage({ params }: { params: { id: string } 
     if (loading) {
         return (
             <div className="flex h-screen bg-gray-50">
-                <Sidebar collapsed={sidebarCollapsed} onToggleAction={() => setSidebarCollapsed(!sidebarCollapsed)} />
+                <Sidebar
+                    collapsed={sidebarCollapsed}
+                    onToggleAction={() => setSidebarCollapsed(!sidebarCollapsed)}
+                    mobileOpen={mobileMenuOpen}
+                    onMobileClose={() => setMobileMenuOpen(false)}
+                />
                 <ProjectDetailPageSkeleton />
             </div>
         );
@@ -177,8 +183,13 @@ export default function ProgettoDetailPage({ params }: { params: { id: string } 
     if (error || !project) {
         return (
             <div className="flex h-screen bg-gray-50">
-                <Sidebar collapsed={sidebarCollapsed} onToggleAction={() => setSidebarCollapsed(!sidebarCollapsed)} />
-                <div className="flex-1 flex items-center justify-center p-6">
+                <Sidebar
+                    collapsed={sidebarCollapsed}
+                    onToggleAction={() => setSidebarCollapsed(!sidebarCollapsed)}
+                    mobileOpen={mobileMenuOpen}
+                    onMobileClose={() => setMobileMenuOpen(false)}
+                />
+                <div className="flex-1 flex items-center justify-center p-4 sm:p-6">
                     <Card className="max-w-md">
                         <div className="text-center">
                             <AlertCircle className="w-12 h-12 text-red-500 mx-auto mb-4" />
@@ -200,33 +211,46 @@ export default function ProgettoDetailPage({ params }: { params: { id: string } 
     return (
         <div className="flex h-screen bg-gray-50">
             {/* Sidebar */}
-            <Sidebar collapsed={sidebarCollapsed} onToggleAction={() => setSidebarCollapsed(!sidebarCollapsed)} />
+            <Sidebar
+                collapsed={sidebarCollapsed}
+                onToggleAction={() => setSidebarCollapsed(!sidebarCollapsed)}
+                mobileOpen={mobileMenuOpen}
+                onMobileClose={() => setMobileMenuOpen(false)}
+            />
 
             {/* Main Content */}
             <div className="flex-1 flex flex-col overflow-hidden">
                 {/* Header - Compatto */}
-                <div className="bg-white border-b border-gray-200 px-6 py-3">
+                <div className="bg-white border-b border-gray-200 px-4 sm:px-6 py-3">
                     <div className="flex items-center justify-between mb-3">
                         <button
                             onClick={() => router.push('/progetti')}
                             className="flex items-center gap-2 text-gray-600 hover:text-gray-900 transition-colors text-sm"
                         >
                             <ArrowLeft size={18} />
-                            <span>Torna ai Progetti</span>
+                            <span className="hidden sm:inline">Torna ai Progetti</span>
+                            <span className="sm:hidden">Indietro</span>
+                        </button>
+                        <button
+                            onClick={() => setMobileMenuOpen(true)}
+                            className="lg:hidden p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                            aria-label="Open menu"
+                        >
+                            <Settings size={20} className="text-gray-600" />
                         </button>
                     </div>
 
                     <div className="mb-3">
-                        <h1 className="text-xl font-bold text-gray-900 mb-0.5">{project.bookTitle}</h1>
+                        <h1 className="text-lg sm:text-xl font-bold text-gray-900 mb-0.5 truncate">{project.bookTitle}</h1>
                         {project.bookSubtitle && (
-                            <p className="text-sm text-gray-600">{project.bookSubtitle}</p>
+                            <p className="text-sm text-gray-600 truncate">{project.bookSubtitle}</p>
                         )}
-                        <div className="flex items-center gap-3 mt-1.5 text-xs text-gray-500">
-                            <span>Autore: <span className="font-medium">{project.authorName}</span></span>
-                            <span>•</span>
-                            <span>{project.company}</span>
-                            <span>•</span>
-                            <span>{project._count.chapters} capitoli</span>
+                        <div className="flex flex-wrap items-center gap-2 sm:gap-3 mt-1.5 text-xs text-gray-500">
+                            <span className="truncate">Autore: <span className="font-medium">{project.authorName}</span></span>
+                            <span className="hidden sm:inline">•</span>
+                            <span className="hidden sm:inline truncate">{project.company}</span>
+                            <span className="hidden sm:inline">•</span>
+                            <span>{project._count.chapters} cap.</span>
 
                             {/* Indicatore generazione in corso con pulsante Stop */}
                             {generatingChapter !== null && (
@@ -250,20 +274,20 @@ export default function ProgettoDetailPage({ params }: { params: { id: string } 
                     </div>
 
                     {/* Tabs */}
-                    <div className="flex gap-1 border-b border-gray-200">
+                    <div className="flex gap-1 border-b border-gray-200 overflow-x-auto">
                         {tabs.map((tab) => {
                             const Icon = tab.icon;
                             return (
                                 <button
                                     key={tab.id}
                                     onClick={() => setActiveTab(tab.id)}
-                                    className={`flex items-center gap-2 px-4 py-2 font-medium transition-colors ${activeTab === tab.id
+                                    className={`flex items-center gap-2 px-3 sm:px-4 py-2 font-medium transition-colors whitespace-nowrap text-sm ${activeTab === tab.id
                                         ? 'text-blue-600 border-b-2 border-blue-600'
                                         : 'text-gray-600 hover:text-gray-900'
                                         }`}
                                 >
                                     <Icon size={18} />
-                                    {tab.label}
+                                    <span className="hidden sm:inline">{tab.label}</span>
                                 </button>
                             );
                         })}
@@ -283,7 +307,7 @@ export default function ProgettoDetailPage({ params }: { params: { id: string } 
                 />
 
                 {/* Tab Content */}
-                <div className="flex-1 overflow-auto p-6">
+                <div className="flex-1 overflow-auto p-4 sm:p-6">
                     {/* Keep all tabs mounted but show/hide with CSS for state persistence */}
                     <div style={{ display: activeTab === 'overview' ? 'block' : 'none' }}>
                         <OverviewTab

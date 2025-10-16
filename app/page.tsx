@@ -33,6 +33,7 @@ interface Activity {
 
 export default function Home() {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [stats, setStats] = useState<Stats | null>(null);
@@ -183,16 +184,19 @@ export default function Home() {
       <Sidebar
         collapsed={sidebarCollapsed}
         onToggleAction={() => setSidebarCollapsed(!sidebarCollapsed)}
+        mobileOpen={mobileMenuOpen}
+        onMobileClose={() => setMobileMenuOpen(false)}
       />
 
       {/* Dashboard Content */}
       <PageContainer
         title="Dashboard"
         description="Panoramica generale della tua attività"
+        onMenuClick={() => setMobileMenuOpen(true)}
       >
         {/* Stats Cards */}
         {loading ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mb-6">
             {[1, 2, 3, 4].map((i) => (
               <Card key={i} padding="lg">
                 <div className="animate-pulse">
@@ -203,13 +207,13 @@ export default function Home() {
             ))}
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mb-6">
             {statsConfig.map((stat, index) => (
               <Card key={index} padding="lg">
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-sm text-gray-600 mb-1">{stat.label}</p>
-                    <p className="text-3xl font-bold text-gray-900">{stat.value}</p>
+                    <p className="text-2xl sm:text-3xl font-bold text-gray-900">{stat.value}</p>
                   </div>
                   <div className={`${stat.color} p-3 rounded-lg`}>
                     <stat.icon className="text-white" size={24} />
@@ -221,23 +225,23 @@ export default function Home() {
         )}
 
         {/* Call to Action - Nuovo Progetto e Caricamento File */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6 mb-6">
           {/* Card Nuovo Progetto */}
           <Card>
-            <div className="flex flex-col items-center justify-center py-12">
-              <div className="mb-4 p-4 bg-blue-100 rounded-full">
-                <Plus size={32} className="text-blue-600" />
+            <div className="flex flex-col items-center justify-center py-8 sm:py-12">
+              <div className="mb-4 p-3 sm:p-4 bg-blue-100 rounded-full">
+                <Plus size={28} className="sm:w-8 sm:h-8 text-blue-600" />
               </div>
-              <h3 className="text-xl font-semibold text-gray-900 mb-2">
+              <h3 className="text-lg sm:text-xl font-semibold text-gray-900 mb-2">
                 Crea un Nuovo Progetto
               </h3>
-              <p className="text-gray-600 mb-6 text-center max-w-md px-4">
+              <p className="text-sm sm:text-base text-gray-600 mb-4 sm:mb-6 text-center max-w-md px-4">
                 Inizia un nuovo progetto di ghost writing e gestisci tutti i dettagli in un unico posto
               </p>
               <button
                 onClick={handleNewProject}
                 disabled={isSubmitting}
-                className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2 font-medium shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
+                className="px-4 sm:px-6 py-2 sm:py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2 font-medium shadow-sm disabled:opacity-50 disabled:cursor-not-allowed text-sm sm:text-base"
               >
                 {isSubmitting ? (
                   <>
@@ -257,7 +261,7 @@ export default function Home() {
 
         {/* Recent Activity Section */}
         <Card padding="lg">
-          <h2 className="text-xl font-semibold text-gray-900 mb-4">Attività Recente</h2>
+          <h2 className="text-lg sm:text-xl font-semibold text-gray-900 mb-4">Attività Recente</h2>
           {loading ? (
             <div className="space-y-3">
               {[1, 2, 3].map((i) => (
@@ -273,11 +277,11 @@ export default function Home() {
           ) : recentActivity.length > 0 ? (
             <div className="space-y-3">
               {recentActivity.slice(0, 5).map((activity) => (
-                <div key={activity.id} className="flex items-start gap-3 p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
-                  <div className={`w-2 h-2 ${getActivityColor(activity.type)} rounded-full mt-2`}></div>
-                  <div className="flex-1">
-                    <p className="text-sm font-medium text-gray-900">{activity.description}</p>
-                    <p className="text-xs text-gray-600">
+                <div key={activity.id} className="flex items-start gap-2 sm:gap-3 p-2 sm:p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
+                  <div className={`w-2 h-2 ${getActivityColor(activity.type)} rounded-full mt-2 flex-shrink-0`}></div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-xs sm:text-sm font-medium text-gray-900 break-words">{activity.description}</p>
+                    <p className="text-xs text-gray-600 break-words">
                       {activity.title} {activity.author && `- ${activity.author}`} • {formatTimestamp(activity.timestamp)}
                     </p>
                   </div>
@@ -285,7 +289,7 @@ export default function Home() {
               ))}
             </div>
           ) : (
-            <p className="text-gray-600">Nessuna attività recente</p>
+            <p className="text-sm sm:text-base text-gray-600">Nessuna attività recente</p>
           )}
         </Card>
       </PageContainer>

@@ -7,6 +7,7 @@ import ClientTable from '@/components/ClientTable';
 
 export default function ClientiPage() {
     const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+    const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
     return (
         <div className="flex h-screen bg-gray-50 dark:bg-gray-900">
@@ -14,12 +15,15 @@ export default function ClientiPage() {
             <Sidebar
                 collapsed={sidebarCollapsed}
                 onToggleAction={() => setSidebarCollapsed(!sidebarCollapsed)}
+                mobileOpen={mobileMenuOpen}
+                onMobileClose={() => setMobileMenuOpen(false)}
             />
 
             {/* Client Table */}
             <PageContainer
                 title="Clienti"
                 description="Gestisci i tuoi clienti"
+                onMenuClick={() => setMobileMenuOpen(true)}
             >
                 <ClientTable />
             </PageContainer>
