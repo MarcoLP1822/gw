@@ -9,7 +9,7 @@ import NewProjectModal from '@/components/NewProjectModal';
 import { ProjectFormData } from '@/types';
 import { projectsApi } from '@/lib/api/projects';
 import { toast } from '@/lib/ui/toast';
-import { FileText, Users, Clock, CheckCircle, Plus, Loader2 } from 'lucide-react';
+import { FileText, Users, Clock, CheckCircle, Plus, Loader2, Upload } from 'lucide-react';
 
 interface Stats {
   totalProjects: number;
@@ -105,6 +105,11 @@ export default function Home() {
 
   const handleCloseModal = () => {
     setIsModalOpen(false);
+  };
+
+  const handleUploadFile = () => {
+    // TODO: Implementare logica per caricamento file
+    toast.info('Funzionalità di caricamento in arrivo!');
   };
 
   const handleSubmitProject = async (projectData: ProjectFormData) => {
@@ -215,37 +220,40 @@ export default function Home() {
           </div>
         )}
 
-        {/* Call to Action - Nuovo Progetto */}
-        <Card className="mb-6">
-          <div className="flex flex-col items-center justify-center py-12">
-            <div className="mb-4 p-4 bg-blue-100 rounded-full">
-              <Plus size={32} className="text-blue-600" />
+        {/* Call to Action - Nuovo Progetto e Caricamento File */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+          {/* Card Nuovo Progetto */}
+          <Card>
+            <div className="flex flex-col items-center justify-center py-12">
+              <div className="mb-4 p-4 bg-blue-100 rounded-full">
+                <Plus size={32} className="text-blue-600" />
+              </div>
+              <h3 className="text-xl font-semibold text-gray-900 mb-2">
+                Crea un Nuovo Progetto
+              </h3>
+              <p className="text-gray-600 mb-6 text-center max-w-md px-4">
+                Inizia un nuovo progetto di ghost writing e gestisci tutti i dettagli in un unico posto
+              </p>
+              <button
+                onClick={handleNewProject}
+                disabled={isSubmitting}
+                className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2 font-medium shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {isSubmitting ? (
+                  <>
+                    <Loader2 size={20} className="animate-spin" />
+                    Creazione...
+                  </>
+                ) : (
+                  <>
+                    <Plus size={20} />
+                    Nuovo Progetto
+                  </>
+                )}
+              </button>
             </div>
-            <h3 className="text-xl font-semibold text-gray-900 mb-2">
-              Crea un Nuovo Progetto
-            </h3>
-            <p className="text-gray-600 mb-6 text-center max-w-md">
-              Inizia un nuovo progetto di ghost writing e gestisci tutti i dettagli in un unico posto
-            </p>
-            <button
-              onClick={handleNewProject}
-              disabled={isSubmitting}
-              className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2 font-medium shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              {isSubmitting ? (
-                <>
-                  <Loader2 size={20} className="animate-spin" />
-                  Creazione...
-                </>
-              ) : (
-                <>
-                  <Plus size={20} />
-                  Nuovo Progetto
-                </>
-              )}
-            </button>
-          </div>
-        </Card>
+          </Card>
+        </div>
 
         {/* Recent Activity Section */}
         <Card padding="lg">

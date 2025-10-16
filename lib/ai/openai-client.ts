@@ -5,14 +5,21 @@ export const openai = new OpenAI({
     apiKey: process.env.OPENAI_API_KEY,
 });
 
-// Modello da usare - AGGIORNATO al nuovo modello
-export const DEFAULT_MODEL = 'gpt-5-mini-2025-08-07';
+// Modello da usare - GPT-5 con Responses API
+export const DEFAULT_MODEL = 'gpt-5';
 
-// Configurazione default
+// Configurazione default per GPT-5
+// Nota: GPT-5 NON supporta temperature, top_p, frequency_penalty, presence_penalty
+// Usa invece reasoning effort e verbosity
 export const DEFAULT_CONFIG = {
     model: DEFAULT_MODEL,
-    temperature: 0.7, // Creatività moderata
-    max_tokens: 4000, // Abbastanza per un outline completo
+    reasoning: {
+        effort: 'medium' as const, // minimal, low, medium, high
+    },
+    text: {
+        verbosity: 'medium' as const, // low, medium, high
+    },
+    max_output_tokens: 16000, // Aumentato per contenuti lunghi come capitoli
 };
 
 /**

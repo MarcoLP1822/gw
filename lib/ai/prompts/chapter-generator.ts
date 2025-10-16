@@ -80,7 +80,20 @@ ${outline.chapters.map((ch, idx) => `
 
   // Style Guide (se disponibile)
   if (styleGuide) {
-    prompt += `# STYLE GUIDE
+    if (typeof styleGuide === 'string') {
+      // Nuovo formato: testo libero
+      prompt += `# STYLE GUIDE
+
+**IMPORTANTE**: Mantieni rigorosamente questo stile in tutto il capitolo.
+
+${styleGuide}
+
+---
+
+`;
+    } else {
+      // Vecchio formato: JSON strutturato (backward compatibility)
+      prompt += `# STYLE GUIDE
 
 **IMPORTANTE**: Mantieni rigorosamente questo stile in tutto il capitolo.
 
@@ -105,6 +118,7 @@ ${styleGuide.metaphors.map(m => `- ${m}`).join('\n')}
 ---
 
 `;
+    }
   }
 
   // Master Context (personaggi, termini, numeri)

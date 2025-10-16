@@ -68,7 +68,13 @@ model Project {
 
   // Master Context (aggiornato dopo ogni capitolo)
   masterContext Json? // { characters, terms, numbers, themes }
-  styleGuide    Json? // Generato dopo cap 2
+  styleGuide    Json? // DEPRECATED: Generato dopo cap 2 (mantenuto per backward compatibility)
+
+  // Style Guide Management (NEW)
+  customStyleGuide      String?  @db.Text // User-defined style guide (manual override)
+  generatedStyleGuide   String?  @db.Text // AI-generated style guide (after chapter 2)
+  styleGuideSource      String? // "manual" | "ai_generated" | "ai_from_docs"
+  styleGuideCreatedAt   DateTime?
 
   // Relations
   outline            Outline?
@@ -76,6 +82,7 @@ model Project {
   generationLogs     GenerationLog[]
   consistencyReports ConsistencyReport[]
   aiConfig           ProjectAIConfig?
+  documents          ProjectDocument[] // NEW: Uploaded reference documents
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -98,7 +105,7 @@ model Outline {
   totalChapters  Int
   estimatedWords Int
 
-  aiModel     String // "gpt-4", "gpt-4o", "claude-3-5-sonnet", etc.
+  aiModel     String // Modello AI utilizzato per la generazione
   generatedAt DateTime @default(now())
 
   chapters Chapter[]
@@ -194,6 +201,7 @@ model ConsistencyReport {
 // ============================================================
 // AI CONFIGURATION (per progetto)
 // Technical parameters only - style and content defined in project onboarding
+// GPT-5 usa reasoning effort e verbosity invece di temperature/top_p
 // ============================================================
 
 model ProjectAIConfig {
@@ -202,14 +210,19 @@ model ProjectAIConfig {
   project   Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
 
   // AI Model Parameters
-  model String @default("gpt-5-mini-2025-08-07")
-  // Options: "gpt-5-mini-2025-08-07" | "gpt-4o" | "gpt-4-turbo"
+  model String @default("gpt-5")
+  // Note: GPT-5 family (gpt-5, gpt-5-mini, gpt-5-nano)
 
-  temperature      Float @default(0.7) // 0.0 - 2.0
-  maxTokens        Int   @default(4000) // Max tokens per generation
-  topP             Float @default(0.95) // 0.0 - 1.0
-  frequencyPenalty Float @default(0.3) // -2.0 to 2.0
-  presencePenalty  Float @default(0.3) // -2.0 to 2.0
+  // GPT-5 Reasoning & Verbosity (sostituisce temperature/top_p)
+  reasoningEffort String @default("medium") // minimal, low, medium, high
+  verbosity       String @default("medium") // low, medium, high
+  maxTokens       Int    @default(4000) // Max output tokens
+
+  // Legacy parameters (non usati da GPT-5, mantenuti per compatibilità)
+  temperature      Float? @default(0.7)
+  topP             Float? @default(0.95)
+  frequencyPenalty Float? @default(0.3)
+  presencePenalty  Float? @default(0.3)
 
   // Chapter Generation Settings
   targetWordsPerChapter Int @default(2000)
@@ -228,4 +241,38 @@ model ProjectAIConfig {
   updatedAt DateTime @updatedAt
 
   @@index([projectId])
+}
+
+// ============================================================
+// DOCUMENT MANAGEMENT
+// ============================================================
+
+model ProjectDocument {
+  id        String  @id @default(cuid())
+  projectId String
+  project   Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  // File Metadata
+  originalFileName String
+  fileType         String // "pdf", "docx", "txt"
+  fileSizeBytes    Int
+
+  // Extracted Content
+  extractedText String @db.Text
+  wordCount     Int
+
+  // Purpose & Usage Tracking
+  purpose           String  @default("style_reference") // "style_reference" | "content_reference"
+  usedForStyleGuide Boolean @default(false)
+  usedInChapters    Int[]   @default([]) // Track which chapters used this doc
+
+  // Processing Status
+  processingStatus String @default("completed") // "pending" | "processing" | "completed" | "failed"
+  errorMessage     String? @db.Text
+
+  uploadedAt DateTime @default(now())
+
+  @@index([projectId])
+  @@index([purpose])
+  @@index([processingStatus])
 }

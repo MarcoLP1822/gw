@@ -1,9 +1,21 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Settings, Sliders, Save, RotateCcw, AlertCircle, CheckCircle2, Loader2 } from 'lucide-react';
+import { Settings, Sliders, Save, RotateCcw, AlertCircle, CheckCircle2, Loader2, Sparkles, FileText, Trash2, AlertTriangle } from 'lucide-react';
 import { FormFieldTooltip, tooltipContent } from '@/components/ui/Tooltip';
+import DocumentUpload from '@/components/DocumentUpload';
+import StyleGuideEditor from '@/components/StyleGuideEditor';
 import type { ProjectAIConfig } from '@prisma/client';
+
+interface Document {
+    id: string;
+    originalFileName: string;
+    fileType: string;
+    fileSizeBytes: number;
+    wordCount: number;
+    uploadedAt: string;
+    purpose: string;
+}
 
 interface AISettingsTabProps {
     projectId: string;
@@ -13,6 +25,7 @@ interface AISettingsTabProps {
 export default function AISettingsTab({ projectId, onRefresh }: AISettingsTabProps) {
     const [config, setConfig] = useState<Partial<ProjectAIConfig> | null>(null);
     const [originalConfig, setOriginalConfig] = useState<Partial<ProjectAIConfig> | null>(null);
+    const [documents, setDocuments] = useState<Document[]>([]);
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
     const [error, setError] = useState<string | null>(null);
@@ -20,6 +33,7 @@ export default function AISettingsTab({ projectId, onRefresh }: AISettingsTabPro
 
     useEffect(() => {
         loadConfig();
+        loadDocuments();
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [projectId]);
 
@@ -36,6 +50,19 @@ export default function AISettingsTab({ projectId, onRefresh }: AISettingsTabPro
             setError(err instanceof Error ? err.message : 'Failed to load configuration');
         } finally {
             setLoading(false);
+        }
+    };
+
+    const loadDocuments = async () => {
+        try {
+            const response = await fetch(`/api/projects/${projectId}/documents`);
+            if (!response.ok) throw new Error('Failed to load documents');
+            const data = await response.json();
+            if (data.success) {
+                setDocuments(data.documents);
+            }
+        } catch (err) {
+            console.error('Error loading documents:', err);
         }
     };
 
@@ -67,20 +94,53 @@ export default function AISettingsTab({ projectId, onRefresh }: AISettingsTabPro
         }
     };
 
-    const handleReset = async () => {
-        if (!confirm('Reset alle impostazioni di default?')) return;
+    const handleResetSettings = async () => {
+        if (!confirm('Vuoi resettare le impostazioni AI ai valori di default?')) return;
         try {
             setSaving(true);
             setError(null);
             const response = await fetch(`/api/projects/${projectId}/ai-config`, { method: 'DELETE' });
-            if (!response.ok) throw new Error('Failed to reset');
+            if (!response.ok) throw new Error('Failed to reset settings');
             const resetConfig = await response.json();
             setConfig(resetConfig);
             setOriginalConfig(resetConfig);
-            setSuccessMessage('Reset completato');
+            setSuccessMessage('Impostazioni resettate ai valori di default');
             setTimeout(() => setSuccessMessage(null), 3000);
         } catch (err) {
-            setError(err instanceof Error ? err.message : 'Failed to reset');
+            setError(err instanceof Error ? err.message : 'Failed to reset settings');
+        } finally {
+            setSaving(false);
+        }
+    };
+
+    const handleResetProject = async () => {
+        const confirmMessage = 'ATTENZIONE: Questa azione cancellerà TUTTO il contenuto generato (outline, capitoli, consistency reports) e riporterà il progetto allo stato iniziale di bozza.\n\nQuesta azione NON può essere annullata.\n\nSei sicuro di voler continuare?';
+        if (!confirm(confirmMessage)) return;
+
+        // Doppia conferma per sicurezza
+        if (!confirm('Confermi nuovamente? Tutto il lavoro generato verrà perso.')) return;
+
+        try {
+            setSaving(true);
+            setError(null);
+            const response = await fetch(`/api/projects/${projectId}/reset`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' }
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.error || 'Failed to reset project');
+            }
+
+            setSuccessMessage('Progetto resettato con successo! Reindirizzamento...');
+
+            // Ricarica la pagina dopo 2 secondi per mostrare lo stato aggiornato
+            setTimeout(() => {
+                window.location.reload();
+            }, 2000);
+        } catch (err) {
+            setError(err instanceof Error ? err.message : 'Failed to reset project');
         } finally {
             setSaving(false);
         }
@@ -109,11 +169,16 @@ export default function AISettingsTab({ projectId, onRefresh }: AISettingsTabPro
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div className="md:col-span-2">
                         <label className="block text-sm font-medium text-gray-700 mb-2">AI Model</label>
-                        <select value={config.model || 'gpt-5-mini'} onChange={(e) => updateConfig('model', e.target.value)} className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500">
-                            <option value="gpt-5-mini">GPT-5 Mini</option>
-                            <option value="gpt-4o">GPT-4o</option>
-                            <option value="gpt-4-turbo">GPT-4 Turbo</option>
-                        </select>
+                        <div className="flex items-center gap-3 p-3 bg-blue-50 border border-blue-200 rounded-md">
+                            <Sparkles className="w-5 h-5 text-blue-600" />
+                            <div>
+                                <p className="text-sm font-medium text-gray-900">GPT-5 Mini</p>
+                                <p className="text-xs text-gray-600">Modello di ultima generazione ottimizzato per velocità ed economicità</p>
+                            </div>
+                        </div>
+                        <p className="text-xs text-gray-500 mt-2">
+                            Questo modello viene utilizzato per outline, capitoli e consistency check. Altri modelli (GPT-4o, GPT-4-turbo) saranno disponibili in futuro.
+                        </p>
                     </div>
                     <div>
                         <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -162,15 +227,69 @@ export default function AISettingsTab({ projectId, onRefresh }: AISettingsTabPro
                 </div>
             </div>
 
+            {/* Document Upload Section */}
             <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-                <div className="flex items-center justify-between">
-                    <button onClick={handleReset} disabled={saving} className="px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-lg"><RotateCcw className="w-4 h-4 inline mr-2" />Reset</button>
+                <div className="flex items-center gap-3 mb-6">
+                    <FileText className="w-5 h-5 text-green-600" />
+                    <h3 className="text-lg font-semibold text-gray-900">Documenti di Riferimento</h3>
+                </div>
+                <p className="text-sm text-gray-600 mb-4">
+                    Carica documenti di riferimento per generare automaticamente lo style guide
+                </p>
+                <DocumentUpload
+                    projectId={projectId}
+                    documents={documents}
+                    onUploadSuccessAction={loadDocuments}
+                    onDeleteSuccessAction={loadDocuments}
+                />
+            </div>
+
+            {/* Style Guide Section */}
+            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+                <div className="flex items-center gap-3 mb-6">
+                    <Sparkles className="w-5 h-5 text-purple-600" />
+                    <h3 className="text-lg font-semibold text-gray-900">Style Guide</h3>
+                </div>
+                <StyleGuideEditor
+                    projectId={projectId}
+                    hasDocuments={documents.length > 0}
+                    onGenerateSuccess={loadDocuments}
+                />
+            </div>
+
+            {/* Save/Reset Buttons */}
+            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+                <div className="flex items-center justify-between gap-4 flex-wrap">
+                    <div className="flex items-center gap-3">
+                        <button
+                            onClick={handleResetSettings}
+                            disabled={saving}
+                            className="px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed border border-gray-300"
+                        >
+                            <RotateCcw className="w-4 h-4 inline mr-2" />
+                            Resetta Impostazioni
+                        </button>
+                        <button
+                            onClick={handleResetProject}
+                            disabled={saving}
+                            className="px-4 py-2 text-red-700 hover:bg-red-50 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed border border-red-300"
+                        >
+                            <Trash2 className="w-4 h-4 inline mr-2" />
+                            Reset Progetto Completo
+                        </button>
+                    </div>
                     <div className="flex items-center gap-3">
                         {hasChanges && <span className="text-sm text-orange-600 font-medium">⚠️ Non salvato</span>}
-                        <button onClick={handleSave} disabled={saving || !hasChanges} className="flex items-center gap-2 px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50">
+                        <button onClick={handleSave} disabled={saving || !hasChanges} className="flex items-center gap-2 px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 transition-colors">
                             {saving ? <><Loader2 className="w-4 h-4 animate-spin" /><span>Salvataggio...</span></> : <><Save className="w-4 h-4" /><span>Salva</span></>}
                         </button>
                     </div>
+                </div>
+                <div className="mt-4 p-3 bg-yellow-50 border border-yellow-200 rounded-lg flex items-start gap-2">
+                    <AlertTriangle className="w-4 h-4 text-yellow-600 mt-0.5 flex-shrink-0" />
+                    <p className="text-xs text-yellow-800">
+                        <strong>Attenzione:</strong> Il &quot;Reset Progetto Completo&quot; cancellerà permanentemente tutto il contenuto generato (outline, capitoli, consistency reports) e riporterà il progetto allo stato iniziale di bozza. Questa azione non può essere annullata.
+                    </p>
                 </div>
             </div>
         </div>

@@ -7,7 +7,7 @@ import { ProjectAIConfig, ReasoningEffort, Verbosity } from '@/types';
 export const DEFAULT_AI_CONFIG = {
     // AI Model Parameters
     model: 'gpt-5' as const,
-
+    
     // GPT-5 Parameters
     reasoningEffort: 'medium' as ReasoningEffort,
     verbosity: 'medium' as Verbosity,
@@ -62,6 +62,19 @@ export const AI_CONFIG_LIMITS = {
         step: 100,
         default: 4000,
     },
+    },
+    frequencyPenalty: {
+        min: -2.0,
+        max: 2.0,
+        step: 0.1,
+        default: 0.3,
+    },
+    presencePenalty: {
+        min: -2.0,
+        max: 2.0,
+        step: 0.1,
+        default: 0.3,
+    },
     targetWordsPerChapter: {
         min: 1000,
         max: 7000,
@@ -81,22 +94,15 @@ export function createDefaultAIConfig(projectId: string): Omit<ProjectAIConfig, 
 }
 
 /**
- * Valida una configurazione AI GPT-5
+ * Valida una configurazione AI
  */
 export function validateAIConfig(config: Partial<ProjectAIConfig>): { valid: boolean; errors: string[] } {
     const errors: string[] = [];
 
-    // Valida reasoning effort
-    if (config.reasoningEffort !== undefined) {
-        if (!AI_CONFIG_LIMITS.reasoningEffort.options.includes(config.reasoningEffort as ReasoningEffort)) {
-            errors.push(`Reasoning Effort deve essere uno di: ${AI_CONFIG_LIMITS.reasoningEffort.options.join(', ')}`);
-        }
-    }
-
-    // Valida verbosity
-    if (config.verbosity !== undefined) {
-        if (!AI_CONFIG_LIMITS.verbosity.options.includes(config.verbosity as Verbosity)) {
-            errors.push(`Verbosity deve essere uno di: ${AI_CONFIG_LIMITS.verbosity.options.join(', ')}`);
+    // Valida temperature
+    if (config.temperature !== undefined) {
+        if (config.temperature < AI_CONFIG_LIMITS.temperature.min || config.temperature > AI_CONFIG_LIMITS.temperature.max) {
+            errors.push(`Temperature deve essere tra ${AI_CONFIG_LIMITS.temperature.min} e ${AI_CONFIG_LIMITS.temperature.max}`);
         }
     }
 
@@ -104,6 +110,27 @@ export function validateAIConfig(config: Partial<ProjectAIConfig>): { valid: boo
     if (config.maxTokens !== undefined) {
         if (config.maxTokens < AI_CONFIG_LIMITS.maxTokens.min || config.maxTokens > AI_CONFIG_LIMITS.maxTokens.max) {
             errors.push(`Max Tokens deve essere tra ${AI_CONFIG_LIMITS.maxTokens.min} e ${AI_CONFIG_LIMITS.maxTokens.max}`);
+        }
+    }
+
+    // Valida topP
+    if (config.topP !== undefined) {
+        if (config.topP < AI_CONFIG_LIMITS.topP.min || config.topP > AI_CONFIG_LIMITS.topP.max) {
+            errors.push(`Top P deve essere tra ${AI_CONFIG_LIMITS.topP.min} e ${AI_CONFIG_LIMITS.topP.max}`);
+        }
+    }
+
+    // Valida frequencyPenalty
+    if (config.frequencyPenalty !== undefined) {
+        if (config.frequencyPenalty < AI_CONFIG_LIMITS.frequencyPenalty.min || config.frequencyPenalty > AI_CONFIG_LIMITS.frequencyPenalty.max) {
+            errors.push(`Frequency Penalty deve essere tra ${AI_CONFIG_LIMITS.frequencyPenalty.min} e ${AI_CONFIG_LIMITS.frequencyPenalty.max}`);
+        }
+    }
+
+    // Valida presencePenalty
+    if (config.presencePenalty !== undefined) {
+        if (config.presencePenalty < AI_CONFIG_LIMITS.presencePenalty.min || config.presencePenalty > AI_CONFIG_LIMITS.presencePenalty.max) {
+            errors.push(`Presence Penalty deve essere tra ${AI_CONFIG_LIMITS.presencePenalty.min} e ${AI_CONFIG_LIMITS.presencePenalty.max}`);
         }
     }
 

@@ -215,7 +215,7 @@ const instructions: InstructionSection[] = [
             {
                 title: 'Modalità Avanzata (Opzionale)',
                 steps: [
-                    'Modello AI: scegli tra gpt-5-mini-2025-08-07 (veloce), GPT-4o, o GPT-4-turbo',
+                    'Modello AI: attualmente GPT-5-mini-2025-08-07 (altri modelli in futuro)',
                     'Temperature: creatività (0.0 = preciso, 2.0 = creativo)',
                     'Max Tokens: limite massimo per capitolo (default 4000)',
                     'Target Words: parole target per capitolo (default 2000)',
@@ -485,12 +485,13 @@ const instructions: InstructionSection[] = [
                 ],
             },
             {
-                title: 'Scelta del Modello AI',
+                title: 'Modello AI',
                 steps: [
-                    '🚀 GPT-5-mini: veloce ed economico, ottimo per la maggior parte dei casi',
-                    '⚡ GPT-4o: bilanciamento tra qualità e velocità',
-                    '💎 GPT-4-turbo: massima qualità, più lento e costoso',
-                    'Tip: inizia con gpt-5-mini, passa a modelli superiori se serve più qualità',
+                    '🚀 GPT-5-mini (2025-08-07): veloce ed economico',
+                    'Ottimizzato per generazione di contenuti lunghi e coerenti',
+                    'Utilizzato per outline, capitoli e consistency check',
+                    'Costo stimato: ~$0.12-0.18 per libro completo',
+                    '💡 Tip: altri modelli saranno disponibili in futuro per più opzioni',
                 ],
             },
             {
@@ -536,7 +537,7 @@ export default function IstruzioniPage() {
         { icon: Clock, label: 'Tempo Medio', value: '10-15 min', color: 'text-blue-600 bg-blue-100' },
         { icon: DollarSign, label: 'Costo per Libro', value: '~$0.15', color: 'text-green-600 bg-green-100' },
         { icon: FileText, label: 'Capitoli', value: '10-15', color: 'text-purple-600 bg-purple-100' },
-        { icon: Zap, label: 'AI Powered', value: 'GPT-4o', color: 'text-orange-600 bg-orange-100' },
+        { icon: Zap, label: 'AI Powered', value: 'GPT-5 Mini', color: 'text-orange-600 bg-orange-100' },
     ];
 
     // Quick start steps
@@ -629,7 +630,7 @@ export default function IstruzioniPage() {
                                     <div>
                                         <h3 className="font-bold text-gray-900 mb-2">Generazione AI Avanzata</h3>
                                         <p className="text-sm text-gray-700">
-                                            GPT-5-mini per velocità, GPT-4o per qualità superiore.
+                                            GPT-5-mini ottimizzato per velocità, qualità e costi contenuti.
                                             Context window espanso e style guide automatico.
                                         </p>
                                     </div>
@@ -659,7 +660,7 @@ export default function IstruzioniPage() {
                                     <div>
                                         <h3 className="font-bold text-gray-900 mb-2">Qualità Garantita</h3>
                                         <p className="text-sm text-gray-700">
-                                            Consistency check con GPT-4o, score 0-100, report dettagliato.
+                                            Consistency check automatico, score 0-100, report dettagliato.
                                             Verifica coerenza narrativa, stile e contenuti.
                                         </p>
                                     </div>

@@ -575,13 +575,17 @@ function OutlineTab({
         const remaining = Array.from({ length: totalChapters }, (_, i) => i + 1)
             .filter(num => !existingChapters.includes(num));
 
+        // Se tutti i capitoli sono già stati generati, offri di rigenerarli tutti
         if (remaining.length === 0) {
-            toast.info('Tutti i capitoli sono già stati generati');
-            return;
-        }
-
-        if (!confirm(`Vuoi generare tutti i ${remaining.length} capitoli rimanenti? Questa operazione potrebbe richiedere diversi minuti.`)) {
-            return;
+            if (!confirm(`Tutti i ${totalChapters} capitoli sono già stati generati. Vuoi rigenerarli tutti da capo? Questa operazione potrebbe richiedere molto tempo e sovrascriverà i capitoli esistenti.`)) {
+                return;
+            }
+            // Rigenera tutti i capitoli
+            remaining.push(...Array.from({ length: totalChapters }, (_, i) => i + 1));
+        } else {
+            if (!confirm(`Vuoi generare tutti i ${remaining.length} capitoli rimanenti? Questa operazione potrebbe richiedere diversi minuti.`)) {
+                return;
+            }
         }
 
         // Reset stop flag
@@ -627,17 +631,25 @@ function OutlineTab({
                 );
 
                 if (!response.ok) {
-                    throw new Error(`Errore capitolo ${chapterNum}`);
+                    const errorData = await response.json().catch(() => ({ error: 'Unknown error' }));
+                    console.error(`❌ Error generating chapter ${chapterNum}:`, errorData);
+                    toast.error(`Errore Cap. ${chapterNum}: ${errorData.error || 'Errore sconosciuto'}`, { duration: 5000 });
+                    // Continue with next chapters even if one fails
+                } else {
+                    completedCount++;
+                    console.log(`✅ Chapter ${chapterNum} generated successfully. Progress: ${completedCount}/${totalCount}`);
                 }
 
-                completedCount++;
-                toast.loading(`Generazione batch: ${completedCount}/${totalCount} completati`, { id: toastId });
+                // Update toast with current progress (whether success or failure)
+                const attempted = remaining.indexOf(chapterNum) + 1;
+                toast.loading(`Generazione batch: ${completedCount}/${totalCount} completati (${attempted}/${totalCount} tentati)`, { id: toastId });
 
                 // Refresh per aggiornare lo stato del capitolo appena generato
                 await onRefresh();
 
             } catch (error) {
-                console.error(`Error generating chapter ${chapterNum}:`, error);
+                console.error(`❌ Error generating chapter ${chapterNum}:`, error);
+                toast.error(`Errore Cap. ${chapterNum}`, { duration: 3000 });
                 // Continue with next chapters even if one fails
             }
 
@@ -719,17 +731,25 @@ function OutlineTab({
                 );
 
                 if (!response.ok) {
-                    throw new Error(`Errore capitolo ${chapterNum}`);
+                    const errorData = await response.json().catch(() => ({ error: 'Unknown error' }));
+                    console.error(`❌ Error generating chapter ${chapterNum}:`, errorData);
+                    toast.error(`Errore Cap. ${chapterNum}: ${errorData.error || 'Errore sconosciuto'}`, { duration: 5000 });
+                    // Continue with next chapters
+                } else {
+                    completedCount++;
+                    console.log(`✅ Chapter ${chapterNum} generated successfully. Progress: ${completedCount}/${totalCount}`);
                 }
 
-                completedCount++;
-                toast.loading(`Generazione: ${completedCount}/${totalCount} completati`, { id: toastId });
+                // Update toast with current progress (whether success or failure)
+                const attempted = remaining.indexOf(chapterNum) + 1;
+                toast.loading(`Generazione: ${completedCount}/${totalCount} completati (${attempted}/${totalCount} tentati)`, { id: toastId });
 
                 // Refresh per aggiornare lo stato del capitolo appena generato
                 await onRefresh();
 
             } catch (error) {
-                console.error(`Error generating chapter ${chapterNum}:`, error);
+                console.error(`❌ Error generating chapter ${chapterNum}:`, error);
+                toast.error(`Errore Cap. ${chapterNum}`, { duration: 3000 });
                 // Continue with next chapters
             }
 
@@ -882,38 +902,43 @@ function OutlineTab({
             </Card>
 
             {/* Batch Generation Controls */}
-            {totalChapters > completedChapters && (
-                <Card>
-                    <div className="flex items-center justify-between">
-                        <div>
-                            <h3 className="text-lg font-semibold text-gray-900 mb-1">Generazione Multipla</h3>
-                            <p className="text-sm text-gray-600">
-                                Genera più capitoli in sequenza automaticamente
-                            </p>
-                        </div>
-                        <div className="flex gap-3">
-                            {totalChapters - completedChapters > 1 && (
-                                <button
-                                    onClick={() => handleBatchGenerateNext(3)}
-                                    disabled={generatingChapter !== null}
-                                    className="px-4 py-2 bg-blue-600 text-white text-sm rounded-lg hover:bg-blue-700 disabled:bg-blue-300 flex items-center gap-2 transition-colors"
-                                >
-                                    <Sparkles size={16} />
-                                    Genera Prossimi 3
-                                </button>
-                            )}
+            <Card>
+                <div className="flex items-center justify-between">
+                    <div>
+                        <h3 className="text-lg font-semibold text-gray-900 mb-1">Generazione Multipla</h3>
+                        <p className="text-sm text-gray-600">
+                            {totalChapters === completedChapters
+                                ? 'Rigenera tutti i capitoli da capo'
+                                : 'Genera più capitoli in sequenza automaticamente'}
+                        </p>
+                    </div>
+                    <div className="flex gap-3">
+                        {/* Pulsante Genera Prossimi 3 - solo se ci sono capitoli da completare */}
+                        {totalChapters > completedChapters && totalChapters - completedChapters > 1 && (
                             <button
-                                onClick={handleBatchGenerateAll}
+                                onClick={() => handleBatchGenerateNext(3)}
                                 disabled={generatingChapter !== null}
-                                className="px-4 py-2 bg-indigo-600 text-white text-sm rounded-lg hover:bg-indigo-700 disabled:bg-indigo-300 flex items-center gap-2 transition-colors"
+                                className="px-4 py-2 bg-blue-600 text-white text-sm rounded-lg hover:bg-blue-700 disabled:bg-blue-300 flex items-center gap-2 transition-colors"
                             >
                                 <Sparkles size={16} />
-                                Genera Tutti ({totalChapters - completedChapters})
+                                Genera Prossimi 3
                             </button>
-                        </div>
+                        )}
+                        {/* Pulsante Genera Tutti - sempre visibile */}
+                        <button
+                            onClick={handleBatchGenerateAll}
+                            disabled={generatingChapter !== null}
+                            className="px-4 py-2 bg-indigo-600 text-white text-sm rounded-lg hover:bg-indigo-700 disabled:bg-indigo-300 flex items-center gap-2 transition-colors"
+                            title={totalChapters === completedChapters ? 'Rigenera tutti i capitoli da capo' : `Genera i ${totalChapters - completedChapters} capitoli rimanenti`}
+                        >
+                            <Sparkles size={16} />
+                            {totalChapters === completedChapters
+                                ? 'Rigenera Tutti'
+                                : `Genera Tutti (${totalChapters - completedChapters})`}
+                        </button>
                     </div>
-                </Card>
-            )}
+                </div>
+            </Card>
 
             {/* Lista capitoli con pulsanti di generazione */}
             <div className="space-y-4">
@@ -1082,6 +1107,13 @@ function ChaptersTab({
     };
 
     const handleRegenerate = async (chapterNumber: number) => {
+        // Se il capitolo è in modalità editing, chiudi prima l'editor
+        if (editingChapter === chapterNumber) {
+            setEditingChapter(null);
+            setEditContent('');
+            return; // Esci dalla funzione, l'utente deve ricliccare per rigenerare
+        }
+
         if (!confirm(`Rigenerare il Capitolo ${chapterNumber}? Il contenuto attuale verrà sostituito.`)) {
             return;
         }

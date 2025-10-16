@@ -117,7 +117,7 @@ export interface StyleGuide {
 export interface ChapterContext {
   project: ProjectFormData;
   outline: GeneratedOutline;
-  styleGuide: StyleGuide | null;
+  styleGuide: StyleGuide | string | null;  // Support both structured and text-based style guides
   masterContext: MasterContext;
   chapters: {
     previous: string | null;         // Full text ultimo capitolo
@@ -166,7 +166,9 @@ export interface ConsistencyReport {
 // AI CONFIGURATION - Technical Parameters Only
 // ============================================================
 
-export type AIModel = 'gpt-5-mini-2025-08-07' | 'gpt-4o' | 'gpt-4-turbo';
+export type AIModel = 'gpt-5' | 'gpt-5-mini' | 'gpt-5-nano' | 'gpt-4o-mini' | 'gpt-4o' | 'gpt-4-turbo' | 'gpt-3.5-turbo';
+export type ReasoningEffort = 'minimal' | 'low' | 'medium' | 'high';
+export type Verbosity = 'low' | 'medium' | 'high';
 
 export interface ProjectAIConfig {
   id: string;
@@ -174,11 +176,17 @@ export interface ProjectAIConfig {
 
   // Technical AI Parameters
   model: AIModel;
-  temperature: number;
+
+  // GPT-5 Parameters (Reasoning & Verbosity)
+  reasoningEffort: ReasoningEffort;
+  verbosity: Verbosity;
   maxTokens: number;
-  topP: number;
-  frequencyPenalty: number;
-  presencePenalty: number;
+
+  // Legacy parameters (non usati da GPT-5, mantenuti per compatibilità)
+  temperature?: number | null;
+  topP?: number | null;
+  frequencyPenalty?: number | null;
+  presencePenalty?: number | null;
 
   // Chapter Generation Settings
   targetWordsPerChapter: number;

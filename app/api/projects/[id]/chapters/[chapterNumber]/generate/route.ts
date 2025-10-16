@@ -2,6 +2,10 @@ import { NextRequest, NextResponse } from 'next/server';
 import { chapterGenerationService } from '@/lib/ai/services/chapter-generation';
 import { handleApiError, ApiErrors } from '@/lib/errors/api-errors';
 
+// Aumenta il timeout per la generazione dei capitoli (può richiedere diversi minuti)
+export const maxDuration = 300; // 5 minuti
+export const runtime = 'nodejs';
+
 /**
  * POST /api/projects/[id]/chapters/[chapterNumber]/generate
  * Genera un singolo capitolo

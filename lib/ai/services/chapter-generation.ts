@@ -1,5 +1,6 @@
 import { prisma } from '@/lib/db';
 import { openai, DEFAULT_MODEL, logAPICall } from '@/lib/ai/openai-client';
+import { callGPT5JSON, getReasoningEffortForTask, getVerbosityForOutput, ReasoningEffort, Verbosity } from '@/lib/ai/responses-api';
 import {
     generateChapterPrompt,
     generateStyleGuidePrompt,
@@ -20,11 +21,19 @@ import {
 import { AIConfigService } from '@/lib/ai/config/ai-config-service';
 import { PromptBuilder } from '@/lib/ai/prompt-builder';
 import { ApiErrors, parseOpenAIError } from '@/lib/errors/api-errors';
+import { StyleGuideService } from '@/lib/services/style-guide-service';
 
 /**
  * Service per la generazione dei capitoli con AI
  */
 export class ChapterGenerationService {
+    /**
+     * Helper per determinare se un modello è GPT-5
+     */
+    private isGPT5Model(model: string): boolean {
+        return model.includes('gpt-5');
+    }
+
     /**
      * Genera un singolo capitolo
      */
@@ -55,6 +64,7 @@ export class ChapterGenerationService {
                         `⚠️ Critical issues found in chapter ${chapterNumber}, regenerating...`
                     );
                     const fixedResult = await this.regenerateWithFix(
+                        projectId,
                         context,
                         chapterNumber,
                         result,
@@ -151,8 +161,17 @@ export class ChapterGenerationService {
             throw ApiErrors.notFound('Progetto o outline', projectId);
         }
 
-        // Carica style guide (se disponibile)
-        const styleGuide = project.styleGuide as StyleGuide | null;
+        // Carica style guide (Priority: custom text > generated text > old JSON format)
+        const activeStyleGuideText = await StyleGuideService.getActiveStyleGuide(projectId);
+        let styleGuide: StyleGuide | string | null = null;
+
+        if (activeStyleGuideText) {
+            // Nuovo formato: testo libero
+            styleGuide = activeStyleGuideText;
+        } else if (project.styleGuide) {
+            // Vecchio formato: JSON strutturato (backward compatibility)
+            styleGuide = project.styleGuide as unknown as StyleGuide;
+        }
 
         // Carica master context
         const masterContext = (project.masterContext as unknown as MasterContext) || {
@@ -250,21 +269,21 @@ export class ChapterGenerationService {
             PromptBuilder.buildCompleteChapterPrompt(context.project, aiConfig, context);
 
         // Costruisci il prompt completo con il context
-        const fullUserPrompt = `
+        // Per GPT-5 Responses API, combiniamo system e user prompt in un unico input
+        const fullPrompt = `${systemPrompt}
+
+---
+
 ${chapterInstructions}
 
 ${generateChapterPrompt(context)}
 `;
 
-        console.log(`🤖 Generating chapter ${chapterNumber} with AI Config...`);
+        console.log(`🤖 Generating chapter ${chapterNumber} with GPT-5...`);
         console.log('\n' + '='.repeat(80));
-        console.log('📝 SYSTEM PROMPT (Dynamic from AI Config):');
+        console.log('📝 FULL PROMPT FOR GPT-5:');
         console.log('='.repeat(80));
-        console.log(systemPrompt);
-        console.log('\n' + '='.repeat(80));
-        console.log('📝 USER PROMPT:');
-        console.log('='.repeat(80));
-        console.log(fullUserPrompt);
+        console.log(fullPrompt.substring(0, 1000) + '...');
         console.log('='.repeat(80) + '\n');
 
         // 🔧 USA I PARAMETRI AI DALLA CONFIGURAZIONE
@@ -272,44 +291,46 @@ ${generateChapterPrompt(context)}
 
         // 📊 LOG: Quale modello stiamo usando
         console.log(`\n🎯 USING AI MODEL: ${modelToUse}`);
-        console.log(`   Temperature: ${aiConfig.temperature}`);
-        console.log(`   Max Tokens: ${aiConfig.maxTokens}`);
-        console.log(`   Top P: ${aiConfig.topP}\n`);
+        console.log(`   Reasoning Effort: ${aiConfig.reasoningEffort || 'medium'}`);
+        console.log(`   Verbosity: ${aiConfig.verbosity || 'medium'}`);
+        console.log(`   Max Output Tokens: ${aiConfig.maxTokens}\n`);
 
         logAPICall(`Generate Chapter ${chapterNumber}`, modelToUse);
 
         try {
-            const response = await openai.chat.completions.create({
-                model: modelToUse,
-                messages: [
-                    { role: 'system', content: systemPrompt },
-                    { role: 'user', content: fullUserPrompt },
-                ],
-                response_format: { type: 'json_object' },
-                temperature: aiConfig.temperature,
-                max_tokens: aiConfig.maxTokens,
-                top_p: aiConfig.topP,
-                frequency_penalty: aiConfig.frequencyPenalty,
-                presence_penalty: aiConfig.presencePenalty,
-            });
+            // GPT-5 usa la Responses API
+            if (this.isGPT5Model(modelToUse)) {
+                console.log('🎯 Using GPT-5 Responses API');
 
-            // 📊 LOG: Risposta ricevuta con info sul modello
-            console.log(`✅ Response received from model: ${response.model}`);
-            console.log(`   Tokens used: ${response.usage?.total_tokens || 'N/A'}`);
-            logAPICall(`Chapter ${chapterNumber} Generated`, response.model, response.usage?.total_tokens);
+                const response = await callGPT5JSON<{
+                    chapter: string;
+                    metadata: { newCharacters: string[]; newTerms: Record<string, string>; keyNumbers: Record<string, string> };
+                    summary: string;
+                    keyPoints: string[];
+                }>(fullPrompt, {
+                    model: modelToUse,
+                    reasoningEffort: (aiConfig.reasoningEffort as ReasoningEffort) || 'medium',
+                    verbosity: (aiConfig.verbosity as Verbosity) || 'high', // Capitoli richiedono alta verbosità
+                    maxOutputTokens: aiConfig.maxTokens || 16000, // Aumentato per capitoli completi
+                });
 
-            const parsed = JSON.parse(response.choices[0].message.content || '{}');
+                console.log('✅ GPT-5 Response received');
+                console.log('🐛 DEBUG: Response keys:', Object.keys(response));
+                console.log('🐛 DEBUG: Content length:', (response.chapter || '').length);
 
-            return {
-                content: parsed.chapter || '',
-                metadata: parsed.metadata || { newCharacters: [], newTerms: {}, keyNumbers: {} },
-                summary: parsed.summary || '',
-                keyPoints: parsed.keyPoints || [],
-                usage: response.usage,
-                // Salviamo i prompt usati (ora dinamici!)
-                systemPrompt: systemPrompt,
-                userPrompt: fullUserPrompt,
-            };
+                return {
+                    content: response.chapter || '',
+                    metadata: response.metadata || { newCharacters: [], newTerms: {}, keyNumbers: {} },
+                    summary: response.summary || '',
+                    keyPoints: response.keyPoints || [],
+                    usage: undefined, // GPT-5 Responses API ha usage diverso
+                    systemPrompt: systemPrompt,
+                    userPrompt: fullPrompt,
+                };
+            } else {
+                // Fallback per modelli non-GPT-5 (se necessario)
+                throw new Error(`Model ${modelToUse} is not supported. Please use GPT-5 family models.`);
+            }
         } catch (error) {
             // Gestisce errori specifici di OpenAI
             throw parseOpenAIError(error);
@@ -328,23 +349,24 @@ ${generateChapterPrompt(context)}
 
         logAPICall(`Quick Validation Chapter ${chapterNumber}`, DEFAULT_MODEL);
 
-        const response = await openai.chat.completions.create({
+        // Use GPT-5 Responses API with minimal reasoning for quick checks
+        const result = await callGPT5JSON<QuickCheckResult>(prompt, {
             model: DEFAULT_MODEL,
-            messages: [{ role: 'user', content: prompt }],
-            response_format: { type: 'json_object' },
-            temperature: 0.3,
-            max_tokens: 500,
+            reasoningEffort: 'minimal', // Quick validation doesn't need deep reasoning
+            verbosity: 'low', // Concise feedback
+            maxOutputTokens: 500,
         });
 
-        console.log(`✅ Quick validation response from model: ${response.model}`);
+        console.log(`✅ Quick validation completed`);
 
-        return JSON.parse(response.choices[0].message.content || '{}');
+        return result;
     }
 
     /**
      * Rigenera con correzioni
      */
     private async regenerateWithFix(
+        projectId: string,
         context: ChapterContext,
         chapterNumber: number,
         previousAttempt: any,
@@ -366,28 +388,42 @@ ${issues.issues.map((issue) => `
 
 Rigenera il capitolo applicando queste correzioni.`;
 
-        const response = await openai.chat.completions.create({
+        // Combine system prompt with user prompt for GPT-5
+        const combinedPrompt = `${CHAPTER_SYSTEM_PROMPT}
+
+---
+
+${fixPrompt}`;
+
+        // Load AI config for the project
+        const aiConfig = await AIConfigService.getOrCreate(projectId);
+
+        // Use GPT-5 Responses API with medium reasoning for regeneration
+        // IMPORTANTE: maxOutputTokens DEVE essere alto per capitoli completi
+        // Se il JSON viene troncato, aumentare questo valore
+        const maxTokens = aiConfig.maxTokens || 16000;
+
+        console.log(`🔄 Regenerating chapter with maxOutputTokens: ${maxTokens}`);
+
+        const result = await callGPT5JSON<{
+            chapter: string;
+            metadata: any;
+            summary: string;
+            keyPoints: string[];
+        }>(combinedPrompt, {
             model: DEFAULT_MODEL,
-            messages: [
-                { role: 'system', content: CHAPTER_SYSTEM_PROMPT },
-                { role: 'user', content: fixPrompt },
-            ],
-            response_format: { type: 'json_object' },
-            temperature: 0.7,
-            max_tokens: 4000,
+            reasoningEffort: 'medium',
+            verbosity: 'high',
+            maxOutputTokens: maxTokens, // Usa lo stesso limite della generazione iniziale
         });
 
-        const parsed = JSON.parse(response.choices[0].message.content || '{}');
-
         return {
-            content: parsed.chapter || '',
-            metadata: parsed.metadata || previousAttempt.metadata,
-            summary: parsed.summary || '',
-            keyPoints: parsed.keyPoints || [],
+            content: result.chapter || '',
+            metadata: result.metadata || previousAttempt.metadata,
+            summary: result.summary || '',
+            keyPoints: result.keyPoints || [],
         };
-    }
-
-    /**
+    }    /**
      * Estrae il titolo dal contenuto Markdown generato dall'AI
      */
     private extractTitleFromContent(content: string, chapterNumber: number, outline?: any): string {
@@ -502,33 +538,26 @@ Rigenera il capitolo applicando queste correzioni.`;
      * Affina style guide dopo cap 2
      */
     private async refineStyleGuide(projectId: string) {
-        console.log('📝 Refining style guide after chapter 2...');
+        console.log('📝 Checking style guide after chapter 2...');
 
-        const chapters = await prisma.chapter.findMany({
-            where: { projectId, chapterNumber: { lte: 2 } },
-            orderBy: { chapterNumber: 'asc' },
-        });
+        // Check if custom style guide already exists
+        const hasCustomStyleGuide = await StyleGuideService.hasStyleGuide(projectId);
 
-        if (chapters.length < 2) return;
+        if (hasCustomStyleGuide) {
+            console.log('✅ Custom style guide already exists, skipping auto-generation');
+            return;
+        }
 
-        const prompt = generateStyleGuidePrompt(chapters.map((c) => c.content));
+        // Auto-generate style guide from chapters 1 and 2
+        console.log('🤖 Generating style guide from chapters 1-2...');
 
-        const response = await openai.chat.completions.create({
-            model: DEFAULT_MODEL,
-            messages: [{ role: 'user', content: prompt }],
-            response_format: { type: 'json_object' },
-            temperature: 0.3,
-            max_tokens: 1000,
-        });
+        const result = await StyleGuideService.generateFromChapters(projectId);
 
-        const styleGuide = JSON.parse(response.choices[0].message.content || '{}');
-
-        await prisma.project.update({
-            where: { id: projectId },
-            data: { styleGuide: styleGuide as any },
-        });
-
-        console.log('✅ Style guide refined and saved');
+        if (result.success) {
+            console.log('✅ Style guide generated and saved');
+        } else {
+            console.log('⚠️ Style guide generation failed:', result.error);
+        }
     }
 
     /**
@@ -610,12 +639,16 @@ Rigenera il capitolo applicando queste correzioni.`;
             include: {
                 outline: true,
                 chapters: { orderBy: { chapterNumber: 'asc' } },
+                aiConfig: true, // Include AI config
             },
         });
 
         if (!project || !project.outline) {
             throw new Error('Progetto o outline non trovato');
         }
+
+        // Get AI config (or use default)
+        const aiConfig = project.aiConfig || await AIConfigService.getOrCreate(projectId);
 
         const chapters = project.chapters.map((ch) => ({
             number: ch.chapterNumber,
@@ -625,15 +658,21 @@ Rigenera il capitolo applicando queste correzioni.`;
 
         const prompt = generateFinalCheckPrompt(chapters, project.outline.structure);
 
-        const response = await openai.chat.completions.create({
-            model: 'gpt-4o', // Modello migliore per analisi approfondita
-            messages: [{ role: 'user', content: prompt }],
-            response_format: { type: 'json_object' },
-            temperature: 0.3,
-            max_tokens: 2000,
+        // 📊 LOG: Using GPT-5 for consistency check
+        console.log(`\n🎯 CONSISTENCY CHECK WITH GPT-5`);
+        console.log(`   Reasoning Effort: minimal (consistency scoring)`);
+        console.log(`   Verbosity: medium (standard report)\n`);
+
+        // Use GPT-5 Responses API with minimal reasoning
+        const report = await callGPT5JSON<ConsistencyReport>(prompt, {
+            model: aiConfig.model as string,
+            reasoningEffort: 'minimal', // Consistency scoring is straightforward
+            verbosity: 'medium', // Standard report format
+            maxOutputTokens: 2000,
         });
 
-        const report = JSON.parse(response.choices[0].message.content || '{}');
+        console.log(`✅ Consistency check completed`);
+        console.log(`   Overall Score: ${report.overallScore || 'N/A'}\n`);
 
         // Salva report nel DB
         await prisma.consistencyReport.create({

@@ -33,23 +33,23 @@ Una piattaforma completa per la creazione automatizzata di libri di business e c
 - ✅ **Modifica Progetti**: Aggiorna dati dopo la creazione
 
 ### 🤖 Sprint 3: AI Outline Generation
-- ✅ **Generazione Outline con AI**: OpenAI gpt-5-mini-2025-08-07
+- ✅ **Generazione Outline con AI**: OpenAI GPT-5-mini-2025-08-07
 - ✅ **Prompt Engineering**: Template personalizzati per outline
 - ✅ **Rigenerazione Illimitata**: Migliora l'outline infinite volte
 - ✅ **Visualizzazione Professionale**: Card design per capitoli
 - ✅ **Cost Tracking**: Log dei costi e usage tokens
 
-### � Sprint 4: AI Chapter Generation
+### 📝 Sprint 4: AI Chapter Generation
 - ✅ **Generazione Sequenziale**: Capitoli generati uno dopo l'altro per massima coerenza
 - ✅ **Context Window Espanso**: Ogni capitolo conosce tutto ciò che è stato scritto prima
 - ✅ **Style Guide Automatico**: Estratto dai primi 2 capitoli e applicato al resto
 - ✅ **Master Context Tracking**: Traccia personaggi, termini, numeri per coerenza fattuale
 - ✅ **Mini Consistency Check**: Verifica incrementale dopo ogni capitolo
-- ✅ **Consistency Check Finale**: Analisi approfondita di tutto il libro con gpt-4o
+- ✅ **Consistency Check Finale**: Analisi approfondita di tutto il libro
 - ✅ **Edit Manuale**: Modifica inline del contenuto con textarea
 - ✅ **Rigenerazione Capitoli**: Rigenera capitoli singoli illimitatamente
 - ✅ **Report Visuale**: Score 0-100 con issues dettagliati e raccomandazioni
-- ✅ **AI Settings Personalizzabili**: Temperatura, modelli, lunghezza per progetto
+- ✅ **AI Settings Personalizzabili**: Temperatura, parametri avanzati per progetto
 
 ### 📊 Dashboard & Analytics
 - ✅ **Lista Progetti**: Overview con ricerca e filtri
@@ -81,7 +81,7 @@ Una piattaforma completa per la creazione automatizzata di libri di business e c
 - **pgBouncer** - Connection pooling
 
 ### AI
-- **OpenAI API** - gpt-5-mini-2025-08-07
+- **OpenAI API** - GPT-5-mini-2025-08-07
 - **JSON Mode** - Structured output
 - **Custom Prompts** - Tailored for book writing
 
@@ -157,15 +157,19 @@ Vedi `prisma/schema.prisma` per lo schema completo.
 
 ## 🤖 AI Integration
 
-### Modelli Utilizzati
-- **gpt-5-mini-2025-08-07** - Per outline e capitoli (economico e veloce)
-- **gpt-4o** - Per consistency check finale (più accurato)
+### Modello Utilizzato
+- **GPT-5-mini-2025-08-07** - Per tutte le operazioni (outline, capitoli, consistency check)
+  - Veloce ed economico
+  - Ottimizzato per la generazione di contenuti lunghi
+  - Consistente e affidabile
+
+**Nota**: Altri modelli saranno disponibili in futuro per offrire più opzioni di qualità e prezzo.
 
 **Costi Medi per Libro**:
 - Outline generation: ~$0.003
 - Chapter generation (10-15 capitoli): ~$0.10-0.15
-- Consistency check: ~$0.02-0.05
-- **Totale: ~$0.15-0.20 per libro completo**
+- Consistency check: ~$0.015-0.03
+- **Totale: ~$0.12-0.18 per libro completo**
 
 ### Prompt Strategy
 - System prompt per guidare il comportamento

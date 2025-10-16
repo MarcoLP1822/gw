@@ -77,7 +77,7 @@ export default function Sidebar({ collapsed, onToggleAction }: SidebarProps) {
           collapsed && 'justify-center'
         )}>
           <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center">
-            <span className="text-sm font-semibold">JD</span>
+            <span className="text-sm font-semibold">MP</span>
           </div>
           {!collapsed && (
             <div className="flex-1 min-w-0">

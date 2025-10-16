@@ -74,19 +74,44 @@ NON scrivere un capitolo completo, solo un paragrafo di esempio.
         console.log('🧪 Testing AI Config...');
         console.log('Configuration:', testConfig);
 
-        // Genera sample output
-        const response = await openai.chat.completions.create({
+        // 🔧 GPT-4o e modelli successivi usano max_completion_tokens invece di max_tokens
+        const isNewModel = (testConfig.model as string).includes('gpt-4o') ||
+            (testConfig.model as string).includes('gpt-5') ||
+            (testConfig.model as string).includes('o1') ||
+            (testConfig.model as string).includes('o3');
+
+        // Alcuni modelli hanno limitazioni sui parametri
+        const hasLimitations = (testConfig.model as string).includes('gpt-5-mini') ||
+            (testConfig.model as string).includes('o1') ||
+            (testConfig.model as string).includes('o3');
+
+        const requestParams: any = {
             model: testConfig.model as any,
             messages: [
                 { role: 'system', content: systemPrompt },
                 { role: 'user', content: testUserPrompt },
             ],
-            temperature: testConfig.temperature,
-            max_tokens: 500, // Limitiamo per il test
-            top_p: testConfig.topP,
-            frequency_penalty: testConfig.frequencyPenalty,
-            presence_penalty: testConfig.presencePenalty,
-        });
+        };
+
+        // Alcuni modelli non supportano temperature, top_p, etc.
+        if (!hasLimitations) {
+            requestParams.temperature = testConfig.temperature;
+            requestParams.top_p = testConfig.topP;
+            requestParams.frequency_penalty = testConfig.frequencyPenalty;
+            requestParams.presence_penalty = testConfig.presencePenalty;
+        } else {
+            console.log(`⚠️ Model ${testConfig.model} has parameter limitations - using defaults only`);
+        }
+
+        // Usa il parametro corretto in base al modello
+        if (isNewModel) {
+            requestParams.max_completion_tokens = 500;
+        } else {
+            requestParams.max_tokens = 500;
+        }
+
+        // Genera sample output
+        const response = await openai.chat.completions.create(requestParams);
 
         const sampleOutput = response.choices[0].message.content || '';
 

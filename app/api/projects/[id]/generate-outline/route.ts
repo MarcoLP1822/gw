@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
-import { openai, DEFAULT_CONFIG, logAPICall } from '@/lib/ai/openai-client';
+import { DEFAULT_MODEL, logAPICall } from '@/lib/ai/openai-client';
+import { callGPT5JSON } from '@/lib/ai/responses-api';
 import { generateOutlinePrompt, SYSTEM_PROMPT } from '@/lib/ai/prompts/outline-generator';
 import { GeneratedOutline } from '@/types';
 
@@ -49,43 +50,38 @@ export async function POST(
 
         const userPrompt = generateOutlinePrompt(projectData);
 
-        // 3. Chiama OpenAI API
+        // Combina system e user prompt per GPT-5 Responses API
+        const fullPrompt = `${SYSTEM_PROMPT}
+
+---
+
+${userPrompt}`;
+
+        // 3. Chiama GPT-5 Responses API
         const startTime = Date.now();
 
         // 📊 LOG: Quale modello stiamo usando
-        console.log(`\n🎯 GENERATING OUTLINE WITH MODEL: ${DEFAULT_CONFIG.model}`);
-        console.log(`   Temperature: ${DEFAULT_CONFIG.temperature}`);
-        console.log(`   Max Tokens: ${DEFAULT_CONFIG.max_tokens}\n`);
+        console.log(`\n🎯 GENERATING OUTLINE WITH GPT-5`);
+        console.log(`   Model: ${DEFAULT_MODEL}`);
+        console.log(`   Reasoning Effort: medium`);
+        console.log(`   Verbosity: medium\n`);
 
-        logAPICall('Generate Outline', DEFAULT_CONFIG.model);
+        logAPICall('Generate Outline', DEFAULT_MODEL);
 
-        const completion = await openai.chat.completions.create({
-            model: DEFAULT_CONFIG.model,
-            messages: [
-                { role: 'system', content: SYSTEM_PROMPT },
-                { role: 'user', content: userPrompt },
-            ],
-            temperature: DEFAULT_CONFIG.temperature,
-            max_tokens: DEFAULT_CONFIG.max_tokens,
-            response_format: { type: 'json_object' }, // Forza risposta JSON
+        const generatedOutline = await callGPT5JSON<GeneratedOutline>(fullPrompt, {
+            model: DEFAULT_MODEL,
+            reasoningEffort: 'medium',
+            verbosity: 'medium',
+            maxOutputTokens: 4000,
         });
 
         const generationTime = Date.now() - startTime;
 
         // 📊 LOG: Risposta ricevuta
-        console.log(`✅ Outline response received from model: ${completion.model}`);
-        console.log(`   Tokens used: ${completion.usage?.total_tokens || 'N/A'}`);
+        console.log(`✅ Outline generated successfully`);
         console.log(`   Generation time: ${(generationTime / 1000).toFixed(2)}s\n`);
 
-        logAPICall('Outline Generated', completion.model, completion.usage?.total_tokens);
-
-        // 4. Parse della risposta
-        const responseContent = completion.choices[0].message.content;
-        if (!responseContent) {
-            throw new Error('Nessuna risposta da OpenAI');
-        }
-
-        const generatedOutline: GeneratedOutline = JSON.parse(responseContent);
+        logAPICall('Outline Generated', DEFAULT_MODEL);
 
         // 5. Salva o aggiorna l'outline nel database (upsert)
         const outline = await prisma.outline.upsert({
@@ -95,13 +91,13 @@ export async function POST(
                 structure: generatedOutline as any, // Prisma accetta JSON
                 totalChapters: generatedOutline.chapters.length,
                 estimatedWords: generatedOutline.chapters.length * 2000, // stima 2000 parole/capitolo
-                aiModel: DEFAULT_CONFIG.model,
+                aiModel: DEFAULT_MODEL,
             },
             update: {
                 structure: generatedOutline as any,
                 totalChapters: generatedOutline.chapters.length,
                 estimatedWords: generatedOutline.chapters.length * 2000,
-                aiModel: DEFAULT_CONFIG.model,
+                aiModel: DEFAULT_MODEL,
                 generatedAt: new Date(), // Aggiorna la data di generazione
             },
         });
@@ -117,10 +113,10 @@ export async function POST(
             data: {
                 projectId,
                 step: 'outline',
-                aiModel: DEFAULT_CONFIG.model,
-                promptTokens: completion.usage?.prompt_tokens || 0,
-                completionTokens: completion.usage?.completion_tokens || 0,
-                totalTokens: completion.usage?.total_tokens || 0,
+                aiModel: DEFAULT_MODEL,
+                promptTokens: 0, // GPT-5 Responses API ha usage diverso
+                completionTokens: 0,
+                totalTokens: 0,
                 duration: generationTime,
                 success: true,
             },
@@ -135,10 +131,7 @@ export async function POST(
                 generatedAt: outline.generatedAt,
             },
             usage: {
-                model: DEFAULT_CONFIG.model,
-                promptTokens: completion.usage?.prompt_tokens,
-                completionTokens: completion.usage?.completion_tokens,
-                totalTokens: completion.usage?.total_tokens,
+                model: DEFAULT_MODEL,
                 generationTime: `${(generationTime / 1000).toFixed(2)}s`,
             },
         });
@@ -151,7 +144,7 @@ export async function POST(
                 data: {
                     projectId: params.id,
                     step: 'outline',
-                    aiModel: DEFAULT_CONFIG.model,
+                    aiModel: DEFAULT_MODEL,
                     promptTokens: 0,
                     completionTokens: 0,
                     totalTokens: 0,
