@@ -307,5 +307,5 @@ Questo progetto è sotto licenza MIT. Vedi il file `LICENSE` per dettagli.
 ---
 
 <p align="center">
-  Made with ❤️ for writers and entrepreneurs
+  Made with ❤️ for writers and entrepreneurss
 </p>
