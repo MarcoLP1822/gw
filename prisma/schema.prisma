@@ -210,7 +210,7 @@ model ProjectAIConfig {
   project   Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
 
   // AI Model Parameters
-  model String @default("gpt-5")
+  model String @default("gpt-5-mini")
   // Note: GPT-5 family (gpt-5, gpt-5-mini, gpt-5-nano)
 
   // GPT-5 Reasoning & Verbosity (sostituisce temperature/top_p)

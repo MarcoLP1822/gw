@@ -168,17 +168,44 @@ export default function AISettingsTab({ projectId, onRefresh }: AISettingsTabPro
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div className="md:col-span-2">
-                        <label className="block text-sm font-medium text-gray-700 mb-2">AI Model</label>
-                        <div className="flex items-center gap-3 p-3 bg-blue-50 border border-blue-200 rounded-md">
-                            <Sparkles className="w-5 h-5 text-blue-600" />
-                            <div>
-                                <p className="text-sm font-medium text-gray-900">GPT-5 Mini</p>
-                                <p className="text-xs text-gray-600">Modello di ultima generazione ottimizzato per velocità ed economicità</p>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                            AI Model
+                            <FormFieldTooltip content="Seleziona il modello AI da utilizzare per la generazione dei contenuti. GPT-5 è il più potente, GPT-5 mini è più veloce ed economico, GPT-5 nano è il più veloce." />
+                        </label>
+                        <select
+                            value={config.model || 'gpt-5-mini'}
+                            onChange={(e) => updateConfig('model', e.target.value)}
+                            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white text-gray-900"
+                        >
+                            <option value="gpt-5">GPT-5 - Il migliore per coding e task complessi (più costoso)</option>
+                            <option value="gpt-5-mini">GPT-5 mini - Veloce ed economico per task ben definiti (consigliato)</option>
+                            <option value="gpt-5-nano">GPT-5 nano - Il più veloce ed economico</option>
+                        </select>
+                        <div className="mt-3 p-3 bg-blue-50 border border-blue-200 rounded-md">
+                            <div className="flex items-start gap-3">
+                                <Sparkles className="w-5 h-5 text-blue-600 mt-0.5 flex-shrink-0" />
+                                <div className="text-xs text-gray-700">
+                                    {config.model === 'gpt-5' && (
+                                        <>
+                                            <p className="font-semibold mb-1">GPT-5 - Modello Premium</p>
+                                            <p>Il migliore per coding, task agentic e contenuti complessi. Massima qualità ma costo più elevato.</p>
+                                        </>
+                                    )}
+                                    {config.model === 'gpt-5-mini' && (
+                                        <>
+                                            <p className="font-semibold mb-1">GPT-5 mini - Bilanciato (Consigliato)</p>
+                                            <p>Ottimo rapporto qualità/prezzo. Ideale per la generazione di libri con task ben definiti.</p>
+                                        </>
+                                    )}
+                                    {config.model === 'gpt-5-nano' && (
+                                        <>
+                                            <p className="font-semibold mb-1">GPT-5 nano - Economia</p>
+                                            <p>Massima velocità e minimo costo. Adatto per progetti semplici e budget limitati.</p>
+                                        </>
+                                    )}
+                                </div>
                             </div>
                         </div>
-                        <p className="text-xs text-gray-500 mt-2">
-                            Questo modello viene utilizzato per outline, capitoli e consistency check. Altri modelli (GPT-4o, GPT-4-turbo) saranno disponibili in futuro.
-                        </p>
                     </div>
                     <div>
                         <label className="block text-sm font-medium text-gray-700 mb-2">

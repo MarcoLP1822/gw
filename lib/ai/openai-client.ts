@@ -5,8 +5,8 @@ export const openai = new OpenAI({
     apiKey: process.env.OPENAI_API_KEY,
 });
 
-// Modello da usare - GPT-5 con Responses API
-export const DEFAULT_MODEL = 'gpt-5';
+// Modello da usare - GPT-5 mini con Responses API (bilanciato qualità/costo)
+export const DEFAULT_MODEL = 'gpt-5-mini';
 
 // Configurazione default per GPT-5
 // Nota: GPT-5 NON supporta temperature, top_p, frequency_penalty, presence_penalty
