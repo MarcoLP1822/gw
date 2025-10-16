@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Settings, Sliders, Save, RotateCcw, AlertCircle, CheckCircle2, Loader2, Sparkles, FileText, Trash2, AlertTriangle } from 'lucide-react';
+import { Settings, Sliders, Save, RotateCcw, AlertCircle, CheckCircle2, Loader2, Sparkles, FileText, Trash2, AlertTriangle, ChevronDown, ChevronRight } from 'lucide-react';
 import { FormFieldTooltip, tooltipContent } from '@/components/ui/Tooltip';
 import DocumentUpload from '@/components/DocumentUpload';
 import StyleGuideEditor from '@/components/StyleGuideEditor';
@@ -30,6 +30,15 @@ export default function AISettingsTab({ projectId, onRefresh }: AISettingsTabPro
     const [saving, setSaving] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [successMessage, setSuccessMessage] = useState<string | null>(null);
+    const [expandedSections, setExpandedSections] = useState<string[]>([]);
+
+    const toggleSection = (sectionId: string) => {
+        setExpandedSections(prev =>
+            prev.includes(sectionId)
+                ? prev.filter(id => id !== sectionId)
+                : [...prev, sectionId]
+        );
+    };
 
     useEffect(() => {
         loadConfig();
@@ -161,127 +170,173 @@ export default function AISettingsTab({ projectId, onRefresh }: AISettingsTabPro
             {error && <div className="p-4 bg-red-50 border border-red-200 rounded-lg flex items-start gap-3"><AlertCircle className="w-5 h-5 text-red-600" /><p className="text-sm text-red-800">{error}</p></div>}
             {successMessage && <div className="p-4 bg-green-50 border border-green-200 rounded-lg flex items-start gap-3"><CheckCircle2 className="w-5 h-5 text-green-600" /><p className="text-sm text-green-800">{successMessage}</p></div>}
 
-            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-                <div className="flex items-center gap-3 mb-6">
-                    <Sliders className="w-5 h-5 text-blue-600" />
-                    <h3 className="text-lg font-semibold text-gray-900">Parametri Tecnici</h3>
-                </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div className="md:col-span-2">
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
-                            AI Model
-                            <FormFieldTooltip content="Seleziona il modello AI da utilizzare per la generazione dei contenuti. GPT-5 è il più potente, GPT-5 mini è più veloce ed economico, GPT-5 nano è il più veloce." />
-                        </label>
-                        <select
-                            value={config.model || 'gpt-5-mini'}
-                            onChange={(e) => updateConfig('model', e.target.value)}
-                            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white text-gray-900"
-                        >
-                            <option value="gpt-5">GPT-5 - Il migliore per coding e task complessi (più costoso)</option>
-                            <option value="gpt-5-mini">GPT-5 mini - Veloce ed economico per task ben definiti (consigliato)</option>
-                            <option value="gpt-5-nano">GPT-5 nano - Il più veloce ed economico</option>
-                        </select>
-                        <div className="mt-3 p-3 bg-blue-50 border border-blue-200 rounded-md">
-                            <div className="flex items-start gap-3">
-                                <Sparkles className="w-5 h-5 text-blue-600 mt-0.5 flex-shrink-0" />
-                                <div className="text-xs text-gray-700">
-                                    {config.model === 'gpt-5' && (
-                                        <>
-                                            <p className="font-semibold mb-1">GPT-5 - Modello Premium</p>
-                                            <p>Il migliore per coding, task agentic e contenuti complessi. Massima qualità ma costo più elevato.</p>
-                                        </>
-                                    )}
-                                    {config.model === 'gpt-5-mini' && (
-                                        <>
-                                            <p className="font-semibold mb-1">GPT-5 mini - Bilanciato (Consigliato)</p>
-                                            <p>Ottimo rapporto qualità/prezzo. Ideale per la generazione di libri con task ben definiti.</p>
-                                        </>
-                                    )}
-                                    {config.model === 'gpt-5-nano' && (
-                                        <>
-                                            <p className="font-semibold mb-1">GPT-5 nano - Economia</p>
-                                            <p>Massima velocità e minimo costo. Adatto per progetti semplici e budget limitati.</p>
-                                        </>
-                                    )}
+            {/* Parametri Tecnici - Collapsible */}
+            <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+                <button
+                    onClick={() => toggleSection('technical')}
+                    className="w-full p-6 flex items-center justify-between hover:bg-gray-50 transition-colors"
+                >
+                    <div className="flex items-center gap-3">
+                        <Sliders className="w-5 h-5 text-blue-600" />
+                        <h3 className="text-lg font-semibold text-gray-900">Parametri Tecnici</h3>
+                    </div>
+                    {expandedSections.includes('technical') ? (
+                        <ChevronDown className="w-5 h-5 text-gray-400" />
+                    ) : (
+                        <ChevronRight className="w-5 h-5 text-gray-400" />
+                    )}
+                </button>
+
+                {expandedSections.includes('technical') && (
+                    <div className="px-6 pb-6 border-t border-gray-100">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
+                            <div className="md:col-span-2">
+                                <label className="block text-sm font-medium text-gray-700 mb-2">
+                                    AI Model
+                                    <FormFieldTooltip content="Seleziona il modello AI da utilizzare per la generazione dei contenuti. GPT-5 è il più potente, GPT-5 mini è più veloce ed economico, GPT-5 nano è il più veloce." />
+                                </label>
+                                <select
+                                    value={config.model || 'gpt-5-mini'}
+                                    onChange={(e) => updateConfig('model', e.target.value)}
+                                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white text-gray-900"
+                                >
+                                    <option value="gpt-5">GPT-5 - Il migliore per coding e task complessi (più costoso)</option>
+                                    <option value="gpt-5-mini">GPT-5 mini - Veloce ed economico per task ben definiti (consigliato)</option>
+                                    <option value="gpt-5-nano">GPT-5 nano - Il più veloce ed economico</option>
+                                </select>
+                                <div className="mt-3 p-3 bg-blue-50 border border-blue-200 rounded-md">
+                                    <div className="flex items-start gap-3">
+                                        <Sparkles className="w-5 h-5 text-blue-600 mt-0.5 flex-shrink-0" />
+                                        <div className="text-xs text-gray-700">
+                                            {config.model === 'gpt-5' && (
+                                                <>
+                                                    <p className="font-semibold mb-1">GPT-5 - Modello Premium</p>
+                                                    <p>Il migliore per coding, task agentic e contenuti complessi. Massima qualità ma costo più elevato.</p>
+                                                </>
+                                            )}
+                                            {config.model === 'gpt-5-mini' && (
+                                                <>
+                                                    <p className="font-semibold mb-1">GPT-5 mini - Bilanciato (Consigliato)</p>
+                                                    <p>Ottimo rapporto qualità/prezzo. Ideale per la generazione di libri con task ben definiti.</p>
+                                                </>
+                                            )}
+                                            {config.model === 'gpt-5-nano' && (
+                                                <>
+                                                    <p className="font-semibold mb-1">GPT-5 nano - Economia</p>
+                                                    <p>Massima velocità e minimo costo. Adatto per progetti semplici e budget limitati.</p>
+                                                </>
+                                            )}
+                                        </div>
+                                    </div>
                                 </div>
+                            </div>
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-2">
+                                    Temperature
+                                    <FormFieldTooltip content={tooltipContent.temperature} />
+                                    <span className="ml-2 text-gray-500 font-normal">({config.temperature})</span>
+                                </label>
+                                <input type="range" min="0" max="1" step="0.1" value={config.temperature || 0.7} onChange={(e) => updateConfig('temperature', parseFloat(e.target.value))} className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-blue-600" />
+                                <div className="flex justify-between text-xs text-gray-500 mt-1"><span>Preciso</span><span>Creativo</span></div>
+                            </div>
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-2">
+                                    Max Tokens
+                                    <FormFieldTooltip content={tooltipContent.maxTokens} />
+                                </label>
+                                <input type="number" min="1000" max="16000" step="500" value={config.maxTokens || 4000} onChange={(e) => updateConfig('maxTokens', parseInt(e.target.value))} className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500" />
+                            </div>
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-2">Target Words</label>
+                                <input type="number" min="500" max="5000" step="100" value={config.targetWordsPerChapter || 2000} onChange={(e) => updateConfig('targetWordsPerChapter', parseInt(e.target.value))} className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500" />
+                            </div>
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-2">
+                                    Top P
+                                    <FormFieldTooltip content={tooltipContent.topP} />
+                                    <span className="ml-2 text-gray-500 font-normal">({config.topP})</span>
+                                </label>
+                                <input type="range" min="0" max="1" step="0.05" value={config.topP || 0.95} onChange={(e) => updateConfig('topP', parseFloat(e.target.value))} className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-blue-600" />
+                            </div>
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-2">
+                                    Frequency Penalty
+                                    <FormFieldTooltip content={tooltipContent.frequencyPenalty} />
+                                    <span className="ml-2 text-gray-500 font-normal">({config.frequencyPenalty})</span>
+                                </label>
+                                <input type="range" min="0" max="2" step="0.1" value={config.frequencyPenalty || 0.3} onChange={(e) => updateConfig('frequencyPenalty', parseFloat(e.target.value))} className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-blue-600" />
+                            </div>
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-2">
+                                    Presence Penalty
+                                    <FormFieldTooltip content={tooltipContent.presencePenalty} />
+                                    <span className="ml-2 text-gray-500 font-normal">({config.presencePenalty})</span>
+                                </label>
+                                <input type="range" min="0" max="2" step="0.1" value={config.presencePenalty || 0.3} onChange={(e) => updateConfig('presencePenalty', parseFloat(e.target.value))} className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-blue-600" />
                             </div>
                         </div>
                     </div>
-                    <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
-                            Temperature
-                            <FormFieldTooltip content={tooltipContent.temperature} />
-                            <span className="ml-2 text-gray-500 font-normal">({config.temperature})</span>
-                        </label>
-                        <input type="range" min="0" max="1" step="0.1" value={config.temperature || 0.7} onChange={(e) => updateConfig('temperature', parseFloat(e.target.value))} className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-blue-600" />
-                        <div className="flex justify-between text-xs text-gray-500 mt-1"><span>Preciso</span><span>Creativo</span></div>
-                    </div>
-                    <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
-                            Max Tokens
-                            <FormFieldTooltip content={tooltipContent.maxTokens} />
-                        </label>
-                        <input type="number" min="1000" max="16000" step="500" value={config.maxTokens || 4000} onChange={(e) => updateConfig('maxTokens', parseInt(e.target.value))} className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500" />
-                    </div>
-                    <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">Target Words</label>
-                        <input type="number" min="500" max="5000" step="100" value={config.targetWordsPerChapter || 2000} onChange={(e) => updateConfig('targetWordsPerChapter', parseInt(e.target.value))} className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500" />
-                    </div>
-                    <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
-                            Top P
-                            <FormFieldTooltip content={tooltipContent.topP} />
-                            <span className="ml-2 text-gray-500 font-normal">({config.topP})</span>
-                        </label>
-                        <input type="range" min="0" max="1" step="0.05" value={config.topP || 0.95} onChange={(e) => updateConfig('topP', parseFloat(e.target.value))} className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-blue-600" />
-                    </div>
-                    <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
-                            Frequency Penalty
-                            <FormFieldTooltip content={tooltipContent.frequencyPenalty} />
-                            <span className="ml-2 text-gray-500 font-normal">({config.frequencyPenalty})</span>
-                        </label>
-                        <input type="range" min="0" max="2" step="0.1" value={config.frequencyPenalty || 0.3} onChange={(e) => updateConfig('frequencyPenalty', parseFloat(e.target.value))} className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-blue-600" />
-                    </div>
-                    <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
-                            Presence Penalty
-                            <FormFieldTooltip content={tooltipContent.presencePenalty} />
-                            <span className="ml-2 text-gray-500 font-normal">({config.presencePenalty})</span>
-                        </label>
-                        <input type="range" min="0" max="2" step="0.1" value={config.presencePenalty || 0.3} onChange={(e) => updateConfig('presencePenalty', parseFloat(e.target.value))} className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-blue-600" />
-                    </div>
-                </div>
+                )}
             </div>
 
-            {/* Document Upload Section */}
-            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-                <div className="flex items-center gap-3 mb-6">
-                    <FileText className="w-5 h-5 text-green-600" />
-                    <h3 className="text-lg font-semibold text-gray-900">Documenti di Riferimento</h3>
-                </div>
-                <p className="text-sm text-gray-600 mb-4">
-                    Carica documenti di riferimento per generare automaticamente lo style guide
-                </p>
-                <DocumentUpload
-                    projectId={projectId}
-                    documents={documents}
-                    onUploadSuccessAction={loadDocuments}
-                    onDeleteSuccessAction={loadDocuments}
-                />
+            {/* Document Upload Section - Collapsible */}
+            <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+                <button
+                    onClick={() => toggleSection('documents')}
+                    className="w-full p-6 flex items-center justify-between hover:bg-gray-50 transition-colors"
+                >
+                    <div className="flex items-center gap-3">
+                        <FileText className="w-5 h-5 text-green-600" />
+                        <h3 className="text-lg font-semibold text-gray-900">Documenti di Riferimento</h3>
+                    </div>
+                    {expandedSections.includes('documents') ? (
+                        <ChevronDown className="w-5 h-5 text-gray-400" />
+                    ) : (
+                        <ChevronRight className="w-5 h-5 text-gray-400" />
+                    )}
+                </button>
+
+                {expandedSections.includes('documents') && (
+                    <div className="px-6 pb-6 border-t border-gray-100">
+                        <p className="text-sm text-gray-600 mb-4 mt-6">
+                            Carica documenti di riferimento per generare automaticamente lo style guide
+                        </p>
+                        <DocumentUpload
+                            projectId={projectId}
+                            documents={documents}
+                            onUploadSuccessAction={loadDocuments}
+                            onDeleteSuccessAction={loadDocuments}
+                        />
+                    </div>
+                )}
             </div>
 
-            {/* Style Guide Section */}
-            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-                <div className="flex items-center gap-3 mb-6">
-                    <Sparkles className="w-5 h-5 text-purple-600" />
-                    <h3 className="text-lg font-semibold text-gray-900">Style Guide</h3>
-                </div>
-                <StyleGuideEditor
-                    projectId={projectId}
-                    hasDocuments={documents.length > 0}
-                    onGenerateSuccess={loadDocuments}
-                />
+            {/* Style Guide Section - Collapsible */}
+            <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+                <button
+                    onClick={() => toggleSection('styleguide')}
+                    className="w-full p-6 flex items-center justify-between hover:bg-gray-50 transition-colors"
+                >
+                    <div className="flex items-center gap-3">
+                        <Sparkles className="w-5 h-5 text-purple-600" />
+                        <h3 className="text-lg font-semibold text-gray-900">Style Guide</h3>
+                    </div>
+                    {expandedSections.includes('styleguide') ? (
+                        <ChevronDown className="w-5 h-5 text-gray-400" />
+                    ) : (
+                        <ChevronRight className="w-5 h-5 text-gray-400" />
+                    )}
+                </button>
+
+                {expandedSections.includes('styleguide') && (
+                    <div className="px-6 pb-6 border-t border-gray-100 mt-6">
+                        <StyleGuideEditor
+                            projectId={projectId}
+                            hasDocuments={documents.length > 0}
+                            onGenerateSuccess={loadDocuments}
+                        />
+                    </div>
+                )}
             </div>
 
             {/* Save/Reset Buttons */}
