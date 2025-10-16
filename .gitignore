@@ -114,3 +114,10 @@ logs/
 .DS_Store
 .AppleDouble
 .LSOverride
+
+# Deployment documentation (not needed in repo)
+docs/DEPLOYMENT*.md
+docs/DEPLOYMENT_COMPLETE.txt
+docs/QUICK_DEPLOY.md
+docs/POST_DEPLOYMENT.md
+docs/COMMANDS.md

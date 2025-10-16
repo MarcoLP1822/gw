@@ -1,0 +1,39 @@
+# Dependencies
+node_modules
+npm-debug.log
+yarn-error.log
+
+# Environment files
+.env
+.env.local
+.env.*.local
+
+# Development
+.next
+.DS_Store
+*.log
+
+# Testing
+coverage
+.nyc_output
+
+# IDE
+.vscode
+.idea
+*.swp
+*.swo
+*~
+
+# Prisma
+prisma/migrations/*.sql
+
+# Scripts
+scripts/seed-test-data.ts
+scripts/test-*.ts
+scripts/test-*.js
+
+# Documentation
+docs/
+examples/
+TROUBLESHOOTING_GUIDE.md
+PROJECT_SUMMARY.md

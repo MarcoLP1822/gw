@@ -95,6 +95,16 @@ Una piattaforma completa per la creazione automatizzata di libri di business e c
 - **PostgreSQL Database** (Supabase raccomandato)
 - **OpenAI API Key**
 
+### 🚀 Deploy su Vercel (Raccomandato)
+
+**Per istruzioni dettagliate sul deployment, consulta [DEPLOYMENT.md](./DEPLOYMENT.md)**
+
+Quick start:
+1. Push del codice su GitHub
+2. Importa il repository su [Vercel](https://vercel.com/new)
+3. Aggiungi le variabili d'ambiente (vedi `.env.vercel.example`)
+4. Deploy automatico completato!
+
 ### Setup Locale
 
 1. **Clona il repository**

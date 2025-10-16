@@ -7,6 +7,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
+    "postinstall": "prisma generate",
     "db:generate": "prisma generate",
     "db:push": "prisma db push",
     "db:migrate": "prisma migrate dev",
@@ -16,7 +17,8 @@
     "db:reset": "prisma migrate reset",
     "seed:test": "ts-node --compiler-options \"{\\\"module\\\":\\\"commonjs\\\"}\" scripts/seed-test-data.ts",
     "verify:model": "node scripts/verify-ai-model.js",
-    "update:model": "node scripts/update-ai-configs.js"
+    "update:model": "node scripts/update-ai-configs.js",
+    "verify:deployment": "node scripts/verify-deployment-ready.js"
   },
   "dependencies": {
     "@prisma/client": "^6.17.0",
