@@ -254,25 +254,25 @@ export default function AISettingsTab({ projectId, onRefresh }: AISettingsTabPro
                                 <label className="block text-sm font-medium text-gray-700 mb-2">
                                     Top P
                                     <FormFieldTooltip content={tooltipContent.topP} />
-                                    <span className="ml-2 text-gray-500 font-normal">({config.topP})</span>
+                                    <span className="ml-2 text-gray-500 font-normal">({config.topP ?? 0.95})</span>
                                 </label>
-                                <input type="range" min="0" max="1" step="0.05" value={config.topP || 0.95} onChange={(e) => updateConfig('topP', parseFloat(e.target.value))} className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-blue-600" />
+                                <input type="range" min="0" max="1" step="0.05" value={config.topP ?? 0.95} onChange={(e) => updateConfig('topP', parseFloat(e.target.value))} className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-blue-600" />
                             </div>
                             <div>
                                 <label className="block text-sm font-medium text-gray-700 mb-2">
                                     Frequency Penalty
                                     <FormFieldTooltip content={tooltipContent.frequencyPenalty} />
-                                    <span className="ml-2 text-gray-500 font-normal">({config.frequencyPenalty})</span>
+                                    <span className="ml-2 text-gray-500 font-normal">({config.frequencyPenalty ?? 0.3})</span>
                                 </label>
-                                <input type="range" min="0" max="2" step="0.1" value={config.frequencyPenalty || 0.3} onChange={(e) => updateConfig('frequencyPenalty', parseFloat(e.target.value))} className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-blue-600" />
+                                <input type="range" min="0" max="2" step="0.1" value={config.frequencyPenalty ?? 0.3} onChange={(e) => updateConfig('frequencyPenalty', parseFloat(e.target.value))} className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-blue-600" />
                             </div>
                             <div>
                                 <label className="block text-sm font-medium text-gray-700 mb-2">
                                     Presence Penalty
                                     <FormFieldTooltip content={tooltipContent.presencePenalty} />
-                                    <span className="ml-2 text-gray-500 font-normal">({config.presencePenalty})</span>
+                                    <span className="ml-2 text-gray-500 font-normal">({config.presencePenalty ?? 0.3})</span>
                                 </label>
-                                <input type="range" min="0" max="2" step="0.1" value={config.presencePenalty || 0.3} onChange={(e) => updateConfig('presencePenalty', parseFloat(e.target.value))} className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-blue-600" />
+                                <input type="range" min="0" max="2" step="0.1" value={config.presencePenalty ?? 0.3} onChange={(e) => updateConfig('presencePenalty', parseFloat(e.target.value))} className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-blue-600" />
                             </div>
                         </div>
                     </div>
