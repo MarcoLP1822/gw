@@ -10,7 +10,8 @@ import {
   ChevronLeft,
   ChevronRight,
   Menu,
-  X
+  X,
+  History
 } from 'lucide-react';
 import clsx from 'clsx';
 import { useEffect } from 'react';
@@ -28,6 +29,7 @@ const menuItems = [
   { icon: Users, label: 'Clienti', href: '/clients' },
   { icon: BarChart, label: 'Analytics', href: '/analytics' },
   { icon: BookOpen, label: 'Istruzioni', href: '/istruzioni' },
+  { icon: History, label: 'Changelog', href: '/changelog' },
   { icon: Settings, label: 'Impostazioni', href: '/settings' },
 ];
 
