@@ -5,7 +5,7 @@ import { ProjectFormData } from '@/types';
  * basato sui dati del progetto forniti dall'utente
  */
 export function generateOutlinePrompt(project: ProjectFormData): string {
-    return `Sei un esperto editor e consulente per l'autopubblicazione di libri di business e crescita personale.
+  return `Sei un esperto editor e consulente per l'autopubblicazione di libri di business e crescita personale.
 
 Il tuo compito è creare un outline dettagliato per un libro basato sulle seguenti informazioni:
 
@@ -59,7 +59,7 @@ IMPORTANTE: Rispondi SOLO con un oggetto JSON valido nel seguente formato:
       "title": "Titolo Capitolo",
       "description": "Descrizione del capitolo",
       "keyPoints": ["Punto 1", "Punto 2", "Punto 3"],
-      "heroJourneyPhase": "Fase del viaggio dell'eroe"
+      "heroJourneyPhase": "Fase del Viaggio dell'eroe"
     }
   ]
 }
