@@ -10,7 +10,7 @@ import { ProjectTableSkeleton } from '@/components/ui/Skeleton';
 import { toast } from '@/lib/ui/toast';
 import { ProjectFormData } from '@/types';
 
-type SortField = 'bookTitle' | 'authorName' | 'company' | 'industry' | 'status' | 'chapters' | 'createdAt';
+type SortField = 'bookTitle' | 'authorName' | 'company' | 'status' | 'chapters' | 'createdAt' | 'updatedAt';
 type SortDirection = 'asc' | 'desc' | null;
 
 interface ProjectListItem {
@@ -103,10 +103,6 @@ export default function ProjectTableV2() {
                 aValue = a.company.toLowerCase();
                 bValue = b.company.toLowerCase();
                 break;
-            case 'industry':
-                aValue = a.industry.toLowerCase();
-                bValue = b.industry.toLowerCase();
-                break;
             case 'status':
                 aValue = a.status;
                 bValue = b.status;
@@ -118,6 +114,10 @@ export default function ProjectTableV2() {
             case 'createdAt':
                 aValue = new Date(a.createdAt).getTime();
                 bValue = new Date(b.createdAt).getTime();
+                break;
+            case 'updatedAt':
+                aValue = new Date(a.updatedAt).getTime();
+                bValue = new Date(b.updatedAt).getTime();
                 break;
             default:
                 return 0;
@@ -387,15 +387,6 @@ export default function ProjectTableV2() {
                                 </th>
                                 <th
                                     className="px-4 py-3 text-left text-sm font-semibold text-gray-700 dark:text-gray-300 cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-600"
-                                    onClick={() => handleSort('industry')}
-                                >
-                                    <div className="flex items-center">
-                                        Settore
-                                        <SortIcon field="industry" />
-                                    </div>
-                                </th>
-                                <th
-                                    className="px-4 py-3 text-left text-sm font-semibold text-gray-700 dark:text-gray-300 cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-600"
                                     onClick={() => handleSort('status')}
                                 >
                                     <div className="flex items-center">
@@ -421,6 +412,15 @@ export default function ProjectTableV2() {
                                         <SortIcon field="createdAt" />
                                     </div>
                                 </th>
+                                <th
+                                    className="px-4 py-3 text-left text-sm font-semibold text-gray-700 dark:text-gray-300 cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-600"
+                                    onClick={() => handleSort('updatedAt')}
+                                >
+                                    <div className="flex items-center">
+                                        Ultima Modifica
+                                        <SortIcon field="updatedAt" />
+                                    </div>
+                                </th>
                                 <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700 dark:text-gray-300">Azioni</th>
                             </tr>
                         </thead>
@@ -440,7 +440,6 @@ export default function ProjectTableV2() {
                                     </td>
                                     <td className="px-4 py-3 text-sm dark:text-gray-300">{project.authorName}</td>
                                     <td className="px-4 py-3 text-sm dark:text-gray-300">{project.company}</td>
-                                    <td className="px-4 py-3 text-sm dark:text-gray-300">{project.industry}</td>
                                     <td className="px-4 py-3 text-sm">{getStatusBadge(project.status)}</td>
                                     <td className="px-4 py-3 text-sm text-center">
                                         <span className="inline-block px-2 py-1 bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 rounded-full text-xs font-semibold">
@@ -448,6 +447,7 @@ export default function ProjectTableV2() {
                                         </span>
                                     </td>
                                     <td className="px-4 py-3 text-sm dark:text-gray-300">{formatDate(project.createdAt)}</td>
+                                    <td className="px-4 py-3 text-sm dark:text-gray-300">{formatDate(project.updatedAt)}</td>
                                     <td className="px-4 py-3">
                                         <div className="flex items-center gap-2">
                                             <button
@@ -504,10 +504,6 @@ export default function ProjectTableV2() {
                                     <span className="font-medium text-gray-900 dark:text-gray-200 truncate ml-2">{project.company}</span>
                                 </div>
                                 <div className="flex justify-between">
-                                    <span className="text-gray-600 dark:text-gray-400">Settore:</span>
-                                    <span className="font-medium text-gray-900 dark:text-gray-200 truncate ml-2">{project.industry}</span>
-                                </div>
-                                <div className="flex justify-between">
                                     <span className="text-gray-600 dark:text-gray-400">Capitoli:</span>
                                     <span className="inline-block px-2 py-0.5 bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 rounded-full text-xs font-semibold">
                                         {project._count.chapters || 0}
@@ -516,6 +512,10 @@ export default function ProjectTableV2() {
                                 <div className="flex justify-between">
                                     <span className="text-gray-600 dark:text-gray-400">Creato:</span>
                                     <span className="font-medium text-gray-900 dark:text-gray-200">{formatDate(project.createdAt)}</span>
+                                </div>
+                                <div className="flex justify-between">
+                                    <span className="text-gray-600 dark:text-gray-400">Ultima Modifica:</span>
+                                    <span className="font-medium text-gray-900 dark:text-gray-200">{formatDate(project.updatedAt)}</span>
                                 </div>
                             </div>
 
