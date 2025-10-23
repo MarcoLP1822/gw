@@ -8,6 +8,7 @@ import { prisma } from '@/lib/db';
 import { DEFAULT_MODEL } from '@/lib/ai/openai-client';
 import { callGPT5JSON } from '@/lib/ai/responses-api';
 import { DocumentService } from './document-service';
+import { AIConfigService } from '@/lib/ai/config/ai-config-service';
 
 export interface StyleGuideGenerationResult {
     styleGuide: string;
@@ -93,7 +94,10 @@ export class StyleGuideService {
             }
 
             // Generate style guide using AI
-            const styleGuide = await this.generateStyleGuideWithAI(referenceText);
+            const projectAIConfig = await AIConfigService.getOrCreate(projectId);
+            const modelToUse = projectAIConfig.model || 'gpt-5-mini';
+
+            const styleGuide = await this.generateStyleGuideWithAI(referenceText, modelToUse);
 
             // Save as custom style guide
             await prisma.project.update({
@@ -190,7 +194,10 @@ export class StyleGuideService {
                 .join('\n\n');
 
             // Generate style guide using AI
-            const styleGuide = await this.generateStyleGuideWithAI(chaptersText);
+            const projectAIConfig = await AIConfigService.getOrCreate(projectId);
+            const modelToUse = projectAIConfig.model || 'gpt-5-mini'; // Default to mini if not configured
+
+            const styleGuide = await this.generateStyleGuideWithAI(chaptersText, modelToUse);
 
             // Save as generated style guide
             await prisma.project.update({
@@ -239,7 +246,7 @@ export class StyleGuideService {
     /**
      * Generate style guide using GPT-5
      */
-    private static async generateStyleGuideWithAI(referenceText: string): Promise<string> {
+    private static async generateStyleGuideWithAI(referenceText: string, model: string = DEFAULT_MODEL): Promise<string> {
         const prompt = `Analizza il seguente testo e genera uno style guide dettagliato per aiutare un'AI a scrivere nello stesso stile.
 
 Lo style guide deve includere:
@@ -271,7 +278,7 @@ ${prompt}`;
         console.log('🎨 Generating style guide with GPT-5...');
 
         const response = await callGPT5JSON<{ styleGuide: string }>(fullPrompt, {
-            model: DEFAULT_MODEL,
+            model,
             reasoningEffort: 'medium',
             verbosity: 'high', // Style guide richiede dettagli
             maxOutputTokens: 2000,

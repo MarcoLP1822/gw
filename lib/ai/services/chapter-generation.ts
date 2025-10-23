@@ -47,6 +47,10 @@ export class ChapterGenerationService {
             // 2. CARICA context completo
             const context = await this.buildContext(projectId, chapterNumber);
 
+            // 🔧 CARICA LA CONFIGURAZIONE AI per avere il modello corretto
+            const aiConfig = await AIConfigService.getOrCreate(projectId);
+            const modelUsed = aiConfig.model || DEFAULT_MODEL;
+
             // 3. GENERA il capitolo con AI
             const result = await this.generateWithAI(projectId, context, chapterNumber);
 
@@ -55,7 +59,8 @@ export class ChapterGenerationService {
                 const quickCheck = await this.quickValidation(
                     result.content,
                     context.chapters.previous,
-                    chapterNumber
+                    chapterNumber,
+                    modelUsed
                 );
 
                 // Se ci sono issue critici, rigenera
@@ -75,7 +80,7 @@ export class ChapterGenerationService {
             }
 
             // 5. SALVA nel database
-            const chapter = await this.saveChapter(projectId, chapterNumber, result, context);
+            const chapter = await this.saveChapter(projectId, chapterNumber, result, context, modelUsed);
 
             // 6. AGGIORNA master context
             await this.updateMasterContext(projectId, result.metadata);
@@ -90,12 +95,20 @@ export class ChapterGenerationService {
 
             // 9. LOG della generazione
             const duration = Date.now() - startTime;
-            await this.logGeneration(projectId, chapterNumber, result, duration, true);
+            await this.logGeneration(projectId, chapterNumber, result, duration, true, modelUsed);
 
             return chapter;
         } catch (error) {
             const duration = Date.now() - startTime;
-            await this.logGeneration(projectId, chapterNumber, null, duration, false, error);
+            // Recupera il modello anche in caso di errore
+            try {
+                const aiConfig = await AIConfigService.getOrCreate(projectId);
+                const modelUsed = aiConfig.model || DEFAULT_MODEL;
+                await this.logGeneration(projectId, chapterNumber, null, duration, false, modelUsed, error);
+            } catch {
+                // Fallback se non riusciamo a recuperare il modello
+                await this.logGeneration(projectId, chapterNumber, null, duration, false, DEFAULT_MODEL, error);
+            }
             throw error;
         }
     }
@@ -343,15 +356,16 @@ ${generateChapterPrompt(context)}
     private async quickValidation(
         newChapter: string,
         previousChapter: string,
-        chapterNumber: number
+        chapterNumber: number,
+        model: string = DEFAULT_MODEL
     ): Promise<QuickCheckResult> {
         const prompt = generateQuickCheckPrompt(newChapter, previousChapter, chapterNumber);
 
-        logAPICall(`Quick Validation Chapter ${chapterNumber}`, DEFAULT_MODEL);
+        logAPICall(`Quick Validation Chapter ${chapterNumber}`, model);
 
         // Use GPT-5 Responses API with minimal reasoning for quick checks
         const result = await callGPT5JSON<QuickCheckResult>(prompt, {
-            model: DEFAULT_MODEL,
+            model,
             reasoningEffort: 'minimal', // Quick validation doesn't need deep reasoning
             verbosity: 'low', // Concise feedback
             maxOutputTokens: 500,
@@ -449,7 +463,13 @@ ${fixPrompt}`;
     /**
      * Salva capitolo nel database
      */
-    private async saveChapter(projectId: string, chapterNumber: number, result: any, context?: any) {
+    private async saveChapter(
+        projectId: string,
+        chapterNumber: number,
+        result: any,
+        context?: any,
+        aiModel: string = DEFAULT_MODEL
+    ) {
         const wordCount = result.content.split(/\s+/).length;
 
         // Estrai il titolo dal contenuto o usa il fallback
@@ -468,7 +488,7 @@ ${fixPrompt}`;
                 content: result.content,
                 wordCount,
                 status: 'completed',
-                aiModel: DEFAULT_MODEL,
+                aiModel,
                 generatedAt: new Date(),
                 systemPrompt: result.systemPrompt || null,
                 userPrompt: result.userPrompt || null,
@@ -486,7 +506,7 @@ ${fixPrompt}`;
                 content: result.content,
                 wordCount,
                 status: 'completed',
-                aiModel: DEFAULT_MODEL,
+                aiModel,
                 generatedAt: new Date(),
                 systemPrompt: result.systemPrompt || null,
                 userPrompt: result.userPrompt || null,
@@ -611,13 +631,14 @@ ${fixPrompt}`;
         result: any,
         duration: number,
         success: boolean,
+        aiModel: string = DEFAULT_MODEL,
         error?: any
     ) {
         await prisma.generationLog.create({
             data: {
                 projectId,
                 step: `chapter_${chapterNumber}`,
-                aiModel: DEFAULT_MODEL,
+                aiModel,
                 promptTokens: result?.usage?.prompt_tokens || 0,
                 completionTokens: result?.usage?.completion_tokens || 0,
                 totalTokens: result?.usage?.total_tokens || 0,
