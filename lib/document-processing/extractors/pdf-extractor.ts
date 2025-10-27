@@ -1,14 +1,10 @@
 /**
  * PDF File Extractor
  * 
- * Extracts text from PDF files using pdf-parse
+ * Extracts text from PDF files using unpdf (serverless-friendly)
  */
 
-// Import polyfills for Node.js environment
-import '../polyfills';
-
-// @ts-ignore - pdf-parse doesn't have proper ESM exports
-const pdfParse = require('pdf-parse');
+import { extractText } from 'unpdf';
 import { TextExtractor, ExtractionResult, countWords } from '../text-extractor';
 
 export class PdfExtractor implements TextExtractor {
@@ -19,18 +15,23 @@ export class PdfExtractor implements TextExtractor {
 
     async extract(buffer: Buffer, filename: string): Promise<ExtractionResult> {
         try {
-            const data = await pdfParse(buffer);
+            // unpdf works with Buffer or Uint8Array
+            const result = await extractText(buffer);
+
+            // unpdf returns an array of strings (one per page)
+            // Join them with double newlines
+            const rawText = Array.isArray(result.text) 
+                ? result.text.join('\n\n') 
+                : result.text;
 
             // Clean up extracted text
-            const text = this.cleanText(data.text);
+            const text = this.cleanText(rawText);
 
             return {
                 text,
                 wordCount: countWords(text),
                 metadata: {
-                    pageCount: data.numpages,
-                    pdfVersion: data.version,
-                    info: data.info,
+                    totalPages: result.totalPages,
                 },
             };
         } catch (error) {
