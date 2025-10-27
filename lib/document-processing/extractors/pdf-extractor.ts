@@ -15,13 +15,16 @@ export class PdfExtractor implements TextExtractor {
 
     async extract(buffer: Buffer, filename: string): Promise<ExtractionResult> {
         try {
-            // unpdf works with Buffer or Uint8Array
-            const result = await extractText(buffer);
+            // Convert Buffer to Uint8Array (required by unpdf)
+            const uint8Array = new Uint8Array(buffer);
+
+            // Extract text using unpdf
+            const result = await extractText(uint8Array);
 
             // unpdf returns an array of strings (one per page)
             // Join them with double newlines
-            const rawText = Array.isArray(result.text) 
-                ? result.text.join('\n\n') 
+            const rawText = Array.isArray(result.text)
+                ? result.text.join('\n\n')
                 : result.text;
 
             // Clean up extracted text
