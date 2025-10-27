@@ -4,6 +4,9 @@
  * Extracts text from PDF files using pdf-parse
  */
 
+// Import polyfills for Node.js environment
+import '../polyfills';
+
 // @ts-ignore - pdf-parse doesn't have proper ESM exports
 const pdfParse = require('pdf-parse');
 import { TextExtractor, ExtractionResult, countWords } from '../text-extractor';
