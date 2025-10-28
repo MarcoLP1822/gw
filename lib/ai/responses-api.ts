@@ -89,14 +89,30 @@ export async function callGPT5(options: GPT5RequestOptions): Promise<GPT5Respons
         logAPICall('GPT-5 Response Received', response.model, response.usage?.total_tokens);
 
         // Gestisci diverse strutture di risposta
-        let outputText = response.output_text || response.text || response.output || '';
+        let outputText = '';
+
+        // Caso 1: output_text è già una stringa
+        if (typeof response.output_text === 'string') {
+            outputText = response.output_text;
+        }
+        // Caso 2: output_text è un oggetto (es. { text: "..." })
+        else if (response.output_text && typeof response.output_text === 'object') {
+            outputText = response.output_text.text ||
+                response.output_text.content ||
+                JSON.stringify(response.output_text);
+            console.log('⚠️ output_text is object, extracted:', outputText.substring(0, 100));
+        }
+        // Caso 3: Prova altri campi
+        else {
+            outputText = response.text || response.output || '';
+        }
 
         // Se la risposta ha un array di choices (come Chat Completions)
         if (!outputText && response.choices && response.choices[0]) {
             outputText = response.choices[0].message?.content || response.choices[0].text || '';
         }
 
-        // Debug: Log se non troviamo il testo
+        // Debug: Log completo se non troviamo il testo
         if (!outputText) {
             console.log('⚠️ No text found in response. Full structure:', JSON.stringify(response, null, 2));
         }
