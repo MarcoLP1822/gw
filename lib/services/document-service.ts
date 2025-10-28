@@ -26,7 +26,7 @@ export interface UploadDocumentResult {
 }
 
 // Constants
-const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
+const MAX_FILE_SIZE = 50 * 1024 * 1024; // 50MB
 const MAX_DOCUMENTS_PER_PROJECT = 5;
 const MAX_TOTAL_WORDS = 50000; // Max 50k words total across all docs
 

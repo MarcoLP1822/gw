@@ -53,9 +53,9 @@ export default function DocumentUpload({
             return;
         }
 
-        // Validate file size (10MB)
-        if (file.size > 10 * 1024 * 1024) {
-            setError('File troppo grande. Massimo 10MB');
+        // Validate file size (50MB)
+        if (file.size > 50 * 1024 * 1024) {
+            setError('File troppo grande. Massimo 50MB');
             return;
         }
 
@@ -165,7 +165,7 @@ export default function DocumentUpload({
                     )}
                 </button>
                 <p className="text-xs text-gray-500 mt-2">
-                    Formati supportati: PDF, DOCX, TXT • Max 10MB • Max {5 - documents.length} documenti rimanenti
+                    Formati supportati: PDF, DOCX, TXT • Max 50MB • Max {5 - documents.length} documenti rimanenti
                 </p>
             </div>
 
