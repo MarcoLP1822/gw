@@ -88,22 +88,28 @@ export async function callGPT5(options: GPT5RequestOptions): Promise<GPT5Respons
 
         logAPICall('GPT-5 Response Received', response.model, response.usage?.total_tokens);
 
+        // DEBUG: Log completo della risposta SEMPRE
+        console.log('🔍 DEBUG - Full response structure:', JSON.stringify(response, null, 2));
+
         // Gestisci diverse strutture di risposta
         let outputText = '';
 
         // Caso 1: output_text è già una stringa
         if (typeof response.output_text === 'string') {
             outputText = response.output_text;
+            console.log('✅ output_text is string, length:', outputText.length);
         }
         // Caso 2: output_text è un oggetto (es. { text: "..." })
         else if (response.output_text && typeof response.output_text === 'object') {
+            console.log('⚠️ output_text is object:', Object.keys(response.output_text));
             outputText = response.output_text.text ||
                 response.output_text.content ||
                 JSON.stringify(response.output_text);
-            console.log('⚠️ output_text is object, extracted:', outputText.substring(0, 100));
+            console.log('⚠️ Extracted text length:', outputText.length);
         }
         // Caso 3: Prova altri campi
         else {
+            console.log('⚠️ output_text not found or wrong type:', typeof response.output_text);
             outputText = response.text || response.output || '';
         }
 
