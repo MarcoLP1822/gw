@@ -135,17 +135,33 @@ export async function callGPT5JSON<T = any>(
         });
 
         try {
+            // Verifica che output_text sia una stringa valida
+            if (!response.output_text || typeof response.output_text !== 'string') {
+                throw new Error(`Invalid output_text: ${typeof response.output_text}`);
+            }
+            
             return JSON.parse(response.output_text);
         } catch (error) {
             console.error(`❌ Failed to parse JSON response (attempt ${attempt + 1}/${maxRetries + 1})`);
-            console.error('Response length:', response.output_text.length);
-            console.error('First 500 chars:', response.output_text.substring(0, 500));
-            console.error('Last 500 chars:', response.output_text.substring(Math.max(0, response.output_text.length - 500)));
+            
+            // Gestisci il caso in cui output_text sia undefined o non stringa
+            const outputText = response.output_text || '';
+            const isValidString = typeof outputText === 'string';
+            
+            console.error('Response length:', isValidString ? outputText.length : 'N/A (not a string)');
+            
+            if (isValidString && outputText.length > 0) {
+                console.error('First 500 chars:', outputText.substring(0, 500));
+                console.error('Last 500 chars:', outputText.substring(Math.max(0, outputText.length - 500)));
+            } else {
+                console.error('Output text is empty or invalid');
+            }
+            
             console.error('Parse error:', error);
 
-            // Prova a capire se è troncato
-            const lastChar = response.output_text.trim().slice(-1);
-            const isTruncated = lastChar !== '}' && lastChar !== ']';
+            // Prova a capire se è troncato (solo se abbiamo una stringa valida)
+            const lastChar = isValidString && outputText.length > 0 ? outputText.trim().slice(-1) : '';
+            const isTruncated = lastChar !== '}' && lastChar !== ']' && lastChar !== '';
 
             if (isTruncated && attempt < maxRetries) {
                 // Retry con più token
