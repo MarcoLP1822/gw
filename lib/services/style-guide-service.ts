@@ -281,7 +281,7 @@ ${prompt}`;
             model,
             reasoningEffort: 'medium',
             verbosity: 'high', // Style guide richiede dettagli
-            maxOutputTokens: 2000,
+            maxOutputTokens: 8000, // Aumentato: GPT-5 usa molti token per reasoning
         });
 
         console.log('✅ Style guide generated');

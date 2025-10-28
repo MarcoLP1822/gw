@@ -94,12 +94,29 @@ export async function callGPT5(options: GPT5RequestOptions): Promise<GPT5Respons
         // Gestisci diverse strutture di risposta
         let outputText = '';
 
-        // Caso 1: output_text è già una stringa
-        if (typeof response.output_text === 'string') {
+        // Caso 1: output_text è già una stringa non vuota
+        if (typeof response.output_text === 'string' && response.output_text.length > 0) {
             outputText = response.output_text;
             console.log('✅ output_text is string, length:', outputText.length);
         }
-        // Caso 2: output_text è un oggetto (es. { text: "..." })
+        // Caso 2: Cerca nell'array output[] (GPT-5 Responses API)
+        else if (response.output && Array.isArray(response.output)) {
+            console.log('🔍 Checking output array, length:', response.output.length);
+            for (const item of response.output) {
+                if (item.type === 'text' && item.text) {
+                    outputText = item.text;
+                    console.log('✅ Found text in output array, length:', outputText.length);
+                    break;
+                }
+                // Prova anche content
+                if (item.content) {
+                    outputText = typeof item.content === 'string' ? item.content : JSON.stringify(item.content);
+                    console.log('✅ Found content in output array, length:', outputText.length);
+                    break;
+                }
+            }
+        }
+        // Caso 3: output_text è un oggetto (es. { text: "..." })
         else if (response.output_text && typeof response.output_text === 'object') {
             console.log('⚠️ output_text is object:', Object.keys(response.output_text));
             outputText = response.output_text.text ||
@@ -107,7 +124,7 @@ export async function callGPT5(options: GPT5RequestOptions): Promise<GPT5Respons
                 JSON.stringify(response.output_text);
             console.log('⚠️ Extracted text length:', outputText.length);
         }
-        // Caso 3: Prova altri campi
+        // Caso 4: Prova altri campi
         else {
             console.log('⚠️ output_text not found or wrong type:', typeof response.output_text);
             outputText = response.text || response.output || '';
