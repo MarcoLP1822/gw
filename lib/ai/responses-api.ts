@@ -88,7 +88,25 @@ export async function callGPT5(options: GPT5RequestOptions): Promise<GPT5Respons
 
         logAPICall('GPT-5 Response Received', response.model, response.usage?.total_tokens);
 
-        return response as GPT5Response;
+        // Gestisci diverse strutture di risposta
+        let outputText = response.output_text || response.text || response.output || '';
+
+        // Se la risposta ha un array di choices (come Chat Completions)
+        if (!outputText && response.choices && response.choices[0]) {
+            outputText = response.choices[0].message?.content || response.choices[0].text || '';
+        }
+
+        // Debug: Log se non troviamo il testo
+        if (!outputText) {
+            console.log('⚠️ No text found in response. Full structure:', JSON.stringify(response, null, 2));
+        }
+
+        return {
+            id: response.id,
+            output_text: outputText,
+            usage: response.usage,
+            model: response.model,
+        } as GPT5Response;
     } catch (error: any) {
         console.error('❌ GPT-5 Error:', error);
         throw new Error(`GPT-5 API Error: ${error.message}`);
