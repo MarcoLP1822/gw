@@ -225,7 +225,7 @@ model ProjectAIConfig {
   presencePenalty  Float? @default(0.3)
 
   // Chapter Generation Settings
-  targetWordsPerChapter Int @default(2000)
+  targetWordsPerChapter Int @default(5000) // Target parole per capitolo (default alto per libri corposi)
 
   // Custom Prompts (Optional overrides)
   useCustomPrompts          Boolean @default(false)

@@ -20,7 +20,7 @@ export const DEFAULT_AI_CONFIG = {
     presencePenalty: null,
 
     // Chapter Generation Settings
-    targetWordsPerChapter: 2000,
+    targetWordsPerChapter: 5000, // Default più alto per libri business corposi
 
     // Custom Prompts
     useCustomPrompts: false,
@@ -64,9 +64,9 @@ export const AI_CONFIG_LIMITS = {
     },
     targetWordsPerChapter: {
         min: 1000,
-        max: 7000,
+        max: 10000,
         step: 100,
-        default: 2000,
+        default: 5000,
     },
 };
 

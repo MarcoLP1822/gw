@@ -284,7 +284,7 @@ export default function AISettingsTab({ projectId, onRefresh }: AISettingsTabPro
                             </div>
                             <div>
                                 <label className="block text-sm font-medium text-gray-700 mb-2">Target Words</label>
-                                <input type="number" min="500" max="5000" step="100" value={config.targetWordsPerChapter || 2000} onChange={(e) => updateConfig('targetWordsPerChapter', parseInt(e.target.value))} className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500" />
+                                <input type="number" min="1000" max="10000" step="100" value={config.targetWordsPerChapter || 5000} onChange={(e) => updateConfig('targetWordsPerChapter', parseInt(e.target.value))} className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500" />
                             </div>
                             <div>
                                 <label className="block text-sm font-medium text-gray-700 mb-2">
