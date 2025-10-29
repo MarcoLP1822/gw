@@ -270,9 +270,9 @@ export default function AISettingsTab({ projectId, onRefresh }: AISettingsTabPro
                                 <label className="block text-sm font-medium text-gray-700 mb-2">
                                     Temperature
                                     <FormFieldTooltip content={tooltipContent.temperature} />
-                                    <span className="ml-2 text-gray-500 font-normal">({config.temperature})</span>
+                                    <span className="ml-2 text-gray-500 font-normal">({config.temperature ?? 0.7})</span>
                                 </label>
-                                <input type="range" min="0" max="1" step="0.1" value={config.temperature || 0.7} onChange={(e) => updateConfig('temperature', parseFloat(e.target.value))} className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-blue-600" />
+                                <input type="range" min="0" max="1" step="0.1" value={config.temperature ?? 0.7} onChange={(e) => updateConfig('temperature', parseFloat(e.target.value))} className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-blue-600" />
                                 <div className="flex justify-between text-xs text-gray-500 mt-1"><span>Preciso</span><span>Creativo</span></div>
                             </div>
                             <div>
