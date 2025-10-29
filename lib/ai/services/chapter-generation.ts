@@ -324,7 +324,7 @@ ${generateChapterPrompt(context)}
                     model: modelToUse,
                     reasoningEffort: (aiConfig.reasoningEffort as ReasoningEffort) || 'medium',
                     verbosity: (aiConfig.verbosity as Verbosity) || 'high', // Capitoli richiedono alta verbosità
-                    maxOutputTokens: aiConfig.maxTokens || 16000, // Aumentato per capitoli completi
+                    maxOutputTokens: aiConfig.maxTokens || 20000, // Aumentato per capitoli completi
                 });
 
                 console.log('✅ GPT-5 Response received');
@@ -415,7 +415,7 @@ ${fixPrompt}`;
         // Use GPT-5 Responses API with medium reasoning for regeneration
         // IMPORTANTE: maxOutputTokens DEVE essere alto per capitoli completi
         // Se il JSON viene troncato, aumentare questo valore
-        const maxTokens = aiConfig.maxTokens || 16000;
+        const maxTokens = aiConfig.maxTokens || 20000;
 
         console.log(`🔄 Regenerating chapter with maxOutputTokens: ${maxTokens}`);
 

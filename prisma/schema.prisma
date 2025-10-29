@@ -216,7 +216,7 @@ model ProjectAIConfig {
   // GPT-5 Reasoning & Verbosity (sostituisce temperature/top_p)
   reasoningEffort String @default("medium") // minimal, low, medium, high
   verbosity       String @default("medium") // low, medium, high
-  maxTokens       Int    @default(4000) // Max output tokens
+  maxTokens       Int    @default(20000) // Max output tokens (aumentato per capitoli completi)
 
   // Legacy parameters (non usati da GPT-5, mantenuti per compatibilità)
   temperature      Float? @default(0.7)

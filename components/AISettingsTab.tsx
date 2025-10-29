@@ -280,7 +280,7 @@ export default function AISettingsTab({ projectId, onRefresh }: AISettingsTabPro
                                     Max Tokens
                                     <FormFieldTooltip content={tooltipContent.maxTokens} />
                                 </label>
-                                <input type="number" min="1000" max="16000" step="500" value={config.maxTokens || 4000} onChange={(e) => updateConfig('maxTokens', parseInt(e.target.value))} className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500" />
+                                <input type="number" min="1000" max="64000" step="1000" value={config.maxTokens || 20000} onChange={(e) => updateConfig('maxTokens', parseInt(e.target.value))} className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500" />
                             </div>
                             <div>
                                 <label className="block text-sm font-medium text-gray-700 mb-2">Target Words</label>

@@ -43,7 +43,7 @@ export async function callGPT5(options: GPT5RequestOptions): Promise<GPT5Respons
         input,
         reasoningEffort = 'medium',
         verbosity = 'medium',
-        maxOutputTokens = 16000, // Aumentato per contenuti lunghi come capitoli
+        maxOutputTokens = 20000, // Aumentato per contenuti lunghi come capitoli
         responseFormat,
         previousResponseId,
     } = options;
@@ -159,8 +159,8 @@ export async function callGPT5JSON<T = any>(
     input: string,
     options?: Partial<GPT5RequestOptions>
 ): Promise<T> {
-    const maxRetries = 2;
-    let currentMaxTokens = options?.maxOutputTokens || 16000;
+    const maxRetries = 3; // Aumentato a 3 retry
+    let currentMaxTokens = options?.maxOutputTokens || 20000; // Aumentato default a 20k
 
     for (let attempt = 0; attempt <= maxRetries; attempt++) {
         const response = await callGPT5({
@@ -203,16 +203,16 @@ export async function callGPT5JSON<T = any>(
             const isTruncated = lastChar !== '}' && lastChar !== ']' && lastChar !== '';
 
             if (isTruncated && attempt < maxRetries) {
-                // Retry con più token
+                // Retry con più token - incremento più aggressivo
                 const previousTokens = currentMaxTokens;
-                currentMaxTokens = Math.min(currentMaxTokens * 1.5, 32000); // Max 32k per GPT-5
+                currentMaxTokens = Math.min(currentMaxTokens * 2, 64000); // Max 64k per GPT-5
                 console.log(`🔄 JSON truncated, retrying with increased tokens: ${previousTokens} → ${currentMaxTokens}`);
                 continue; // Riprova con più token
             }
 
             // Ultimo tentativo fallito o errore non di troncamento
             if (isTruncated) {
-                const suggestedTokens = Math.min(currentMaxTokens * 2, 32000);
+                const suggestedTokens = Math.min(currentMaxTokens * 2, 64000);
                 throw new Error(
                     `JSON response appears truncated (ends with '${lastChar}'). ` +
                     `Current maxOutputTokens: ${currentMaxTokens}. ` +

@@ -11,7 +11,7 @@ export const DEFAULT_AI_CONFIG = {
     // GPT-5 Parameters
     reasoningEffort: 'medium' as ReasoningEffort,
     verbosity: 'medium' as Verbosity,
-    maxTokens: 4000,
+    maxTokens: 20000, // Aumentato per capitoli completi (evita troncamenti)
 
     // Legacy parameters (per compatibilità)
     temperature: null,
