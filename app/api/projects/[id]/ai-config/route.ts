@@ -36,10 +36,10 @@ export async function POST(
         const body = await request.json();
 
         // Log per debug
-        console.log('📝 Updating AI config:', { 
-            projectId: params.id, 
+        console.log('📝 Updating AI config:', {
+            projectId: params.id,
             targetWordsPerChapter: body.targetWordsPerChapter,
-            maxTokens: body.maxTokens 
+            maxTokens: body.maxTokens
         });
 
         // Valida i dati

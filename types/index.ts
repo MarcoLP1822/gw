@@ -125,6 +125,9 @@ export interface ChapterContext {
     first: string | null;            // Key points primo capitolo
   };
   currentChapterInfo: OutlineChapter;
+  aiConfig: {
+    targetWordsPerChapter: number;
+  };
 }
 
 // ============================================================

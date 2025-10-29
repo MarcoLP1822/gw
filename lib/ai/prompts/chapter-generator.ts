@@ -213,7 +213,7 @@ ${currentChapterInfo.keyPoints.map((p, i) => `${i + 1}. ${p}`).join('\n')}
 
 **Fase Hero's Journey:** ${currentChapterInfo.heroJourneyPhase}
 
-**Lunghezza target:** 2,000-3,000 parole
+**Lunghezza target:** ~${context.aiConfig.targetWordsPerChapter.toLocaleString('it-IT')} parole
 
 ---
 
@@ -309,17 +309,17 @@ e una sensazione che finalmente stavo guardando nella direzione giusta.
 
 Il capitolo deve **fluire come una storia**, con questi momenti intrecciati naturalmente:
 
-1. **Apertura narrativa forte** (200-400 parole)
+1. **Apertura narrativa forte** (~${Math.round(context.aiConfig.targetWordsPerChapter * 0.1)}-${Math.round(context.aiConfig.targetWordsPerChapter * 0.15)} parole)
    - Scena concreta, dialogo, momento specifico
    - Nessuna introduzione generica o teorica
 
-2. **Corpo principale: narrazione con insight incorporati** (1500-2000 parole)
+2. **Corpo principale: narrazione con insight incorporati** (~${Math.round(context.aiConfig.targetWordsPerChapter * 0.7)} parole)
    - Racconti estesi di situazioni vissute
    - Insegnamenti emergono dalle storie, non le interrompono
    - Eventuale framework presentato come scoperta personale
    - UN SOLO elenco puntato, se strettamente necessario
 
-3. **Chiusura riflessiva** (300-400 parole)
+3. **Chiusura riflessiva** (~${Math.round(context.aiConfig.targetWordsPerChapter * 0.15)} parole)
    - Ritorno alla scena iniziale O apertura verso il futuro
    - Domanda o riflessione per il lettore
    - Transizione naturale al capitolo successivo

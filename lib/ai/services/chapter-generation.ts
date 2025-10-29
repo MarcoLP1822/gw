@@ -174,6 +174,9 @@ export class ChapterGenerationService {
             throw ApiErrors.notFound('Progetto o outline', projectId);
         }
 
+        // Carica AI config per ottenere targetWordsPerChapter
+        const aiConfig = await AIConfigService.getOrCreate(projectId);
+
         // Carica style guide (Priority: custom text > generated text > old JSON format)
         const activeStyleGuideText = await StyleGuideService.getActiveStyleGuide(projectId);
         let styleGuide: StyleGuide | string | null = null;
@@ -257,6 +260,9 @@ export class ChapterGenerationService {
                 estimatedPages: project.estimatedPages || undefined,
                 additionalNotes: project.additionalNotes || undefined,
                 targetAudience: project.targetReaders, // alias
+            },
+            aiConfig: {
+                targetWordsPerChapter: aiConfig.targetWordsPerChapter,
             },
             outline: outlineStructure,
             styleGuide,
