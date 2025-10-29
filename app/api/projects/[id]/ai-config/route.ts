@@ -35,9 +35,17 @@ export async function POST(
     try {
         const body = await request.json();
 
+        // Log per debug
+        console.log('📝 Updating AI config:', { 
+            projectId: params.id, 
+            targetWordsPerChapter: body.targetWordsPerChapter,
+            maxTokens: body.maxTokens 
+        });
+
         // Valida i dati
         const validation = validateAIConfig(body);
         if (!validation.valid) {
+            console.error('❌ Validation failed:', validation.errors);
             return NextResponse.json(
                 {
                     error: 'Invalid configuration',
