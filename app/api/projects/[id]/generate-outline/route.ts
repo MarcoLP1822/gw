@@ -72,7 +72,7 @@ ${userPrompt}`;
             model: DEFAULT_MODEL,
             reasoningEffort: 'medium',
             verbosity: 'medium',
-            maxOutputTokens: 4000,
+            maxOutputTokens: 8000, // Aumentato per outline più dettagliati
         });
 
         const generationTime = Date.now() - startTime;

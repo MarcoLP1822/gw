@@ -57,10 +57,10 @@ export const AI_CONFIG_LIMITS = {
         },
     },
     maxTokens: {
-        min: 500,
-        max: 16000,
-        step: 100,
-        default: 4000,
+        min: 1000,
+        max: 128000,
+        step: 1000,
+        default: 20000,
     },
     targetWordsPerChapter: {
         min: 1000,

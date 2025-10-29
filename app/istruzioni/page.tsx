@@ -217,7 +217,7 @@ const instructions: InstructionSection[] = [
                 steps: [
                     'Modello AI: attualmente GPT-5-mini-2025-08-07 (altri modelli in futuro)',
                     'Temperature: creatività (0.0 = preciso, 2.0 = creativo)',
-                    'Max Tokens: limite massimo per capitolo (default 4000)',
+                    'Max Tokens: limite massimo per capitolo (default 20000, max 128000)',
                     'Target Words: parole target per capitolo (default 2000)',
                     'Top P, Frequency Penalty, Presence Penalty: controlli avanzati',
                     'Custom Prompts: sostituisci le istruzioni predefinite (per utenti esperti)',

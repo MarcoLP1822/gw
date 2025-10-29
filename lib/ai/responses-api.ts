@@ -205,14 +205,14 @@ export async function callGPT5JSON<T = any>(
             if (isTruncated && attempt < maxRetries) {
                 // Retry con più token - incremento più aggressivo
                 const previousTokens = currentMaxTokens;
-                currentMaxTokens = Math.min(currentMaxTokens * 2, 64000); // Max 64k per GPT-5
+                currentMaxTokens = Math.min(currentMaxTokens * 2, 128000); // Max 128k per GPT-5
                 console.log(`🔄 JSON truncated, retrying with increased tokens: ${previousTokens} → ${currentMaxTokens}`);
                 continue; // Riprova con più token
             }
 
             // Ultimo tentativo fallito o errore non di troncamento
             if (isTruncated) {
-                const suggestedTokens = Math.min(currentMaxTokens * 2, 64000);
+                const suggestedTokens = Math.min(currentMaxTokens * 2, 128000);
                 throw new Error(
                     `JSON response appears truncated (ends with '${lastChar}'). ` +
                     `Current maxOutputTokens: ${currentMaxTokens}. ` +

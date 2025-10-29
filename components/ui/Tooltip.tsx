@@ -133,7 +133,7 @@ export const tooltipContent = {
         <div className="space-y-1">
             <p className="font-semibold">Max Tokens</p>
             <p>Lunghezza massima della risposta.</p>
-            <p className="text-xs mt-1">~4 caratteri = 1 token</p>
+            <p className="text-xs mt-1">~4 caratteri = 1 token (default: 20000, max: 128000)</p>
         </div>
     ),
 

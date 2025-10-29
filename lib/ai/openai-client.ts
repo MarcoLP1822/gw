@@ -19,7 +19,7 @@ export const DEFAULT_CONFIG = {
     text: {
         verbosity: 'medium' as const, // low, medium, high
     },
-    max_output_tokens: 16000, // Aumentato per contenuti lunghi come capitoli
+    max_output_tokens: 20000, // Aumentato per contenuti lunghi come capitoli
 };
 
 /**
