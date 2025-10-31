@@ -143,6 +143,11 @@ model Chapter {
   summary   String?  @db.Text // Summary generato (500 parole)
   keyPoints String[] @default([]) // 3-5 punti chiave del capitolo
 
+  // Versioning (single level undo)
+  previousContent       String?   @db.Text // Versione precedente del content (per undo)
+  lastModifiedBy        String?   @default("system") // "user" | "ai" | "system"
+  previousContentSavedAt DateTime? // Quando è stato salvato previousContent
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 

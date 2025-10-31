@@ -40,6 +40,8 @@ export async function GET(
 /**
  * PUT /api/projects/[id]/chapters/[chapterNumber]
  * Aggiorna il contenuto di un capitolo (edit manuale)
+ * 
+ * Salva automaticamente la versione precedente in previousContent
  */
 export async function PUT(
     request: NextRequest,
@@ -51,7 +53,7 @@ export async function PUT(
         const chapterNumber = parseInt(params.chapterNumber, 10);
         const body = await request.json();
 
-        const { content } = body;
+        const { content, modifiedBy = 'user' } = body;
 
         if (!content) {
             return NextResponse.json(
@@ -60,9 +62,27 @@ export async function PUT(
             );
         }
 
+        // Recupera il capitolo corrente per salvare il contenuto precedente
+        const currentChapter = await prisma.chapter.findUnique({
+            where: {
+                projectId_chapterNumber: { projectId, chapterNumber },
+            },
+            select: {
+                content: true,
+            },
+        });
+
+        if (!currentChapter) {
+            return NextResponse.json(
+                { error: 'Capitolo non trovato' },
+                { status: 404 }
+            );
+        }
+
         // Calcola nuovo word count
         const wordCount = content.split(/\s+/).length;
 
+        // Aggiorna capitolo salvando la versione precedente
         const chapter = await prisma.chapter.update({
             where: {
                 projectId_chapterNumber: { projectId, chapterNumber },
@@ -70,6 +90,9 @@ export async function PUT(
             data: {
                 content,
                 wordCount,
+                previousContent: currentChapter.content, // Salva backup
+                lastModifiedBy: modifiedBy,
+                previousContentSavedAt: new Date(),
                 updatedAt: new Date(),
             },
         });
@@ -78,6 +101,7 @@ export async function PUT(
             success: true,
             chapter,
             message: 'Capitolo aggiornato con successo',
+            hasUndo: true, // Indica che l'undo è disponibile
         });
     } catch (error: any) {
         console.error('Error updating chapter:', error);

@@ -95,6 +95,14 @@ export interface GeneratedChapter {
   keyPoints?: string[];         // 3-5 punti chiave
 }
 
+// Chapter Versioning (from Prisma)
+// Note: Chapter model uses these fields for single-level undo:
+// - previousContent: string | null       // Backup of content before last edit
+// - lastModifiedBy: 'user' | 'ai' | 'system'  // Who made the last modification
+// - previousContentSavedAt: Date | null  // When previousContent was saved
+
+export type ChapterModifiedBy = 'user' | 'ai' | 'system';
+
 export interface MasterContext {
   characters: string[];         // Tutti i personaggi introdotti finora
   terms: Record<string, string>;       // Glossario termini

@@ -23,7 +23,8 @@ import {
     Download,
     Sparkles,
     Clock,
-    Settings
+    Settings,
+    Undo2
 } from 'lucide-react';
 
 type TabType = 'overview' | 'outline' | 'chapters' | 'ai-settings' | 'export';
@@ -253,20 +254,25 @@ export default function ProgettoDetailPage({ params }: { params: { id: string } 
                             <span>{project._count.chapters} cap.</span>
 
                             {/* Indicatore generazione in corso con pulsante Stop */}
-                            {generatingChapter !== null && (
+                            {(generatingChapter !== null || regeneratingChapter !== null) && (
                                 <>
                                     <span>•</span>
                                     <span className="flex items-center gap-2 text-blue-600 font-medium">
                                         <Loader2 size={14} className="animate-spin" />
-                                        Generando Cap. {generatingChapter}
-                                        <button
-                                            onClick={() => setStopBatchGeneration(true)}
-                                            disabled={stopBatchGeneration}
-                                            className="ml-1 px-2 py-0.5 text-xs bg-red-600 text-white rounded hover:bg-red-700 disabled:bg-red-300 transition-colors"
-                                            title="Interrompi generazione batch"
-                                        >
-                                            {stopBatchGeneration ? 'Fermando...' : 'Stop'}
-                                        </button>
+                                        {regeneratingChapter !== null
+                                            ? `Rigenerando Cap. ${regeneratingChapter}`
+                                            : `Generando Cap. ${generatingChapter}`
+                                        }
+                                        {generatingChapter !== null && (
+                                            <button
+                                                onClick={() => setStopBatchGeneration(true)}
+                                                disabled={stopBatchGeneration}
+                                                className="ml-1 px-2 py-0.5 text-xs bg-red-600 text-white rounded hover:bg-red-700 disabled:bg-red-300 transition-colors"
+                                                title="Interrompi generazione batch"
+                                            >
+                                                {stopBatchGeneration ? 'Fermando...' : 'Stop'}
+                                            </button>
+                                        )}
                                     </span>
                                 </>
                             )}
@@ -1062,6 +1068,7 @@ function ChaptersTab({
     const [editingChapter, setEditingChapter] = useState<number | null>(null);
     const [editContent, setEditContent] = useState('');
     const [saving, setSaving] = useState(false);
+    const [undoingChapter, setUndoingChapter] = useState<number | null>(null);
     // Removed local regenerating state - now using global one
     const [runningCheck, setRunningCheck] = useState(false);
     const [consistencyReport, setConsistencyReport] = useState<any>(null);
@@ -1157,6 +1164,32 @@ function ChaptersTab({
             toast.error('Errore durante la rigenerazione del capitolo');
         } finally {
             setRegeneratingChapter(null);
+        }
+    };
+
+    const handleUndo = async (chapterNumber: number) => {
+        if (!confirm(`Ripristinare la versione precedente del Capitolo ${chapterNumber}?`)) {
+            return;
+        }
+
+        setUndoingChapter(chapterNumber);
+        try {
+            const response = await fetch(`/api/projects/${project.id}/chapters/${chapterNumber}/undo`, {
+                method: 'POST',
+            });
+
+            if (!response.ok) {
+                const data = await response.json();
+                throw new Error(data.error || 'Errore durante l\'undo');
+            }
+
+            toast.success(`✅ Versione precedente ripristinata!`);
+            onRefresh();
+        } catch (error: any) {
+            console.error('Error undoing chapter:', error);
+            toast.error(error.message || 'Errore durante il ripristino');
+        } finally {
+            setUndoingChapter(null);
         }
     };
 
@@ -1393,14 +1426,37 @@ function ChaptersTab({
                                         </button>
                                     </>
                                 ) : (
-                                    <button
-                                        onClick={() => handleEdit(chapter)}
-                                        disabled={regeneratingChapter !== null || generatingChapter !== null}
-                                        className="px-3 py-1.5 bg-blue-600 text-white text-sm rounded-lg hover:bg-blue-700 disabled:bg-blue-300 disabled:cursor-not-allowed flex items-center gap-1"
-                                    >
-                                        <Edit2 size={14} />
-                                        Modifica
-                                    </button>
+                                    <>
+                                        {/* Show Undo button if previousContent exists */}
+                                        {(chapter as any).previousContent && (
+                                            <button
+                                                onClick={() => handleUndo(chapter.chapterNumber)}
+                                                disabled={undoingChapter !== null || regeneratingChapter !== null || generatingChapter !== null}
+                                                className="px-3 py-1.5 bg-amber-600 text-white text-sm rounded-lg hover:bg-amber-700 disabled:bg-amber-300 disabled:cursor-not-allowed flex items-center gap-1"
+                                                title="Ripristina versione precedente"
+                                            >
+                                                {undoingChapter === chapter.chapterNumber ? (
+                                                    <>
+                                                        <Loader2 size={14} className="animate-spin" />
+                                                        Undo...
+                                                    </>
+                                                ) : (
+                                                    <>
+                                                        <Undo2 size={14} />
+                                                        Undo
+                                                    </>
+                                                )}
+                                            </button>
+                                        )}
+                                        <button
+                                            onClick={() => handleEdit(chapter)}
+                                            disabled={regeneratingChapter !== null || generatingChapter !== null}
+                                            className="px-3 py-1.5 bg-blue-600 text-white text-sm rounded-lg hover:bg-blue-700 disabled:bg-blue-300 disabled:cursor-not-allowed flex items-center gap-1"
+                                        >
+                                            <Edit2 size={14} />
+                                            Modifica
+                                        </button>
+                                    </>
                                 )}
                                 <button
                                     onClick={() => handleRegenerate(chapter.chapterNumber)}
