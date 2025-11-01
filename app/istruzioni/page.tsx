@@ -44,6 +44,7 @@ const instructions: InstructionSection[] = [
         content: [
             'Benvenuto nella piattaforma Ghost Writing AI! Questo strumento ti permette di creare libri professionali utilizzando l\'intelligenza artificiale.',
             'La piattaforma gestisce l\'intero processo: dalla raccolta delle informazioni iniziali, alla generazione dell\'outline, fino alla scrittura dei capitoli e l\'esportazione finale.',
+            'Versione 3.2.0 - Sistema completo di generazione AI con controlli avanzati di qualità e coerenza.',
         ],
     },
     {
@@ -201,26 +202,43 @@ const instructions: InstructionSection[] = [
         icon: Settings,
         content: [
             'Prima di generare l\'outline, configura come l\'AI scriverà il tuo libro nella sezione "AI Settings".',
+            'Puoi scegliere tra modalità semplice (preset predefiniti) o avanzata (controllo totale su 27 parametri).',
         ],
         subsections: [
             {
-                title: 'Modalità Semplice',
+                title: 'Modalità Semplice (Consigliata)',
                 steps: [
-                    '📊 Target Audience: scegli il pubblico (professionisti, imprenditori, pubblico generale, ecc.)',
-                    '🎯 Obiettivo del Libro: personal branding, lead generation, insegnamento, ecc.',
-                    '✨ Stile di Scrittura: scegli tra 8 preset predefiniti (storytelling, didattico, professionale, ecc.)',
-                    '📏 Lunghezza Capitoli: conciso (~1000 parole), standard (~2000), dettagliato (~3000)',
+                    '📊 Target Audience: scegli il pubblico (professionisti, imprenditori, pubblico generale, studenti, bambini, ecc.)',
+                    '🎯 Obiettivo del Libro: personal branding, lead generation, insegnamento, ispirazione, educazione',
+                    '✨ Stile di Scrittura: scegli tra 8 preset predefiniti (storytelling, didattico, professionale, ispirazionale, ecc.)',
+                    '📏 Lunghezza Capitoli: conciso (~1000 parole), standard (~2000), dettagliato (~3000), approfondito (~5000)',
+                    '🎨 Tono e Stile: formale/informale, serio/leggero, tecnico/divulgativo',
+                    '📖 Narrative Voice: prima persona, terza persona, misto',
+                    '🔬 Complessità: semplice, moderato, avanzato, esperto',
                 ],
             },
             {
                 title: 'Modalità Avanzata (Opzionale)',
                 steps: [
-                    'Modello AI: attualmente GPT-5-mini-2025-08-07 (altri modelli in futuro)',
+                    'Modello AI: GPT-5-mini-2025-08-07 (attualmente l\'unico, altri in futuro)',
+                    'Reasoning Effort: minimal/low/medium/high (per outline e consistency check)',
                     'Temperature: creatività (0.0 = preciso, 2.0 = creativo)',
                     'Max Tokens: limite massimo per capitolo (default 20000, max 128000)',
-                    'Target Words: parole obiettivo per capitolo (default 5000, max 10000) - controlla la lunghezza narrativa',
-                    'Top P, Frequency Penalty, Presence Penalty: controlli avanzati',
+                    'Target Words: parole obiettivo per capitolo (default 5000, max 10000)',
+                    'Top P: nucleus sampling (0.0-1.0)',
+                    'Frequency Penalty: riduce ripetizioni (-2.0 a 2.0)',
+                    'Presence Penalty: incoraggia nuovi topic (-2.0 a 2.0)',
                     'Custom Prompts: sostituisci le istruzioni predefinite (per utenti esperti)',
+                    '💡 Tooltip: ogni parametro ha un tooltip esplicativo, basta passarci sopra con il mouse',
+                ],
+            },
+            {
+                title: 'Test delle Impostazioni',
+                steps: [
+                    'Usa il pulsante "Test" per vedere un esempio di generazione',
+                    'Prova diverse combinazioni prima di salvare',
+                    'Le modifiche si applicano solo ai capitoli generati dopo il salvataggio',
+                    'I capitoli già scritti mantengono le impostazioni originali',
                 ],
             },
         ],
@@ -251,17 +269,30 @@ const instructions: InstructionSection[] = [
         title: '6. Generare i Capitoli',
         icon: FileText,
         content: [
-            'Dopo aver generato l\'outline, puoi iniziare a generare i capitoli uno alla volta.',
-            'I capitoli devono essere generati in ordine sequenziale (non puoi generare il Capitolo 3 prima del Capitolo 2).',
+            'Dopo aver generato l\'outline, puoi iniziare a generare i capitoli.',
+            'I capitoli vengono scritti considerando tutto il contesto precedente per massima coerenza.',
         ],
         subsections: [
             {
-                title: 'Processo di Generazione',
+                title: 'Generazione Singola',
                 steps: [
-                    'Ogni capitolo viene scritto considerando il contesto dei capitoli precedenti',
-                    'L\'AI mantiene coerenza di stile, terminologia e personaggi',
-                    'Puoi vedere il progresso in tempo reale',
-                    'Una volta completato, il capitolo appare nella sezione "Capitoli"',
+                    'Clicca su "Genera" sul primo capitolo disponibile',
+                    'L\'AI scrive il capitolo considerando outline + capitoli precedenti',
+                    'Style Guide automatico estratto dopo i primi 2 capitoli',
+                    'Master Context aggiornato con personaggi, termini e numeri',
+                    'Mini Consistency Check incrementale dopo ogni capitolo',
+                    'Tempo: ~30-45 secondi per capitolo',
+                ],
+            },
+            {
+                title: 'Generazione Batch (Novità 2.2.0)',
+                steps: [
+                    '🚀 "Genera Prossimi 3": genera automaticamente i prossimi 3 capitoli in sequenza',
+                    '⚡ "Genera Tutti": completa l\'intero libro automaticamente',
+                    '📊 Progress bar in tempo reale durante la generazione batch',
+                    '⏸️ Puoi interrompere in qualsiasi momento',
+                    '✅ Notifiche toast per ogni capitolo completato',
+                    '⚠️ In caso di errore, la batch si ferma al capitolo problematico',
                 ],
             },
             {
@@ -269,43 +300,78 @@ const instructions: InstructionSection[] = [
                 steps: [
                     '✏️ Modifica: clicca su "Modifica" per editare manualmente il contenuto',
                     '♻️ Rigenera: clicca su "Rigenera" per far riscrivere il capitolo dall\'AI',
-                    '⚠️ Nota: modificare o rigenerare un capitolo invaliderà il Consistency Check',
+                    '⚠️ Nota: modificare o rigenerare un capitolo invalida il Consistency Check',
+                    '💡 Tip: usa la modifica per piccole correzioni, rigenera per cambi sostanziali',
+                ],
+            },
+            {
+                title: 'Stati dei Capitoli',
+                steps: [
+                    '⚪ Non Generato: capitolo ancora da scrivere',
+                    '🔵 Generando: AI sta scrivendo il capitolo',
+                    '✅ Completato: capitolo pronto e salvato',
+                    '⚠️ Modificato: contenuto editato manualmente',
+                    '🔄 Rigenerando: AI sta riscrivendo il capitolo',
                 ],
             },
         ],
     },
     {
         id: 'consistency',
-        title: '7. Consistency Check',
+        title: '7. Consistency Check - Tab Dedicato',
         icon: CheckCircle,
         content: [
-            'Una volta completati tutti i capitoli, puoi eseguire un Consistency Check per verificare la coerenza del libro.',
+            'Una volta completati tutti i capitoli, vai al tab "Consistency" per verificare la coerenza del libro.',
+            'Il tab dedicato offre una visualizzazione chiara e professionale del report di qualità.',
         ],
         subsections: [
             {
                 title: 'Cosa Verifica',
                 steps: [
-                    '📖 Coerenza Narrativa: flusso logico tra i capitoli',
-                    '✍️ Coerenza di Stile: uniformità del tono e della scrittura',
-                    '🔗 Coerenza dei Contenuti: personaggi, termini, numeri consistenti',
-                    '💯 Punteggio Generale: score da 0 a 100',
+                    '📖 Coerenza Narrativa: flusso logico tra i capitoli (score 0-100)',
+                    '✍️ Coerenza di Stile: uniformità del tono e della scrittura (score 0-100)',
+                    '🔗 Coerenza Fattuale: personaggi, termini, numeri consistenti (score 0-100)',
+                    '💯 Punteggio Generale: media pesata delle 3 dimensioni',
+                    '🎯 Reasoning Effort: "medium" per accuracy bilanciata e costi ottimizzati',
                 ],
             },
             {
-                title: 'Report',
+                title: 'UI del Tab Consistency',
                 steps: [
-                    'Criticità rilevate con severità (alta, media, bassa)',
-                    'Suggerimenti per migliorare la coerenza',
-                    'Raccomandazioni specifiche per capitolo',
-                    'Il report rimane visibile per riferimento futuro',
+                    '🎨 Grande badge circolare con score totale (es: 85/100)',
+                    '📊 3 card colorate per ogni dimensione (narrativa: blu, stile: viola, fattuale: verde)',
+                    '🔍 Lista dettagliata delle criticità con badge di severità',
+                    '⚠️ Warning badge per report obsoleti (capitoli modificati dopo il check)',
+                    'ℹ️ Info card che spiega come funziona il consistency check',
+                    '🔄 Pulsante "Genera" o "Rigenera" secondo lo stato',
                 ],
             },
             {
-                title: 'Stati del Pulsante',
+                title: 'Report Dettagliato',
                 steps: [
-                    '🟣 Viola: primo check, nessun report esistente',
-                    '🟢 Verde: report esistente e aggiornato, puoi rigenerarlo',
-                    '🟠 Arancione: contenuto modificato, report obsoleto - rigenera consigliato',
+                    'Criticità organizzate per severità (🔴 Alta, 🟡 Media, 🟢 Bassa)',
+                    'Capitoli coinvolti per ogni issue rilevata',
+                    'Descrizione dettagliata del problema',
+                    'Suggerimenti specifici per risolverlo',
+                    'Raccomandazioni generali per migliorare la qualità',
+                ],
+            },
+            {
+                title: 'Stati del Report',
+                steps: [
+                    '🟣 Nessun Report: primo check da eseguire',
+                    '🟢 Report Aggiornato: check valido, può essere rigenerato',
+                    '� Report Obsoleto: capitoli modificati, check consigliato',
+                    '⚪ Generazione Disabilitata: non tutti i capitoli sono completi',
+                ],
+            },
+            {
+                title: 'Parametri Ottimizzati',
+                steps: [
+                    'Reasoning Effort: "medium" (bilanciamento accuracy/costo)',
+                    'Max Output Tokens: 4000 (sufficiente per analisi dettagliata)',
+                    'Usa getReasoningEffortForTask() per coerenza con outline',
+                    'Costo stimato: ~$0.02-0.03 per check completo',
                 ],
             },
         ],
@@ -316,15 +382,30 @@ const instructions: InstructionSection[] = [
         icon: Download,
         content: [
             'Una volta soddisfatto del libro, vai al tab "Esporta" per scaricare il manoscritto completo.',
+            'L\'export è completamente gratuito e avviene client-side in 2-3 secondi.',
         ],
         subsections: [
             {
                 title: 'Formato di Esportazione',
                 steps: [
-                    'Formato DOCX (Microsoft Word)',
-                    'Include titolo, sottotitolo e informazioni autore',
-                    'Tutti i capitoli formattati correttamente',
-                    'Pronto per la revisione finale o pubblicazione',
+                    'Formato DOCX (Microsoft Word) professionale',
+                    'Cover page con titolo, sottotitolo, autore e azienda',
+                    'Copyright page con anno automatico',
+                    'Table of Contents (indice) con hyperlink',
+                    'Tutti i capitoli formattati con heading styles',
+                    'Sezione biografia autore',
+                    'Margini: 1 inch su tutti i lati',
+                    'Font: Calibri 12pt, testo giustificato',
+                    'Numerazione pagine automatica',
+                ],
+            },
+            {
+                title: 'Statistiche Export',
+                steps: [
+                    '📚 Numero capitoli inclusi',
+                    '📝 Conteggio parole totali',
+                    '📄 Pagine stimate (250 parole/pagina)',
+                    '🎯 File scaricato: titolo-libro-YYYYMMDD.docx',
                 ],
             },
             {
@@ -332,6 +413,8 @@ const instructions: InstructionSection[] = [
                 steps: [
                     'Tutti i capitoli devono essere generati',
                     'Il pulsante "Esporta" si abilita automaticamente quando tutto è pronto',
+                    'Puoi esportare infinite volte (gratuito)',
+                    'Ogni export riflette lo stato attuale dei capitoli',
                 ],
             },
         ],
@@ -407,10 +490,11 @@ const instructions: InstructionSection[] = [
     },
     {
         id: 'notifiche',
-        title: '11. Sistema di Notifiche',
+        title: '11. Sistema di Notifiche Toast',
         icon: Bell,
         content: [
-            'La piattaforma utilizza un sistema di toast notifications per feedback immediato.',
+            'La piattaforma utilizza un sistema di toast notifications moderno per feedback immediato.',
+            'Le notifiche sono non-invasive e appaiono in alto a destra dello schermo.',
         ],
         subsections: [
             {
@@ -426,11 +510,12 @@ const instructions: InstructionSection[] = [
             {
                 title: 'Comportamento',
                 steps: [
-                    'Appaiono in alto a destra (non invasive)',
-                    'Auto-dismiss dopo 5 secondi (default)',
+                    'Appaiono in alto a destra (non bloccanti)',
+                    'Auto-dismiss dopo 5 secondi (configurabile)',
                     'Click per chiudere manualmente',
                     'Stack verticale per notifiche multiple',
                     'Animazioni smooth (fade in/out)',
+                    'Accessibili da tastiera (ARIA)',
                 ],
             },
             {
@@ -441,14 +526,57 @@ const instructions: InstructionSection[] = [
                     'Al completamento operazioni lunghe',
                     'In caso di errori o problemi di rete',
                     'Per conferme di salvataggio',
+                    'Durante batch generation (ogni capitolo completato)',
                 ],
             },
         ],
     },
     {
         id: 'tips',
-        title: '12. Suggerimenti e Best Practices',
+        title: '12. Miglioramenti UX - Skeleton Loaders & Tooltips',
         icon: Sparkles,
+        content: [
+            'La piattaforma include miglioramenti UX moderni per un\'esperienza utente ottimale.',
+        ],
+        subsections: [
+            {
+                title: 'Skeleton Loaders (Caricamento Intelligente)',
+                steps: [
+                    '💀 15 componenti skeleton riutilizzabili',
+                    '⚡ Animazione shimmer CSS-only (no bundle cost)',
+                    '📱 Utilizzati durante caricamento progetti, capitoli, analytics',
+                    '🎯 Migliorano perceived performance',
+                    '✨ Transizione smooth da skeleton a contenuto reale',
+                ],
+            },
+            {
+                title: 'Tooltip System (Aiuto Contestuale)',
+                steps: [
+                    'ℹ️ Tooltip su tutti i parametri AI complessi',
+                    '♿ Accessibile WCAG 2.1 AA (Radix UI)',
+                    '⌨️ Navigabile da tastiera',
+                    '🎨 Design coerente con la piattaforma',
+                    '📝 12+ tooltip pre-configurati su AI Settings',
+                    '💡 Hover o focus per vedere le spiegazioni',
+                ],
+            },
+            {
+                title: 'Workflow Stepper (Guida Visuale)',
+                steps: [
+                    '📊 Barra di progresso a 6 step nella pagina progetto',
+                    '✅ Mostra lo step corrente e quelli completati',
+                    '🎯 Aiuta a capire a che punto sei nel processo',
+                    '📱 Responsive: versione compatta su mobile',
+                    '🔄 Aggiornamento automatico basato sullo stato progetto',
+                    'ℹ️ Nota: può essere disabilitato se non necessario',
+                ],
+            },
+        ],
+    },
+    {
+        id: 'best-practices',
+        title: '13. Suggerimenti e Best Practices',
+        icon: Target,
         content: [
             'Ecco alcuni consigli per ottenere i migliori risultati:',
         ],
@@ -466,12 +594,14 @@ const instructions: InstructionSection[] = [
             {
                 title: 'Durante la Generazione',
                 steps: [
-                    '✅ Segui il Workflow Stepper per sapere a che punto sei',
-                    '✅ Genera i capitoli in ordine sequenziale (obbligatorio)',
+                    '✅ Segui il Workflow Stepper per sapere a che punto sei (se abilitato)',
+                    '✅ Genera i capitoli in ordine sequenziale',
+                    '🚀 Usa "Genera Prossimi 3" o "Genera Tutti" per velocizzare',
                     '✅ Leggi ogni capitolo dopo la generazione',
                     '✅ Se un capitolo non ti convince, rigeneralo subito',
                     '✅ Puoi fare piccole modifiche manuali se necessario',
-                    '✅ Le notifiche ti terranno aggiornato sul progresso',
+                    '✅ Le notifiche toast ti terranno aggiornato sul progresso',
+                    '⏸️ Puoi interrompere la batch generation in qualsiasi momento',
                 ],
             },
             {
@@ -485,12 +615,13 @@ const instructions: InstructionSection[] = [
                 ],
             },
             {
-                title: 'Modello AI',
+                title: 'Modello AI e Parametri',
                 steps: [
-                    '🚀 GPT-5-mini (2025-08-07): veloce ed economico',
+                    '🚀 GPT-5-mini (2025-08-07): veloce, economico e di alta qualità',
                     'Ottimizzato per generazione di contenuti lunghi e coerenti',
                     'Utilizzato per outline, capitoli e consistency check',
-                    'Costo stimato: ~$0.12-0.18 per libro completo',
+                    'Costo stimato: ~$0.12-0.18 per libro completo (10-15 capitoli)',
+                    'Reasoning Effort "medium" per accuracy bilanciata',
                     '💡 Tip: altri modelli saranno disponibili in futuro per più opzioni',
                 ],
             },
@@ -505,15 +636,25 @@ const instructions: InstructionSection[] = [
                 ],
             },
             {
-                title: 'Workflow Stepper - Le 6 Fasi',
+                title: 'Workflow Ottimizzato - Le 6 Fasi',
                 steps: [
-                    '1️⃣ Nuovo Progetto: crea e compila informazioni base',
-                    '2️⃣ AI Settings: configura parametri di generazione',
-                    '3️⃣ Genera Outline: crea la struttura del libro',
-                    '4️⃣ Genera Capitoli: scrivi i contenuti uno per volta',
-                    '5️⃣ Check Coerenza: verifica consistenza del libro',
-                    '6️⃣ Esporta: scarica il manoscritto completo',
-                    '💡 Segui la barra di progresso in cima alla pagina progetto',
+                    '1️⃣ Nuovo Progetto: crea e compila informazioni base (2-3 minuti)',
+                    '2️⃣ AI Settings: configura parametri di generazione (1-2 minuti)',
+                    '3️⃣ Genera Outline: crea la struttura del libro (~20 secondi)',
+                    '4️⃣ Genera Capitoli: usa batch generation per velocità (~5-10 minuti totali)',
+                    '5️⃣ Check Coerenza: verifica consistenza nel tab dedicato (~30 secondi)',
+                    '6️⃣ Esporta: scarica il manoscritto completo (2-3 secondi, gratuito)',
+                    '⏱️ Tempo totale stimato: 10-15 minuti per un libro completo',
+                ],
+            },
+            {
+                title: 'Gestione Errori e Recovery',
+                steps: [
+                    '🔄 Batch generation interrompibile: puoi fermare e riprendere',
+                    '📝 Capitoli salvati automaticamente: nessuna perdita di dati',
+                    '⚠️ Notifiche chiare in caso di errori',
+                    '🔁 Rigenerazione illimitata: puoi sempre rifare outline/capitoli',
+                    '💾 Auto-save su tutte le modifiche manuali',
                 ],
             },
         ],
@@ -634,8 +775,8 @@ export default function IstruzioniPage() {
                                     <div>
                                         <h3 className="font-bold text-gray-900 mb-2">Generazione AI Avanzata</h3>
                                         <p className="text-sm text-gray-700">
-                                            GPT-5-mini ottimizzato per velocità, qualità e costi contenuti.
-                                            Context window espanso e style guide automatico.
+                                            GPT-5-mini con reasoning &quot;medium&quot; per velocità, qualità e costi ottimizzati.
+                                            Context window espanso, style guide automatico e batch generation.
                                         </p>
                                     </div>
                                 </div>
@@ -649,8 +790,8 @@ export default function IstruzioniPage() {
                                     <div>
                                         <h3 className="font-bold text-gray-900 mb-2">Controllo Totale</h3>
                                         <p className="text-sm text-gray-700">
-                                            27 parametri configurabili, preset intelligenti, test in tempo reale.
-                                            Modifica manuale sempre disponibile.
+                                            27 parametri configurabili, 8 preset stile, test in tempo reale.
+                                            Tooltips su ogni parametro. Modifica manuale sempre disponibile.
                                         </p>
                                     </div>
                                 </div>
@@ -664,8 +805,8 @@ export default function IstruzioniPage() {
                                     <div>
                                         <h3 className="font-bold text-gray-900 mb-2">Qualità Garantita</h3>
                                         <p className="text-sm text-gray-700">
-                                            Consistency check automatico, score 0-100, report dettagliato.
-                                            Verifica coerenza narrativa, stile e contenuti.
+                                            Consistency check con tab dedicato, score 0-100, 3 dimensioni di analisi.
+                                            Report dettagliato con severità issues e raccomandazioni specifiche.
                                         </p>
                                     </div>
                                 </div>
@@ -677,10 +818,10 @@ export default function IstruzioniPage() {
                                         <TrendingUp className="text-white" size={24} />
                                     </div>
                                     <div>
-                                        <h3 className="font-bold text-gray-900 mb-2">Analytics & Tracking</h3>
+                                        <h3 className="font-bold text-gray-900 mb-2">UX Moderna</h3>
                                         <p className="text-sm text-gray-700">
-                                            Dashboard in tempo reale, metriche dettagliate, tracking costi AI.
-                                            Tutto sotto controllo.
+                                            Toast notifications, skeleton loaders, tooltips accessibili.
+                                            Batch generation, progress tracking real-time. Tutto fluido e intuitivo.
                                         </p>
                                     </div>
                                 </div>
