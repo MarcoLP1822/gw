@@ -35,8 +35,8 @@ export default function AISettingsTab({ projectId, onRefresh }: AISettingsTabPro
     const toggleSection = (sectionId: string) => {
         setExpandedSections(prev =>
             prev.includes(sectionId)
-                ? prev.filter(id => id !== sectionId)
-                : [...prev, sectionId]
+                ? [] // Chiudi la sezione se è già aperta
+                : [sectionId] // Apri solo questa sezione (chiudendo tutte le altre)
         );
     };
 
@@ -88,6 +88,10 @@ export default function AISettingsTab({ projectId, onRefresh }: AISettingsTabPro
             });
             if (!response.ok) {
                 const errorData = await response.json();
+                // Se ci sono dettagli di validazione, mostrali
+                if (errorData.details && Array.isArray(errorData.details)) {
+                    throw new Error(errorData.details.join(', '));
+                }
                 throw new Error(errorData.error || 'Failed to save configuration');
             }
             const savedConfig = await response.json();

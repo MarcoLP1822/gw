@@ -9,13 +9,14 @@ interface ModalProps {
     title: string;
     children: React.ReactNode;
     size?: 'sm' | 'md' | 'lg' | 'xl' | 'full';
+    preventClose?: boolean; // Se true, impedisce chiusura con click fuori o ESC
 }
 
-export default function Modal({ isOpen, onCloseAction, title, children, size = 'lg' }: ModalProps) {
+export default function Modal({ isOpen, onCloseAction, title, children, size = 'lg', preventClose = false }: ModalProps) {
     // Chiudi il modal con ESC
     useEffect(() => {
         const handleEscape = (e: KeyboardEvent) => {
-            if (e.key === 'Escape') onCloseAction();
+            if (e.key === 'Escape' && !preventClose) onCloseAction();
         };
 
         if (isOpen) {
@@ -28,7 +29,7 @@ export default function Modal({ isOpen, onCloseAction, title, children, size = '
             document.removeEventListener('keydown', handleEscape);
             document.body.style.overflow = 'unset';
         };
-    }, [isOpen, onCloseAction]);
+    }, [isOpen, onCloseAction, preventClose]);
 
     if (!isOpen) return null;
 
@@ -45,7 +46,7 @@ export default function Modal({ isOpen, onCloseAction, title, children, size = '
             {/* Backdrop */}
             <div
                 className="fixed inset-0 bg-black bg-opacity-50 transition-opacity"
-                onClick={onCloseAction}
+                onClick={preventClose ? undefined : onCloseAction}
             />
 
             {/* Modal Container */}
@@ -57,12 +58,14 @@ export default function Modal({ isOpen, onCloseAction, title, children, size = '
                     {/* Header */}
                     <div className="flex items-center justify-between px-4 sm:px-6 py-3 sm:py-4 border-b border-gray-200 flex-shrink-0">
                         <h2 className="text-lg sm:text-xl font-semibold text-gray-900 truncate pr-2">{title}</h2>
-                        <button
-                            onClick={onCloseAction}
-                            className="text-gray-400 hover:text-gray-600 transition-colors flex-shrink-0"
-                        >
-                            <X size={24} />
-                        </button>
+                        {!preventClose && (
+                            <button
+                                onClick={onCloseAction}
+                                className="text-gray-400 hover:text-gray-600 transition-colors flex-shrink-0"
+                            >
+                                <X size={24} />
+                            </button>
+                        )}
                     </div>
 
                     {/* Content */}

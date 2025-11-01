@@ -100,17 +100,17 @@ export function validateAIConfig(config: Partial<ProjectAIConfig>): { valid: boo
         }
     }
 
-    // Valida maxTokens
+    // Valida maxTokens (estremi inclusi)
     if (config.maxTokens !== undefined) {
         if (config.maxTokens < AI_CONFIG_LIMITS.maxTokens.min || config.maxTokens > AI_CONFIG_LIMITS.maxTokens.max) {
-            errors.push(`Max Tokens deve essere tra ${AI_CONFIG_LIMITS.maxTokens.min} e ${AI_CONFIG_LIMITS.maxTokens.max}`);
+            errors.push(`Max Tokens deve essere tra ${AI_CONFIG_LIMITS.maxTokens.min} e ${AI_CONFIG_LIMITS.maxTokens.max} (inclusi)`);
         }
     }
 
-    // Valida targetWordsPerChapter
+    // Valida targetWordsPerChapter (estremi inclusi)
     if (config.targetWordsPerChapter !== undefined) {
         if (config.targetWordsPerChapter < AI_CONFIG_LIMITS.targetWordsPerChapter.min || config.targetWordsPerChapter > AI_CONFIG_LIMITS.targetWordsPerChapter.max) {
-            errors.push(`Target words per chapter deve essere tra ${AI_CONFIG_LIMITS.targetWordsPerChapter.min} e ${AI_CONFIG_LIMITS.targetWordsPerChapter.max}`);
+            errors.push(`Target words per chapter deve essere tra ${AI_CONFIG_LIMITS.targetWordsPerChapter.min} e ${AI_CONFIG_LIMITS.targetWordsPerChapter.max} (inclusi)`);
         }
     }
 

@@ -9,6 +9,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+---
+
+## [2.2.1] - 2025-11-01
+
+### Changed
+- **UI Optimization** - Disabled WorkflowStepper component
+  - Temporarily commented out WorkflowStepper in project detail page
+  - Reduced visual clutter in project interface
+  - Code preserved for future reactivation if needed
+  - Improved focus on main content tabs
+
+---
+
+## [2.2.0] - Previous Release
+
 ### Added
 - **Consistency Check Tab** - Dedicated UI for consistency reports
   - New "Consistency" tab between Chapters and Export

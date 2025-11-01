@@ -528,8 +528,8 @@ export default function IstruzioniPage() {
     const toggleSection = (id: string) => {
         setExpandedSections(prev =>
             prev.includes(id)
-                ? prev.filter(sectionId => sectionId !== id)
-                : [...prev, id]
+                ? [] // Chiudi la sezione se è già aperta
+                : [id] // Apri solo questa sezione (chiudendo tutte le altre)
         );
     };
 

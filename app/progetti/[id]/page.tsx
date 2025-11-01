@@ -24,7 +24,9 @@ import {
     Sparkles,
     Clock,
     Settings,
-    Undo2
+    Undo2,
+    ChevronDown,
+    ChevronRight
 } from 'lucide-react';
 
 type TabType = 'overview' | 'outline' | 'chapters' | 'consistency' | 'ai-settings' | 'export';
@@ -265,14 +267,28 @@ export default function ProgettoDetailPage({ params }: { params: { id: string } 
                                             : `Generando Cap. ${generatingChapter}`
                                         }
                                         {generatingChapter !== null && (
-                                            <button
-                                                onClick={() => setStopBatchGeneration(true)}
-                                                disabled={stopBatchGeneration}
-                                                className="ml-1 px-2 py-0.5 text-xs bg-red-600 text-white rounded hover:bg-red-700 disabled:bg-red-300 transition-colors"
-                                                title="Interrompi generazione batch"
-                                            >
-                                                {stopBatchGeneration ? 'Fermando...' : 'Stop'}
-                                            </button>
+                                            <>
+                                                <button
+                                                    onClick={() => setStopBatchGeneration(true)}
+                                                    disabled={stopBatchGeneration}
+                                                    className="ml-1 px-2 py-0.5 text-xs bg-red-600 text-white rounded hover:bg-red-700 disabled:bg-red-300 transition-colors"
+                                                    title="Interrompi generazione batch"
+                                                >
+                                                    {stopBatchGeneration ? 'Fermando...' : 'Stop'}
+                                                </button>
+                                                <button
+                                                    onClick={() => {
+                                                        GenerationStateManager.clear();
+                                                        setGeneratingChapter(null);
+                                                        setStopBatchGeneration(false);
+                                                        toast.success('Stato generazione resettato');
+                                                    }}
+                                                    className="ml-1 px-2 py-0.5 text-xs bg-orange-600 text-white rounded hover:bg-orange-700 transition-colors"
+                                                    title="Forza reset stato (usa se bloccato)"
+                                                >
+                                                    Reset
+                                                </button>
+                                            </>
                                         )}
                                     </span>
                                 </>
@@ -301,8 +317,8 @@ export default function ProgettoDetailPage({ params }: { params: { id: string } 
                     </div>
                 </div>
 
-                {/* Workflow Stepper */}
-                <WorkflowStepper
+                {/* Workflow Stepper - TEMPORANEAMENTE DISATTIVATO */}
+                {/* <WorkflowStepper
                     currentStep={activeTab === 'overview' ? 'info' : activeTab}
                     projectData={{
                         hasAIConfig: true, // Assuming AI config exists (can be enhanced)
@@ -311,7 +327,7 @@ export default function ProgettoDetailPage({ params }: { params: { id: string } 
                         totalChapters: project.outline?.structure ? (project.outline.structure as any).chapters?.length || 0 : 0,
                         hasConsistencyCheck: false // Can be enhanced with actual check
                     }}
-                />
+                /> */}
 
                 {/* Tab Content */}
                 <div className="flex-1 overflow-auto p-4 sm:p-6">
@@ -544,6 +560,9 @@ function OutlineTab({
     setStopBatchGeneration
 }: OutlineTabProps) {
     // Removed local states - now using global ones from parent
+    const [editingChapter, setEditingChapter] = useState<any>(null);
+    const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+    const [isAddModalOpen, setIsAddModalOpen] = useState(false);
 
     const handleGenerateOutline = async () => {
         setIsGeneratingOutline(true);
@@ -608,6 +627,119 @@ function OutlineTab({
         }
     };
 
+    const handleEditChapter = (chapter: any) => {
+        setEditingChapter(chapter);
+        setIsEditModalOpen(true);
+    };
+
+    const handleAddChapter = () => {
+        const outline = project.outline?.structure as any;
+        setEditingChapter({
+            number: 1, // Verrà scelto nel modal
+            insertPosition: 0, // Default: alla fine (0 = alla fine)
+            title: '',
+            description: '',
+            keyPoints: [''],
+            heroJourneyPhase: 'Mondo ordinario'
+        });
+        setIsAddModalOpen(true);
+    };
+
+    const handleSaveChapter = async (chapterData: any) => {
+        try {
+            const outline = project.outline?.structure as any;
+            let updatedChapters = [...(outline?.chapters || [])];
+
+            if (isAddModalOpen) {
+                // Aggiunta nuovo capitolo nella posizione specificata
+                const insertPosition = chapterData.insertPosition || 0;
+
+                if (insertPosition === 0) {
+                    // Aggiungi alla fine
+                    updatedChapters.push(chapterData);
+                } else {
+                    // Inserisci nella posizione specificata (insertPosition è 1-based)
+                    updatedChapters.splice(insertPosition - 1, 0, chapterData);
+                }
+
+                // Ricalcola i numeri
+                updatedChapters = updatedChapters.map((ch, idx) => ({ ...ch, number: idx + 1 }));
+            } else {
+                // Modifica capitolo esistente
+                const index = updatedChapters.findIndex(ch => ch.number === chapterData.number);
+                if (index !== -1) {
+                    updatedChapters[index] = chapterData;
+                }
+            }
+
+            const updatedOutline = {
+                ...outline,
+                chapters: updatedChapters
+            };
+
+            const response = await fetch(`/api/projects/${project.id}/outline`, {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ structure: updatedOutline })
+            });
+
+            if (!response.ok) {
+                throw new Error('Errore nel salvataggio');
+            }
+
+            toast.success(isAddModalOpen ? '✨ Capitolo aggiunto!' : '✨ Capitolo aggiornato!');
+            setIsEditModalOpen(false);
+            setIsAddModalOpen(false);
+            onRefresh();
+        } catch (err) {
+            console.error('Errore:', err);
+            toast.error('Errore nel salvataggio del capitolo');
+        }
+    };
+
+    const handleDeleteChapter = async (chapterNumber: number) => {
+        // Verifica se il capitolo è già stato generato
+        const chapterExists = project.chapters.some(ch => ch.chapterNumber === chapterNumber);
+
+        if (chapterExists) {
+            toast.error('Non puoi eliminare un capitolo già generato');
+            return;
+        }
+
+        if (!confirm(`Sei sicuro di voler eliminare il Capitolo ${chapterNumber}?`)) {
+            return;
+        }
+
+        try {
+            const outline = project.outline?.structure as any;
+            let updatedChapters = outline?.chapters?.filter((ch: any) => ch.number !== chapterNumber) || [];
+
+            // Ricalcola i numeri dei capitoli
+            updatedChapters = updatedChapters.map((ch: any, idx: number) => ({ ...ch, number: idx + 1 }));
+
+            const updatedOutline = {
+                ...outline,
+                chapters: updatedChapters
+            };
+
+            const response = await fetch(`/api/projects/${project.id}/outline`, {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ structure: updatedOutline })
+            });
+
+            if (!response.ok) {
+                throw new Error('Errore nell\'eliminazione');
+            }
+
+            toast.success('✨ Capitolo eliminato!');
+            onRefresh();
+        } catch (err) {
+            console.error('Errore:', err);
+            toast.error('Errore nell\'eliminazione del capitolo');
+        }
+    };
+
     // Batch generation: Generate all remaining chapters
     const handleBatchGenerateAll = async () => {
         const outline = project.outline?.structure as any;
@@ -650,8 +782,9 @@ function OutlineTab({
         const toastId = toast.loading(`Generazione batch: 0/${totalCount} completati`);
 
         for (const chapterNum of remaining) {
-            // Check if stop was requested
+            // Check if stop was requested BEFORE starting new chapter
             if (stopBatchGeneration) {
+                console.log(`⏸️ Stop richiesto prima di Cap. ${chapterNum}`);
                 toast.info(`⏸️ Generazione interrotta. Completati ${completedCount}/${totalCount} capitoli`);
                 break;
             }
@@ -679,6 +812,13 @@ function OutlineTab({
                 } else {
                     completedCount++;
                     console.log(`✅ Chapter ${chapterNum} generated successfully. Progress: ${completedCount}/${totalCount}`);
+                }
+
+                // Check if stop was requested DURING chapter generation
+                if (stopBatchGeneration) {
+                    console.log(`⏸️ Stop richiesto dopo Cap. ${chapterNum}`);
+                    toast.info(`⏸️ Generazione interrotta dopo Cap. ${chapterNum}. Completati ${completedCount}/${totalCount} capitoli`);
+                    break;
                 }
 
                 // Update toast with current progress (whether success or failure)
@@ -750,8 +890,9 @@ function OutlineTab({
         const toastId = toast.loading(`Generazione: 0/${totalCount} completati`);
 
         for (const chapterNum of remaining) {
-            // Check if stop was requested
+            // Check if stop was requested BEFORE starting new chapter
             if (stopBatchGeneration) {
+                console.log(`⏸️ Stop richiesto prima di Cap. ${chapterNum}`);
                 toast.info(`⏸️ Generazione interrotta. Completati ${completedCount}/${totalCount} capitoli`);
                 break;
             }
@@ -779,6 +920,13 @@ function OutlineTab({
                 } else {
                     completedCount++;
                     console.log(`✅ Chapter ${chapterNum} generated successfully. Progress: ${completedCount}/${totalCount}`);
+                }
+
+                // Check if stop was requested DURING chapter generation
+                if (stopBatchGeneration) {
+                    console.log(`⏸️ Stop richiesto dopo Cap. ${chapterNum}`);
+                    toast.info(`⏸️ Generazione interrotta dopo Cap. ${chapterNum}. Completati ${completedCount}/${totalCount} capitoli`);
+                    break;
                 }
 
                 // Update toast with current progress (whether success or failure)
@@ -840,6 +988,11 @@ function OutlineTab({
             return { label: 'Generazione...', disabled: true, generating: true };
         }
 
+        // Disabilita se c'è una generazione in corso (outline o altri capitoli)
+        if (isGeneratingOutline || (generatingChapter !== null && generatingChapter !== chapterNumber)) {
+            return { label: '⏸️ In attesa', disabled: true, locked: true };
+        }
+
         if (!canGenerateChapter(chapterNumber)) {
             return { label: '🔒 Bloccato', disabled: true, locked: true };
         }
@@ -866,7 +1019,7 @@ function OutlineTab({
 
                         <button
                             onClick={handleGenerateOutline}
-                            disabled={isGeneratingOutline}
+                            disabled={isGeneratingOutline || generatingChapter !== null}
                             className="px-6 py-3 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 disabled:bg-indigo-300 disabled:cursor-not-allowed flex items-center gap-2 mx-auto transition-colors"
                         >
                             {isGeneratingOutline ? (
@@ -907,8 +1060,8 @@ function OutlineTab({
                     </div>
                     <button
                         onClick={handleGenerateOutline}
-                        disabled={isGeneratingOutline}
-                        className="px-4 py-2 bg-indigo-600 text-white text-sm rounded-lg hover:bg-indigo-700 disabled:bg-indigo-300 flex items-center gap-2 transition-colors"
+                        disabled={isGeneratingOutline || generatingChapter !== null}
+                        className="px-4 py-2 bg-indigo-600 text-white text-sm rounded-lg hover:bg-indigo-700 disabled:bg-indigo-300 disabled:cursor-not-allowed flex items-center gap-2 transition-colors"
                     >
                         {isGeneratingOutline ? (
                             <>
@@ -958,8 +1111,8 @@ function OutlineTab({
                         {totalChapters > completedChapters && totalChapters - completedChapters > 1 && (
                             <button
                                 onClick={() => handleBatchGenerateNext(3)}
-                                disabled={generatingChapter !== null}
-                                className="px-4 py-2 bg-blue-600 text-white text-sm rounded-lg hover:bg-blue-700 disabled:bg-blue-300 flex items-center gap-2 transition-colors"
+                                disabled={generatingChapter !== null || isGeneratingOutline}
+                                className="px-4 py-2 bg-blue-600 text-white text-sm rounded-lg hover:bg-blue-700 disabled:bg-blue-300 disabled:cursor-not-allowed flex items-center gap-2 transition-colors"
                             >
                                 <Sparkles size={16} />
                                 Genera Prossimi 3
@@ -968,8 +1121,8 @@ function OutlineTab({
                         {/* Pulsante Genera Tutti - sempre visibile */}
                         <button
                             onClick={handleBatchGenerateAll}
-                            disabled={generatingChapter !== null}
-                            className="px-4 py-2 bg-indigo-600 text-white text-sm rounded-lg hover:bg-indigo-700 disabled:bg-indigo-300 flex items-center gap-2 transition-colors"
+                            disabled={generatingChapter !== null || isGeneratingOutline}
+                            className="px-4 py-2 bg-indigo-600 text-white text-sm rounded-lg hover:bg-indigo-700 disabled:bg-indigo-300 disabled:cursor-not-allowed flex items-center gap-2 transition-colors"
                             title={totalChapters === completedChapters ? 'Rigenera tutti i capitoli da capo' : `Genera i ${totalChapters - completedChapters} capitoli rimanenti`}
                         >
                             <Sparkles size={16} />
@@ -982,6 +1135,18 @@ function OutlineTab({
             </Card>
 
             {/* Lista capitoli con pulsanti di generazione */}
+            <div className="flex items-center justify-between mb-4">
+                <h3 className="text-lg font-semibold text-gray-900">Capitoli</h3>
+                <button
+                    onClick={() => handleAddChapter()}
+                    disabled={generatingChapter !== null || isGeneratingOutline}
+                    className="px-4 py-2 bg-green-600 text-white text-sm rounded-lg hover:bg-green-700 disabled:bg-green-300 disabled:cursor-not-allowed flex items-center gap-2 transition-colors"
+                >
+                    <Sparkles size={16} />
+                    Aggiungi Capitolo
+                </button>
+            </div>
+
             <div className="space-y-4">
                 {outline.chapters?.map((chapter: any, index: number) => {
                     const buttonState = getChapterButtonState(chapter.number);
@@ -1008,7 +1173,7 @@ function OutlineTab({
                                         </ul>
                                     </div>
 
-                                    <div className="flex items-center gap-3">
+                                    <div className="flex items-center gap-3 flex-wrap">
                                         <div className="inline-flex items-center gap-1 px-3 py-1 bg-purple-50 text-purple-700 text-xs rounded-full">
                                             <Sparkles size={12} />
                                             {chapter.heroJourneyPhase}
@@ -1032,6 +1197,26 @@ function OutlineTab({
                                             )}
                                             {buttonState.label}
                                         </button>
+
+                                        {/* Pulsanti modifica/elimina */}
+                                        <div className="flex items-center gap-2 ml-auto">
+                                            <button
+                                                onClick={() => handleEditChapter(chapter)}
+                                                disabled={generatingChapter !== null || isGeneratingOutline}
+                                                className="p-1.5 text-gray-600 hover:text-indigo-600 hover:bg-indigo-50 rounded transition-colors disabled:text-gray-400 disabled:cursor-not-allowed disabled:hover:bg-transparent"
+                                                title="Modifica capitolo"
+                                            >
+                                                <Edit2 size={16} />
+                                            </button>
+                                            <button
+                                                onClick={() => handleDeleteChapter(chapter.number)}
+                                                disabled={buttonState.generated || generatingChapter !== null || isGeneratingOutline}
+                                                className="p-1.5 text-gray-600 hover:text-red-600 hover:bg-red-50 rounded transition-colors disabled:text-gray-400 disabled:cursor-not-allowed disabled:hover:bg-transparent"
+                                                title="Elimina capitolo"
+                                            >
+                                                <Trash2 size={16} />
+                                            </button>
+                                        </div>
                                     </div>
 
                                     {!canGenerateChapter(chapter.number) && chapter.number > 1 && (
@@ -1051,6 +1236,223 @@ function OutlineTab({
                     {generationError}
                 </div>
             )}
+
+            {/* Modal per editare/aggiungere capitolo */}
+            {(isEditModalOpen || isAddModalOpen) && editingChapter && (
+                <ChapterEditModal
+                    chapter={editingChapter}
+                    existingChapters={outline.chapters || []}
+                    isOpen={isEditModalOpen || isAddModalOpen}
+                    onClose={() => {
+                        setIsEditModalOpen(false);
+                        setIsAddModalOpen(false);
+                        setEditingChapter(null);
+                    }}
+                    onSave={handleSaveChapter}
+                    isNewChapter={isAddModalOpen}
+                />
+            )}
+        </div>
+    );
+}
+
+// Modal per editare/aggiungere capitolo
+interface ChapterEditModalProps {
+    chapter: any;
+    existingChapters: any[];
+    isOpen: boolean;
+    onClose: () => void;
+    onSave: (chapter: any) => void;
+    isNewChapter: boolean;
+}
+
+function ChapterEditModal({ chapter, existingChapters, isOpen, onClose, onSave, isNewChapter }: ChapterEditModalProps) {
+    const [formData, setFormData] = useState({
+        number: chapter.number,
+        insertPosition: chapter.insertPosition || 0,
+        title: chapter.title,
+        description: chapter.description,
+        keyPoints: chapter.keyPoints || [''],
+        heroJourneyPhase: chapter.heroJourneyPhase || 'Mondo ordinario'
+    });
+
+    const heroJourneyPhases = [
+        'Mondo ordinario',
+        'Chiamata all\'avventura',
+        'Rifiuto della chiamata',
+        'Incontro con il mentore',
+        'Varco della prima soglia',
+        'Prove, alleati e nemici',
+        'Avvicinamento alla caverna profonda',
+        'Prova centrale',
+        'Ricompensa',
+        'Via del ritorno',
+        'Resurrezione',
+        'Ritorno con l\'elisir'
+    ];
+
+    const handleSubmit = (e: React.FormEvent) => {
+        e.preventDefault();
+        // Filtra keyPoints vuoti
+        const cleanedData = {
+            ...formData,
+            keyPoints: formData.keyPoints.filter((p: string) => p.trim() !== '')
+        };
+        onSave(cleanedData);
+    };
+
+    const addKeyPoint = () => {
+        setFormData(prev => ({
+            ...prev,
+            keyPoints: [...prev.keyPoints, '']
+        }));
+    };
+
+    const removeKeyPoint = (index: number) => {
+        setFormData(prev => ({
+            ...prev,
+            keyPoints: prev.keyPoints.filter((_: string, i: number) => i !== index)
+        }));
+    };
+
+    const updateKeyPoint = (index: number, value: string) => {
+        setFormData(prev => ({
+            ...prev,
+            keyPoints: prev.keyPoints.map((p: string, i: number) => i === index ? value : p)
+        }));
+    };
+
+    if (!isOpen) return null;
+
+    return (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+            <div className="bg-white rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+                <div className="p-6">
+                    <h2 className="text-2xl font-bold text-gray-900 mb-6">
+                        {isNewChapter ? 'Aggiungi Capitolo' : 'Modifica Capitolo'}
+                    </h2>
+
+                    <form onSubmit={handleSubmit} className="space-y-4">
+                        {/* Selettore posizione - solo per nuovi capitoli */}
+                        {isNewChapter && (
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">
+                                    Posizione
+                                </label>
+                                <select
+                                    value={formData.insertPosition}
+                                    onChange={(e) => setFormData(prev => ({ ...prev, insertPosition: parseInt(e.target.value) }))}
+                                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500"
+                                >
+                                    <option value={0}>Alla fine (dopo tutti i capitoli)</option>
+                                    {existingChapters.map((ch: any, idx: number) => (
+                                        <option key={ch.number} value={ch.number}>
+                                            Prima del Capitolo {ch.number}: {ch.title}
+                                        </option>
+                                    ))}
+                                </select>
+                                <p className="text-xs text-gray-500 mt-1">
+                                    Scegli dove inserire il nuovo capitolo
+                                </p>
+                            </div>
+                        )}
+
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                                Titolo
+                            </label>
+                            <input
+                                type="text"
+                                value={formData.title}
+                                onChange={(e) => setFormData(prev => ({ ...prev, title: e.target.value }))}
+                                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500"
+                                required
+                            />
+                        </div>
+
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                                Descrizione
+                            </label>
+                            <textarea
+                                value={formData.description}
+                                onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
+                                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500"
+                                rows={3}
+                                required
+                            />
+                        </div>
+
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                                Fase del Viaggio dell&apos;Eroe
+                            </label>
+                            <select
+                                value={formData.heroJourneyPhase}
+                                onChange={(e) => setFormData(prev => ({ ...prev, heroJourneyPhase: e.target.value }))}
+                                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500"
+                            >
+                                {heroJourneyPhases.map(phase => (
+                                    <option key={phase} value={phase}>{phase}</option>
+                                ))}
+                            </select>
+                        </div>
+
+                        <div>
+                            <div className="flex items-center justify-between mb-2">
+                                <label className="block text-sm font-medium text-gray-700">
+                                    Punti Chiave
+                                </label>
+                                <button
+                                    type="button"
+                                    onClick={addKeyPoint}
+                                    className="text-sm text-indigo-600 hover:text-indigo-700"
+                                >
+                                    + Aggiungi punto
+                                </button>
+                            </div>
+                            <div className="space-y-2">
+                                {formData.keyPoints.map((point: string, index: number) => (
+                                    <div key={index} className="flex gap-2">
+                                        <input
+                                            type="text"
+                                            value={point}
+                                            onChange={(e) => updateKeyPoint(index, e.target.value)}
+                                            className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500"
+                                            placeholder={`Punto chiave ${index + 1}`}
+                                        />
+                                        {formData.keyPoints.length > 1 && (
+                                            <button
+                                                type="button"
+                                                onClick={() => removeKeyPoint(index)}
+                                                className="px-3 py-2 text-red-600 hover:bg-red-50 rounded-lg"
+                                            >
+                                                <Trash2 size={16} />
+                                            </button>
+                                        )}
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+
+                        <div className="flex gap-3 pt-4">
+                            <button
+                                type="button"
+                                onClick={onClose}
+                                className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50"
+                            >
+                                Annulla
+                            </button>
+                            <button
+                                type="submit"
+                                className="flex-1 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700"
+                            >
+                                {isNewChapter ? 'Aggiungi' : 'Salva Modifiche'}
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
         </div>
     );
 }
@@ -1080,11 +1482,20 @@ function ChaptersTab({
     const [editContent, setEditContent] = useState('');
     const [saving, setSaving] = useState(false);
     const [undoingChapter, setUndoingChapter] = useState<number | null>(null);
+    const [expandedChapters, setExpandedChapters] = useState<number[]>([]);
     // Removed local regenerating state - now using global one
     const [runningCheck, setRunningCheck] = useState(false);
     const [consistencyReport, setConsistencyReport] = useState<any>(null);
     const [hasExistingReport, setHasExistingReport] = useState(false);
     const [lastReportDate, setLastReportDate] = useState<Date | null>(null);
+
+    const toggleChapter = (chapterNumber: number) => {
+        setExpandedChapters(prev =>
+            prev.includes(chapterNumber)
+                ? [] // Chiudi il capitolo se è già aperto
+                : [chapterNumber] // Apri solo questo capitolo (chiudendo tutti gli altri)
+        );
+    };
 
     // Calcolo variabili necessarie per l'useEffect
     const completedChapters = project.chapters.filter(ch => ch.status === 'completed').length;
@@ -1263,122 +1674,142 @@ function ChaptersTab({
 
             {/* Lista capitoli */}
             <div className="space-y-4">
-                {project.chapters.map((chapter) => (
-                    <Card key={chapter.id}>
-                        <div className="flex items-start justify-between mb-3">
-                            <div>
-                                <h3 className="text-lg font-semibold text-gray-900 mb-1">
-                                    Capitolo {chapter.chapterNumber}: {chapter.title.replace(/^Capitolo\s+\d+:\s*/i, '')}
-                                </h3>
-                                <div className="flex items-center gap-3 text-sm text-gray-500">
-                                    <span>{chapter.wordCount} parole</span>
-                                    <span>•</span>
-                                    <span>{chapter.aiModel}</span>
-                                    {chapter.generatedAt && (
-                                        <>
+                {project.chapters.map((chapter) => {
+                    const isExpanded = expandedChapters.includes(chapter.chapterNumber);
+
+                    return (
+                        <div key={chapter.id} className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+                            {/* Header - sempre visibile */}
+                            <div className="p-4 flex items-center justify-between">
+                                <button
+                                    onClick={() => toggleChapter(chapter.chapterNumber)}
+                                    className="flex-1 flex items-center gap-3 hover:bg-gray-50 -m-4 p-4 rounded-lg transition-colors"
+                                >
+                                    <BookOpen className="w-5 h-5 text-blue-600 flex-shrink-0" />
+                                    <div className="flex-1 text-left">
+                                        <h3 className="text-lg font-semibold text-gray-900">
+                                            Capitolo {chapter.chapterNumber}: {chapter.title.replace(/^Capitolo\s+\d+:\s*/i, '')}
+                                        </h3>
+                                        <div className="flex items-center gap-3 text-sm text-gray-500 mt-1">
+                                            <span>{chapter.wordCount} parole</span>
                                             <span>•</span>
-                                            <span>{new Date(chapter.generatedAt).toLocaleDateString('it-IT')}</span>
-                                        </>
+                                            <span>{chapter.aiModel}</span>
+                                            {chapter.generatedAt && (
+                                                <>
+                                                    <span>•</span>
+                                                    <span>{new Date(chapter.generatedAt).toLocaleDateString('it-IT')}</span>
+                                                </>
+                                            )}
+                                        </div>
+                                    </div>
+                                    {isExpanded ? (
+                                        <ChevronDown className="w-5 h-5 text-gray-400" />
+                                    ) : (
+                                        <ChevronRight className="w-5 h-5 text-gray-400" />
                                     )}
-                                </div>
+                                </button>
                             </div>
-                            <div className="flex items-center gap-2">
-                                {editingChapter === chapter.chapterNumber ? (
-                                    <>
-                                        <button
-                                            onClick={() => {
-                                                setEditingChapter(null);
-                                                setEditContent('');
-                                            }}
-                                            disabled={saving}
-                                            className="px-3 py-1.5 bg-gray-600 text-white text-sm rounded-lg hover:bg-gray-700 disabled:bg-gray-300 flex items-center gap-1"
-                                        >
-                                            <ArrowLeft size={14} />
-                                            Annulla
-                                        </button>
-                                        <button
-                                            onClick={() => handleSave(chapter.chapterNumber)}
-                                            disabled={saving}
-                                            className="px-3 py-1.5 bg-green-600 text-white text-sm rounded-lg hover:bg-green-700 disabled:bg-green-300"
-                                        >
-                                            {saving ? 'Salvataggio...' : 'Salva'}
-                                        </button>
-                                    </>
-                                ) : (
-                                    <>
-                                        {/* Show Undo button if previousContent exists */}
-                                        {(chapter as any).previousContent && (
-                                            <button
-                                                onClick={() => handleUndo(chapter.chapterNumber)}
-                                                disabled={undoingChapter !== null || regeneratingChapter !== null || generatingChapter !== null}
-                                                className="px-3 py-1.5 bg-amber-600 text-white text-sm rounded-lg hover:bg-amber-700 disabled:bg-amber-300 disabled:cursor-not-allowed flex items-center gap-1"
-                                                title="Ripristina versione precedente"
-                                            >
-                                                {undoingChapter === chapter.chapterNumber ? (
-                                                    <>
-                                                        <Loader2 size={14} className="animate-spin" />
-                                                        Undo...
-                                                    </>
-                                                ) : (
-                                                    <>
-                                                        <Undo2 size={14} />
-                                                        Undo
-                                                    </>
+
+                            {/* Contenuto espandibile */}
+                            {isExpanded && (
+                                <div className="border-t border-gray-100">
+                                    {/* Action buttons */}
+                                    <div className="px-4 py-3 bg-gray-50 flex items-center gap-2 justify-end">
+                                        {editingChapter === chapter.chapterNumber ? (
+                                            <>
+                                                <button
+                                                    onClick={() => {
+                                                        setEditingChapter(null);
+                                                        setEditContent('');
+                                                    }}
+                                                    disabled={saving}
+                                                    className="px-3 py-1.5 bg-gray-600 text-white text-sm rounded-lg hover:bg-gray-700 disabled:bg-gray-300 flex items-center gap-1"
+                                                >
+                                                    <ArrowLeft size={14} />
+                                                    Annulla
+                                                </button>
+                                                <button
+                                                    onClick={() => handleSave(chapter.chapterNumber)}
+                                                    disabled={saving}
+                                                    className="px-3 py-1.5 bg-green-600 text-white text-sm rounded-lg hover:bg-green-700 disabled:bg-green-300"
+                                                >
+                                                    {saving ? 'Salvataggio...' : 'Salva'}
+                                                </button>
+                                            </>
+                                        ) : (
+                                            <>
+                                                {/* Show Undo button if previousContent exists */}
+                                                {(chapter as any).previousContent && (
+                                                    <button
+                                                        onClick={() => handleUndo(chapter.chapterNumber)}
+                                                        disabled={undoingChapter !== null || regeneratingChapter !== null || generatingChapter !== null}
+                                                        className="px-3 py-1.5 bg-amber-600 text-white text-sm rounded-lg hover:bg-amber-700 disabled:bg-amber-300 disabled:cursor-not-allowed flex items-center gap-1"
+                                                        title="Ripristina versione precedente"
+                                                    >
+                                                        {undoingChapter === chapter.chapterNumber ? (
+                                                            <>
+                                                                <Loader2 size={14} className="animate-spin" />
+                                                                Undo...
+                                                            </>
+                                                        ) : (
+                                                            <>
+                                                                <Undo2 size={14} />
+                                                                Undo
+                                                            </>
+                                                        )}
+                                                    </button>
                                                 )}
-                                            </button>
+                                                <button
+                                                    onClick={() => handleEdit(chapter)}
+                                                    disabled={regeneratingChapter !== null || generatingChapter !== null}
+                                                    className="px-3 py-1.5 bg-blue-600 text-white text-sm rounded-lg hover:bg-blue-700 disabled:bg-blue-300 disabled:cursor-not-allowed flex items-center gap-1"
+                                                >
+                                                    <Edit2 size={14} />
+                                                    Modifica
+                                                </button>
+                                            </>
                                         )}
                                         <button
-                                            onClick={() => handleEdit(chapter)}
+                                            onClick={() => handleRegenerate(chapter.chapterNumber)}
                                             disabled={regeneratingChapter !== null || generatingChapter !== null}
-                                            className="px-3 py-1.5 bg-blue-600 text-white text-sm rounded-lg hover:bg-blue-700 disabled:bg-blue-300 disabled:cursor-not-allowed flex items-center gap-1"
+                                            className="px-3 py-1.5 bg-indigo-600 text-white text-sm rounded-lg hover:bg-indigo-700 disabled:bg-indigo-300 disabled:cursor-not-allowed flex items-center gap-1"
                                         >
-                                            <Edit2 size={14} />
-                                            Modifica
+                                            {regeneratingChapter === chapter.chapterNumber ? (
+                                                <>
+                                                    <Loader2 size={14} className="animate-spin" />
+                                                    Rigenera...
+                                                </>
+                                            ) : (
+                                                <>
+                                                    <Sparkles size={14} />
+                                                    Rigenera
+                                                </>
+                                            )}
                                         </button>
-                                    </>
-                                )}
-                                <button
-                                    onClick={() => handleRegenerate(chapter.chapterNumber)}
-                                    disabled={regeneratingChapter !== null || generatingChapter !== null}
-                                    className="px-3 py-1.5 bg-indigo-600 text-white text-sm rounded-lg hover:bg-indigo-700 disabled:bg-indigo-300 disabled:cursor-not-allowed flex items-center gap-1"
-                                >
-                                    {regeneratingChapter === chapter.chapterNumber ? (
-                                        <>
-                                            <Loader2 size={14} className="animate-spin" />
-                                            Rigenera...
-                                        </>
-                                    ) : (
-                                        <>
-                                            <Sparkles size={14} />
-                                            Rigenera
-                                        </>
-                                    )}
-                                </button>
-                            </div>
-                        </div>
+                                    </div>
 
-                        {editingChapter === chapter.chapterNumber ? (
-                            <textarea
-                                value={editContent}
-                                onChange={(e) => setEditContent(e.target.value)}
-                                className="w-full h-96 p-3 border border-gray-300 rounded-lg font-mono text-sm"
-                                placeholder="Contenuto del capitolo in Markdown..."
-                            />
-                        ) : (
-                            <div className="prose max-w-none bg-gray-50 p-4 rounded-lg">
-                                <div className="text-gray-700 whitespace-pre-wrap line-clamp-6">
-                                    {chapter.content}
+                                    {/* Content area */}
+                                    <div className="px-4 pb-4">
+                                        {editingChapter === chapter.chapterNumber ? (
+                                            <textarea
+                                                value={editContent}
+                                                onChange={(e) => setEditContent(e.target.value)}
+                                                className="w-full h-96 p-3 border border-gray-300 rounded-lg font-mono text-sm"
+                                                placeholder="Contenuto del capitolo in Markdown..."
+                                            />
+                                        ) : (
+                                            <div className="prose max-w-none bg-gray-50 p-4 rounded-lg">
+                                                <div className="text-gray-700 whitespace-pre-wrap">
+                                                    {chapter.content}
+                                                </div>
+                                            </div>
+                                        )}
+                                    </div>
                                 </div>
-                                <button
-                                    onClick={() => handleEdit(chapter)}
-                                    className="text-blue-600 text-sm mt-2 hover:underline"
-                                >
-                                    Leggi tutto / Modifica →
-                                </button>
-                            </div>
-                        )}
-                    </Card>
-                ))}
+                            )}
+                        </div>
+                    );
+                })}
             </div>
         </div>
     );
@@ -1610,40 +2041,53 @@ function ConsistencyTab({
                                             ...(consistencyReport.narrative?.issues || []),
                                             ...(consistencyReport.style?.issues || []),
                                             ...(consistencyReport.consistency?.issues || [])
-                                        ].map((issue: any, idx: number) => (
-                                            <div
-                                                key={idx}
-                                                className={`p-4 rounded-lg border-l-4 ${issue.severity === 'high'
-                                                    ? 'bg-red-50 border-red-500'
-                                                    : issue.severity === 'medium'
-                                                        ? 'bg-yellow-50 border-yellow-500'
-                                                        : 'bg-gray-50 border-gray-300'
-                                                    }`}
-                                            >
-                                                <div className="flex items-start justify-between mb-2">
-                                                    <div className="font-medium text-gray-900">
-                                                        {issue.chapter && (
-                                                            <span className="text-purple-600 mr-2">Cap. {issue.chapter}:</span>
-                                                        )}
-                                                        {issue.description}
+                                        ]
+                                            .sort((a: any, b: any) => {
+                                                // Ordina per capitolo (numerico ascendente)
+                                                // Se chapter non esiste o è null, metti alla fine
+                                                const chapterA = a.chapter || 999;
+                                                const chapterB = b.chapter || 999;
+                                                if (chapterA !== chapterB) {
+                                                    return chapterA - chapterB;
+                                                }
+                                                // Se stesso capitolo, ordina per severity (high > medium > low)
+                                                const severityOrder: Record<string, number> = { high: 1, medium: 2, low: 3 };
+                                                return (severityOrder[a.severity] || 4) - (severityOrder[b.severity] || 4);
+                                            })
+                                            .map((issue: any, idx: number) => (
+                                                <div
+                                                    key={idx}
+                                                    className={`p-4 rounded-lg border-l-4 ${issue.severity === 'high'
+                                                        ? 'bg-red-50 border-red-500'
+                                                        : issue.severity === 'medium'
+                                                            ? 'bg-yellow-50 border-yellow-500'
+                                                            : 'bg-gray-50 border-gray-300'
+                                                        }`}
+                                                >
+                                                    <div className="flex items-start justify-between mb-2">
+                                                        <div className="font-medium text-gray-900">
+                                                            {issue.chapter && (
+                                                                <span className="text-purple-600 mr-2">Cap. {issue.chapter}:</span>
+                                                            )}
+                                                            {issue.description}
+                                                        </div>
+                                                        <span
+                                                            className={`text-xs px-2 py-1 rounded uppercase font-semibold ${issue.severity === 'high'
+                                                                ? 'bg-red-200 text-red-800'
+                                                                : issue.severity === 'medium'
+                                                                    ? 'bg-yellow-200 text-yellow-800'
+                                                                    : 'bg-gray-200 text-gray-800'
+                                                                }`}
+                                                        >
+                                                            {issue.severity}
+                                                        </span>
                                                     </div>
-                                                    <span
-                                                        className={`text-xs px-2 py-1 rounded uppercase font-semibold ${issue.severity === 'high'
-                                                            ? 'bg-red-200 text-red-800'
-                                                            : issue.severity === 'medium'
-                                                                ? 'bg-yellow-200 text-yellow-800'
-                                                                : 'bg-gray-200 text-gray-800'
-                                                            }`}
-                                                    >
-                                                        {issue.severity}
-                                                    </span>
+                                                    <div className="text-sm text-gray-700 flex items-start gap-2">
+                                                        <span className="text-gray-400">💡</span>
+                                                        <span>{issue.suggestion}</span>
+                                                    </div>
                                                 </div>
-                                                <div className="text-sm text-gray-700 flex items-start gap-2">
-                                                    <span className="text-gray-400">💡</span>
-                                                    <span>{issue.suggestion}</span>
-                                                </div>
-                                            </div>
-                                        ))}
+                                            ))}
                                     </div>
                                 </div>
                             )}

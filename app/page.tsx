@@ -6,10 +6,11 @@ import Sidebar from '@/components/Sidebar';
 import PageContainer from '@/components/PageContainer';
 import Card from '@/components/Card';
 import NewProjectModal from '@/components/NewProjectModal';
+import DocumentBasedProjectModal from '@/components/DocumentBasedProjectModal';
 import { ProjectFormData } from '@/types';
 import { projectsApi } from '@/lib/api/projects';
 import { toast } from '@/lib/ui/toast';
-import { FileText, Users, Clock, CheckCircle, Plus, Loader2, Upload } from 'lucide-react';
+import { FileText, Users, Clock, CheckCircle, Plus, Loader2, Upload, Sparkles } from 'lucide-react';
 
 interface Stats {
   totalProjects: number;
@@ -35,6 +36,7 @@ export default function Home() {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isDocumentModalOpen, setIsDocumentModalOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [stats, setStats] = useState<Stats | null>(null);
   const [recentActivity, setRecentActivity] = useState<Activity[]>([]);
@@ -104,8 +106,16 @@ export default function Home() {
     setIsModalOpen(true);
   };
 
+  const handleNewProjectFromDocument = () => {
+    setIsDocumentModalOpen(true);
+  };
+
   const handleCloseModal = () => {
     setIsModalOpen(false);
+  };
+
+  const handleCloseDocumentModal = () => {
+    setIsDocumentModalOpen(false);
   };
 
   const handleUploadFile = () => {
@@ -138,6 +148,60 @@ export default function Home() {
 
     } catch (error) {
       console.error('Errore durante la creazione del progetto:', error);
+      toast.error('Errore durante la creazione del progetto. Riprova.');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleSubmitDocumentProject = async (projectData: ProjectFormData & { styleGuide: string }) => {
+    try {
+      setIsSubmitting(true);
+
+      // Estrai styleGuide dal projectData
+      const { styleGuide, ...projectDataOnly } = projectData;
+
+      console.log('📝 Creating project from document with data:', projectDataOnly);
+
+      // Crea il progetto
+      const response = await projectsApi.create(projectDataOnly);
+      const projectId = response.project.id;
+
+      console.log('✅ Project created:', projectId);
+
+      // Salva lo style guide generato come customStyleGuide
+      console.log('💾 Saving style guide...');
+      const styleGuideResponse = await fetch(`/api/projects/${projectId}/style-guide`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ styleGuide, source: 'ai_from_docs' }),
+      });
+
+      if (!styleGuideResponse.ok) {
+        console.warn('⚠️ Failed to save style guide, but project was created');
+      } else {
+        console.log('✅ Style guide saved');
+      }
+
+      // Chiudi il modal
+      setIsDocumentModalOpen(false);
+
+      // Mostra notifica di successo
+      toast.success('Progetto creato con successo da documento!');
+
+      // Ricarica i dati della dashboard
+      const statsResponse = await fetch('/api/stats');
+      const statsData = await statsResponse.json();
+      if (statsData.success) {
+        setStats(statsData.stats);
+      }
+
+      // Naviga alla pagina del progetto appena creato
+      console.log('🚀 Redirecting to project:', projectId);
+      router.push(`/progetti/${projectId}`);
+
+    } catch (error) {
+      console.error('❌ Errore durante la creazione del progetto:', error);
       toast.error('Errore durante la creazione del progetto. Riprova.');
     } finally {
       setIsSubmitting(false);
@@ -226,7 +290,7 @@ export default function Home() {
 
         {/* Call to Action - Nuovo Progetto e Caricamento File */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6 mb-6">
-          {/* Card Nuovo Progetto */}
+          {/* Card Nuovo Progetto - Blu */}
           <Card>
             <div className="flex flex-col items-center justify-center py-8 sm:py-12">
               <div className="mb-4 p-3 sm:p-4 bg-blue-100 rounded-full">
@@ -252,6 +316,38 @@ export default function Home() {
                   <>
                     <Plus size={20} />
                     Nuovo Progetto
+                  </>
+                )}
+              </button>
+            </div>
+          </Card>
+
+          {/* Card Nuovo Progetto da Documento - Verde */}
+          <Card>
+            <div className="flex flex-col items-center justify-center py-8 sm:py-12">
+              <div className="mb-4 p-3 sm:p-4 bg-green-100 rounded-full">
+                <Sparkles size={28} className="sm:w-8 sm:h-8 text-green-600" />
+              </div>
+              <h3 className="text-lg sm:text-xl font-semibold text-gray-900 mb-2">
+                Crea da Documento
+              </h3>
+              <p className="text-sm sm:text-base text-gray-600 mb-4 sm:mb-6 text-center max-w-md px-4">
+                Carica un documento e l&apos;AI compilerà automaticamente i campi del progetto
+              </p>
+              <button
+                onClick={handleNewProjectFromDocument}
+                disabled={isSubmitting}
+                className="px-4 sm:px-6 py-2 sm:py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors flex items-center gap-2 font-medium shadow-sm disabled:opacity-50 disabled:cursor-not-allowed text-sm sm:text-base"
+              >
+                {isSubmitting ? (
+                  <>
+                    <Loader2 size={20} className="animate-spin" />
+                    Creazione...
+                  </>
+                ) : (
+                  <>
+                    <Sparkles size={20} />
+                    Crea da Documento
                   </>
                 )}
               </button>
@@ -299,6 +395,13 @@ export default function Home() {
         isOpen={isModalOpen}
         onCloseAction={handleCloseModal}
         onSubmitAction={handleSubmitProject}
+      />
+
+      {/* Modal per nuovo progetto da documento */}
+      <DocumentBasedProjectModal
+        isOpen={isDocumentModalOpen}
+        onCloseAction={handleCloseDocumentModal}
+        onSubmitAction={handleSubmitDocumentProject}
       />
     </div>
   );

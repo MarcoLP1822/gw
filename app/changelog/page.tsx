@@ -17,6 +17,21 @@ interface ChangelogEntry {
 
 const changelog: ChangelogEntry[] = [
     {
+        version: '2.2.1',
+        date: '1 Novembre 2025',
+        type: 'improvement',
+        changes: [
+            {
+                category: 'Ottimizzazione UI',
+                items: [
+                    'Disattivato temporaneamente il componente WorkflowStepper nella pagina progetto',
+                    'Ridotto ingombro visivo per migliore focus sui contenuti principali',
+                    'Codice preservato per futura riattivazione',
+                ],
+            },
+        ],
+    },
+    {
         version: '2.2.0',
         date: '1 Novembre 2025',
         type: 'improvement',
