@@ -44,7 +44,7 @@ const instructions: InstructionSection[] = [
         content: [
             'Benvenuto nella piattaforma Ghost Writing AI! Questo strumento ti permette di creare libri professionali utilizzando l\'intelligenza artificiale.',
             'La piattaforma gestisce l\'intero processo: dalla raccolta delle informazioni iniziali, alla generazione dell\'outline, fino alla scrittura dei capitoli e l\'esportazione finale.',
-            'Versione 3.2.0 - Sistema completo di generazione AI con controlli avanzati di qualità e coerenza.',
+            'Versione 3.3.2 - Sistema completo di generazione AI con controlli avanzati di qualità, coerenza e UI/UX ottimizzata.',
         ],
     },
     {
@@ -220,16 +220,14 @@ const instructions: InstructionSection[] = [
             {
                 title: 'Modalità Avanzata (Opzionale)',
                 steps: [
-                    'Modello AI: GPT-5-mini-2025-08-07 (attualmente l\'unico, altri in futuro)',
-                    'Reasoning Effort: minimal/low/medium/high (per outline e consistency check)',
-                    'Temperature: creatività (0.0 = preciso, 2.0 = creativo)',
-                    'Max Tokens: limite massimo per capitolo (default 20000, max 128000)',
-                    'Target Words: parole obiettivo per capitolo (default 5000, max 10000)',
-                    'Top P: nucleus sampling (0.0-1.0)',
-                    'Frequency Penalty: riduce ripetizioni (-2.0 a 2.0)',
-                    'Presence Penalty: incoraggia nuovi topic (-2.0 a 2.0)',
+                    'Modello AI: GPT-5-mini-2025-08-07 (bilanciato qualità/velocità/costo)',
+                    'Reasoning Effort: minimal/low/medium/high - controlla la profondità del ragionamento AI',
+                    'Verbosity: low/medium/high - lunghezza e dettaglio delle risposte',
+                    'Max Output Tokens: limite massimo per capitolo (default 20000, max 128000)',
+                    'Target Words: parole obiettivo per capitolo (default 2000-5000)',
                     'Custom Prompts: sostituisci le istruzioni predefinite (per utenti esperti)',
                     '💡 Tooltip: ogni parametro ha un tooltip esplicativo, basta passarci sopra con il mouse',
+                    '⚠️ Nota: GPT-5 non usa temperature, top_p, o penalty - usa Reasoning Effort invece',
                 ],
             },
             {
@@ -612,6 +610,8 @@ const instructions: InstructionSection[] = [
                     '✏️ Modifica i progetti per aggiornare informazioni',
                     '👁️ Monitora lo stato nella lista progetti',
                     '📈 Controlla l\'Analytics per vedere i trend',
+                    '📱 Layout responsive ottimizzato per mobile',
+                    '🎨 Card progetti con design migliorato e info chiare',
                 ],
             },
             {
@@ -694,7 +694,7 @@ export default function IstruzioniPage() {
         { icon: Clock, label: 'Tempo Medio', value: '10-15 min', color: 'text-blue-600 bg-blue-100' },
         { icon: DollarSign, label: 'Costo per Libro', value: '~$0.15', color: 'text-green-600 bg-green-100' },
         { icon: FileText, label: 'Capitoli', value: '10-15', color: 'text-purple-600 bg-purple-100' },
-        { icon: Zap, label: 'AI Powered', value: 'GPT-5 Mini', color: 'text-orange-600 bg-orange-100' },
+        { icon: Zap, label: 'AI Powered', value: 'GPT-5', color: 'text-orange-600 bg-orange-100' },
     ];
 
     // Quick start steps
@@ -805,7 +805,7 @@ export default function IstruzioniPage() {
                                     <div>
                                         <h3 className="font-bold text-gray-900 mb-2">Controllo Totale</h3>
                                         <p className="text-sm text-gray-700">
-                                            27 parametri configurabili, 8 preset stile, test in tempo reale.
+                                            Parametri AI configurabili, 8 preset stile, test in tempo reale.
                                             Tooltips su ogni parametro. Modifica manuale sempre disponibile.
                                         </p>
                                     </div>
@@ -836,7 +836,8 @@ export default function IstruzioniPage() {
                                         <h3 className="font-bold text-gray-900 mb-2">UX Moderna</h3>
                                         <p className="text-sm text-gray-700">
                                             Toast notifications, skeleton loaders, tooltips accessibili.
-                                            Batch generation, progress tracking real-time. Tutto fluido e intuitivo.
+                                            Batch generation, sidebar con evidenziazione sezione attiva, card collassabili.
+                                            Design responsive ottimizzato per mobile. Tutto fluido e intuitivo.
                                         </p>
                                     </div>
                                 </div>
