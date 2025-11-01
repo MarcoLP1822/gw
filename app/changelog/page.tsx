@@ -17,6 +17,26 @@ interface ChangelogEntry {
 
 const changelog: ChangelogEntry[] = [
     {
+        version: '3.5.0',
+        date: '1 Novembre 2025',
+        type: 'feature',
+        changes: [
+            {
+                category: 'UI/UX',
+                items: [
+                    'Aggiorna istruzioni v3.3.2 con info corrette GPT-5 e nuove funzionalità UI',
+                    'Responsive design per sezione progetti - filtri e card mobile',
+                ],
+            },
+            {
+                category: 'Documentazione',
+                items: [
+                    'Card collassabili changelog, rimozione header sezioni, evidenziazione sidebar attiva',
+                ],
+            }
+        ],
+    },
+    {
         version: '3.4.0',
         date: '1 Novembre 2025',
         type: 'feature',
