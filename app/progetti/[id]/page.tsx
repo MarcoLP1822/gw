@@ -1724,10 +1724,13 @@ function ExportTab({ project }: { project: ProjectDetail }) {
             setExportError(null);
             setExportSuccess(false);
 
+            // Mostra toast di avvio
+            toast.info('📝 Generazione documento in corso... potrebbero essere necessari 1-2 minuti per libri completi');
+
             await projectsApi.exportDocx(project.id);
 
             setExportSuccess(true);
-            toast.success('📄 Documento esportato con successo!');
+            toast.success('📄 Download completato! Il documento è stato salvato');
             setTimeout(() => setExportSuccess(false), 3000);
         } catch (err) {
             const errorMessage = err instanceof Error ? err.message : 'Errore durante l\'esportazione';
