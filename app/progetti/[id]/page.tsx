@@ -27,7 +27,7 @@ import {
     Undo2
 } from 'lucide-react';
 
-type TabType = 'overview' | 'outline' | 'chapters' | 'ai-settings' | 'export';
+type TabType = 'overview' | 'outline' | 'chapters' | 'consistency' | 'ai-settings' | 'export';
 
 interface ProjectDetail {
     id: string;
@@ -134,6 +134,7 @@ export default function ProgettoDetailPage({ params }: { params: { id: string } 
         { id: 'ai-settings' as TabType, label: 'AI Settings', icon: Settings },
         { id: 'outline' as TabType, label: 'Outline', icon: FileText },
         { id: 'chapters' as TabType, label: 'Capitoli', icon: FileText },
+        { id: 'consistency' as TabType, label: 'Consistency', icon: AlertCircle },
         { id: 'export' as TabType, label: 'Esporta', icon: Download },
     ];
 
@@ -352,6 +353,16 @@ export default function ProgettoDetailPage({ params }: { params: { id: string } 
                             setRegeneratingChapter={setRegeneratingChapter}
                             // Global batch generation state to disable buttons
                             generatingChapter={generatingChapter}
+                        />
+                    </div>
+
+                    <div style={{ display: activeTab === 'consistency' ? 'block' : 'none' }}>
+                        <ConsistencyTab
+                            project={project}
+                            onRefresh={fetchProject}
+                            // Generation states to disable button during operations
+                            generatingChapter={generatingChapter}
+                            regeneratingChapter={regeneratingChapter}
                         />
                     </div>
 
@@ -1236,7 +1247,7 @@ function ChaptersTab({
 
     return (
         <div className="max-w-4xl mx-auto space-y-6">
-            {/* Header con statistiche e consistency check */}
+            {/* Header con statistiche */}
             <Card>
                 <div className="flex items-center justify-between mb-4">
                     <div>
@@ -1247,142 +1258,10 @@ function ChaptersTab({
                             <span>{totalWords.toLocaleString()} parole totali</span>
                         </div>
                     </div>
-
-                    {allChaptersComplete && (
-                        <button
-                            onClick={handleConsistencyCheck}
-                            disabled={runningCheck || regeneratingChapter !== null || generatingChapter !== null}
-                            className={`px-4 py-2 text-white text-sm rounded-lg flex items-center gap-2 transition-colors disabled:cursor-not-allowed ${contentChanged
-                                ? 'bg-orange-600 hover:bg-orange-700 disabled:bg-orange-300'
-                                : hasExistingReport
-                                    ? 'bg-green-600 hover:bg-green-700 disabled:bg-green-300'
-                                    : 'bg-purple-600 hover:bg-purple-700 disabled:bg-purple-300'
-                                }`}
-                        >
-                            {runningCheck ? (
-                                <>
-                                    <Loader2 size={16} className="animate-spin" />
-                                    Analisi...
-                                </>
-                            ) : contentChanged ? (
-                                <>
-                                    <AlertCircle size={16} />
-                                    ⚠️ Rigenera Check
-                                </>
-                            ) : hasExistingReport ? (
-                                <>
-                                    <AlertCircle size={16} />
-                                    ✅ Rigenera Check
-                                </>
-                            ) : (
-                                <>
-                                    <AlertCircle size={16} />
-                                    Consistency Check
-                                </>
-                            )}
-                        </button>
-                    )}
                 </div>
-
-                {!allChaptersComplete && (
-                    <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg text-blue-700 text-sm">
-                        💡 Completa tutti i capitoli per eseguire il consistency check finale
-                    </div>
-                )}
-
-                {contentChanged && (
-                    <div className="p-3 bg-orange-50 border border-orange-200 rounded-lg text-orange-700 text-sm">
-                        ⚠️ Hai modificato o rigenerato dei capitoli. Il report precedente potrebbe essere obsoleto - considera di rigenerarlo.
-                    </div>
-                )}
             </Card>
 
-            {/* Consistency Report (se disponibile) */}
-            {consistencyReport && (
-                <Card>
-                    <div className="flex items-start gap-3 mb-4">
-                        <AlertCircle className={`flex-shrink-0 ${contentChanged ? 'text-orange-600' : 'text-purple-600'}`} size={24} />
-                        <div className="flex-1">
-                            <div className="flex items-center justify-between mb-2">
-                                <h3 className="text-lg font-semibold text-gray-900">
-                                    Consistency Report
-                                </h3>
-                                {contentChanged && (
-                                    <span className="text-xs bg-orange-100 text-orange-700 px-2 py-1 rounded">
-                                        ⚠️ Potrebbe essere obsoleto
-                                    </span>
-                                )}
-                            </div>
-                            <div className="flex items-center gap-4 mb-4">
-                                <div className="text-3xl font-bold text-purple-600">
-                                    {consistencyReport.overallScore || 0}/100
-                                </div>
-                                <div className="text-sm text-gray-600">
-                                    Punteggio Generale
-                                </div>
-                            </div>
-
-                            {/* Score breakdown */}
-                            {consistencyReport.narrative && consistencyReport.style && consistencyReport.consistency && (
-                                <div className="grid grid-cols-3 gap-4 mb-4">
-                                    <div>
-                                        <div className="text-xs text-gray-500 mb-1">Narrativa</div>
-                                        <div className="text-lg font-semibold">{consistencyReport.narrative.score || 0}/100</div>
-                                    </div>
-                                    <div>
-                                        <div className="text-xs text-gray-500 mb-1">Stile</div>
-                                        <div className="text-lg font-semibold">{consistencyReport.style.score || 0}/100</div>
-                                    </div>
-                                    <div>
-                                        <div className="text-xs text-gray-500 mb-1">Coerenza</div>
-                                        <div className="text-lg font-semibold">{consistencyReport.consistency.score || 0}/100</div>
-                                    </div>
-                                </div>
-                            )}
-
-                            {/* Issues */}
-                            {consistencyReport.narrative?.issues || consistencyReport.style?.issues || consistencyReport.consistency?.issues ? (
-                                <div className="mb-4">
-                                    <h4 className="text-sm font-semibold text-gray-700 mb-2">Issues Rilevati:</h4>
-                                    <div className="space-y-2">
-                                        {[
-                                            ...(consistencyReport.narrative?.issues || []),
-                                            ...(consistencyReport.style?.issues || []),
-                                            ...(consistencyReport.consistency?.issues || [])
-                                        ].map((issue: any, idx: number) => (
-                                            <div key={idx} className={`p-2 rounded text-sm ${issue.severity === 'high' ? 'bg-red-50 border-l-2 border-red-500' :
-                                                issue.severity === 'medium' ? 'bg-yellow-50 border-l-2 border-yellow-500' :
-                                                    'bg-gray-50 border-l-2 border-gray-300'
-                                                }`}>
-                                                <div className="font-medium">
-                                                    {issue.chapter && `Cap. ${issue.chapter}: `}
-                                                    {issue.description}
-                                                </div>
-                                                <div className="text-gray-600 mt-1">💡 {issue.suggestion}</div>
-                                            </div>
-                                        ))}
-                                    </div>
-                                </div>
-                            ) : null}
-
-                            {/* Recommendations */}
-                            {consistencyReport.recommendations && consistencyReport.recommendations.length > 0 && (
-                                <div>
-                                    <h4 className="text-sm font-semibold text-gray-700 mb-2">Raccomandazioni:</h4>
-                                    <ul className="space-y-1">
-                                        {consistencyReport.recommendations.map((rec: string, idx: number) => (
-                                            <li key={idx} className="text-sm text-gray-700 flex items-start gap-2">
-                                                <span className="text-purple-600">•</span>
-                                                <span>{rec}</span>
-                                            </li>
-                                        ))}
-                                    </ul>
-                                </div>
-                            )}
-                        </div>
-                    </div>
-                </Card>
-            )}            {/* Lista capitoli */}
+            {/* Lista capitoli */}
             <div className="space-y-4">
                 {project.chapters.map((chapter) => (
                     <Card key={chapter.id}>
@@ -1501,6 +1380,322 @@ function ChaptersTab({
                     </Card>
                 ))}
             </div>
+        </div>
+    );
+}
+
+// ============================================================
+// CONSISTENCY TAB (Dedicated tab for consistency reports)
+// ============================================================
+
+interface ConsistencyTabProps {
+    project: ProjectDetail;
+    onRefresh: () => void;
+    generatingChapter: number | null;
+    regeneratingChapter: number | null;
+}
+
+function ConsistencyTab({
+    project,
+    onRefresh,
+    generatingChapter,
+    regeneratingChapter
+}: ConsistencyTabProps) {
+    const [runningCheck, setRunningCheck] = useState(false);
+    const [consistencyReport, setConsistencyReport] = useState<any>(null);
+    const [hasExistingReport, setHasExistingReport] = useState(false);
+    const [lastReportDate, setLastReportDate] = useState<Date | null>(null);
+
+    // Calcolo variabili necessarie
+    const completedChapters = project.chapters.filter(ch => ch.status === 'completed').length;
+    const allChaptersComplete = project.outline &&
+        completedChapters === (project.outline.structure as any).chapters?.length;
+
+    // Verifica se ci sono capitoli modificati dopo l'ultimo report
+    const contentChanged = lastReportDate !== null && project.chapters.some((chapter: any) => {
+        const chapterUpdated = new Date(chapter.updatedAt);
+        return chapterUpdated > lastReportDate;
+    });
+
+    // Check se esiste già un consistency report
+    useEffect(() => {
+        const checkExistingReport = async () => {
+            try {
+                const response = await fetch(`/api/projects/${project.id}/consistency-check`);
+                if (response.ok) {
+                    const data = await response.json();
+                    if (data.report) {
+                        setConsistencyReport(data.report);
+                        setHasExistingReport(true);
+                        setLastReportDate(new Date(data.report.createdAt || Date.now()));
+                    }
+                }
+            } catch (error) {
+                console.error('Error checking for existing report:', error);
+            }
+        };
+
+        if (allChaptersComplete) {
+            checkExistingReport();
+        }
+    }, [project.id, allChaptersComplete]);
+
+    const handleConsistencyCheck = async () => {
+        setRunningCheck(true);
+        try {
+            const response = await fetch(`/api/projects/${project.id}/consistency-check`, {
+                method: 'POST',
+            });
+            const data = await response.json();
+            setConsistencyReport(data.report);
+            setHasExistingReport(true);
+            setLastReportDate(new Date());
+            toast.success('✅ Consistency check completato!');
+        } catch (error) {
+            console.error('Error running consistency check:', error);
+            toast.error('Errore durante il consistency check');
+        } finally {
+            setRunningCheck(false);
+        }
+    };
+
+    return (
+        <div className="max-w-4xl mx-auto space-y-6">
+            {/* Header Card */}
+            <Card>
+                <div className="flex items-start justify-between mb-4">
+                    <div>
+                        <h2 className="text-xl font-bold text-gray-900 mb-2">Consistency Check</h2>
+                        <p className="text-sm text-gray-600">
+                            Analisi automatica della coerenza narrativa, stilistica e fattuale del libro completo
+                        </p>
+                    </div>
+                </div>
+
+                {/* Status & Action Button */}
+                {!allChaptersComplete ? (
+                    <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg text-blue-700">
+                        <div className="flex items-start gap-3">
+                            <AlertCircle className="flex-shrink-0 mt-0.5" size={20} />
+                            <div>
+                                <p className="font-medium mb-1">Capitoli incompleti</p>
+                                <p className="text-sm">
+                                    Completa tutti i {(project.outline?.structure as any)?.chapters?.length || 0} capitoli per eseguire il consistency check finale.
+                                    Capitoli completati: {completedChapters}/{(project.outline?.structure as any)?.chapters?.length || 0}
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                ) : (
+                    <div className="space-y-3">
+                        {contentChanged && (
+                            <div className="p-3 bg-orange-50 border border-orange-200 rounded-lg text-orange-700 text-sm flex items-start gap-2">
+                                <AlertCircle className="flex-shrink-0 mt-0.5" size={16} />
+                                <span>
+                                    ⚠️ Hai modificato o rigenerato dei capitoli. Il report precedente potrebbe essere obsoleto - considera di rigenerarlo.
+                                </span>
+                            </div>
+                        )}
+
+                        <button
+                            onClick={handleConsistencyCheck}
+                            disabled={runningCheck || regeneratingChapter !== null || generatingChapter !== null}
+                            className={`w-full px-6 py-3 text-white text-base font-medium rounded-lg flex items-center justify-center gap-3 transition-colors disabled:cursor-not-allowed ${contentChanged
+                                ? 'bg-orange-600 hover:bg-orange-700 disabled:bg-orange-300'
+                                : hasExistingReport
+                                    ? 'bg-green-600 hover:bg-green-700 disabled:bg-green-300'
+                                    : 'bg-purple-600 hover:bg-purple-700 disabled:bg-purple-300'
+                                }`}
+                        >
+                            {runningCheck ? (
+                                <>
+                                    <Loader2 size={20} className="animate-spin" />
+                                    Analisi in corso...
+                                </>
+                            ) : contentChanged ? (
+                                <>
+                                    <AlertCircle size={20} />
+                                    ⚠️ Rigenera Consistency Check
+                                </>
+                            ) : hasExistingReport ? (
+                                <>
+                                    <AlertCircle size={20} />
+                                    ✅ Rigenera Consistency Check
+                                </>
+                            ) : (
+                                <>
+                                    <Sparkles size={20} />
+                                    Esegui Consistency Check
+                                </>
+                            )}
+                        </button>
+                    </div>
+                )}
+            </Card>
+
+            {/* Consistency Report (se disponibile) */}
+            {consistencyReport && (
+                <Card>
+                    <div className="space-y-6">
+                        {/* Header con Overall Score */}
+                        <div className="flex items-start gap-4">
+                            <div className="flex-shrink-0 w-24 h-24 rounded-full bg-purple-100 flex items-center justify-center">
+                                <div className="text-center">
+                                    <div className="text-3xl font-bold text-purple-600">
+                                        {consistencyReport.overallScore || 0}
+                                    </div>
+                                    <div className="text-xs text-purple-600">/100</div>
+                                </div>
+                            </div>
+                            <div className="flex-1">
+                                <h3 className="text-2xl font-bold text-gray-900 mb-2">Report Completo</h3>
+                                <p className="text-gray-600">
+                                    Analisi dettagliata della qualità e coerenza del libro
+                                </p>
+                                {contentChanged && (
+                                    <div className="mt-2 inline-flex items-center gap-1 px-2 py-1 bg-orange-100 text-orange-700 text-xs rounded">
+                                        <AlertCircle size={12} />
+                                        Potrebbe essere obsoleto
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+
+                        {/* Score breakdown cards */}
+                        {consistencyReport.narrative && consistencyReport.style && consistencyReport.consistency && (
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                <div className="bg-gradient-to-br from-blue-50 to-blue-100 rounded-lg p-4 border border-blue-200">
+                                    <div className="text-xs font-semibold text-blue-600 uppercase mb-2">Coerenza Narrativa</div>
+                                    <div className="text-3xl font-bold text-blue-900 mb-1">
+                                        {consistencyReport.narrative.score || 0}<span className="text-lg">/100</span>
+                                    </div>
+                                    <div className="text-xs text-blue-700">
+                                        Arco narrativo, progressione, transizioni
+                                    </div>
+                                </div>
+
+                                <div className="bg-gradient-to-br from-purple-50 to-purple-100 rounded-lg p-4 border border-purple-200">
+                                    <div className="text-xs font-semibold text-purple-600 uppercase mb-2">Coerenza Stilistica</div>
+                                    <div className="text-3xl font-bold text-purple-900 mb-1">
+                                        {consistencyReport.style.score || 0}<span className="text-lg">/100</span>
+                                    </div>
+                                    <div className="text-xs text-purple-700">
+                                        Tono, stile di scrittura, POV
+                                    </div>
+                                </div>
+
+                                <div className="bg-gradient-to-br from-green-50 to-green-100 rounded-lg p-4 border border-green-200">
+                                    <div className="text-xs font-semibold text-green-600 uppercase mb-2">Coerenza Fattuale</div>
+                                    <div className="text-3xl font-bold text-green-900 mb-1">
+                                        {consistencyReport.consistency.score || 0}<span className="text-lg">/100</span>
+                                    </div>
+                                    <div className="text-xs text-green-700">
+                                        Fatti, nomi, numeri, timeline
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+
+                        {/* Issues Section */}
+                        {(consistencyReport.narrative?.issues?.length > 0 ||
+                            consistencyReport.style?.issues?.length > 0 ||
+                            consistencyReport.consistency?.issues?.length > 0) && (
+                                <div>
+                                    <h4 className="text-lg font-semibold text-gray-900 mb-3 flex items-center gap-2">
+                                        <AlertCircle size={20} className="text-orange-600" />
+                                        Criticità Rilevate
+                                    </h4>
+                                    <div className="space-y-3">
+                                        {[
+                                            ...(consistencyReport.narrative?.issues || []),
+                                            ...(consistencyReport.style?.issues || []),
+                                            ...(consistencyReport.consistency?.issues || [])
+                                        ].map((issue: any, idx: number) => (
+                                            <div
+                                                key={idx}
+                                                className={`p-4 rounded-lg border-l-4 ${issue.severity === 'high'
+                                                    ? 'bg-red-50 border-red-500'
+                                                    : issue.severity === 'medium'
+                                                        ? 'bg-yellow-50 border-yellow-500'
+                                                        : 'bg-gray-50 border-gray-300'
+                                                    }`}
+                                            >
+                                                <div className="flex items-start justify-between mb-2">
+                                                    <div className="font-medium text-gray-900">
+                                                        {issue.chapter && (
+                                                            <span className="text-purple-600 mr-2">Cap. {issue.chapter}:</span>
+                                                        )}
+                                                        {issue.description}
+                                                    </div>
+                                                    <span
+                                                        className={`text-xs px-2 py-1 rounded uppercase font-semibold ${issue.severity === 'high'
+                                                            ? 'bg-red-200 text-red-800'
+                                                            : issue.severity === 'medium'
+                                                                ? 'bg-yellow-200 text-yellow-800'
+                                                                : 'bg-gray-200 text-gray-800'
+                                                            }`}
+                                                    >
+                                                        {issue.severity}
+                                                    </span>
+                                                </div>
+                                                <div className="text-sm text-gray-700 flex items-start gap-2">
+                                                    <span className="text-gray-400">💡</span>
+                                                    <span>{issue.suggestion}</span>
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
+
+                        {/* Recommendations */}
+                        {consistencyReport.recommendations && consistencyReport.recommendations.length > 0 && (
+                            <div>
+                                <h4 className="text-lg font-semibold text-gray-900 mb-3">📋 Raccomandazioni</h4>
+                                <div className="bg-purple-50 rounded-lg p-4 border border-purple-200">
+                                    <ul className="space-y-2">
+                                        {consistencyReport.recommendations.map((rec: string, idx: number) => (
+                                            <li key={idx} className="text-gray-800 flex items-start gap-3">
+                                                <span className="text-purple-600 font-bold flex-shrink-0">•</span>
+                                                <span>{rec}</span>
+                                            </li>
+                                        ))}
+                                    </ul>
+                                </div>
+                            </div>
+                        )}
+                    </div>
+                </Card>
+            )}
+
+            {/* Info Card */}
+            {!consistencyReport && allChaptersComplete && (
+                <Card>
+                    <h3 className="text-lg font-semibold text-gray-900 mb-3">ℹ️ Come funziona il Consistency Check</h3>
+                    <div className="space-y-3 text-sm text-gray-700">
+                        <p>
+                            Il consistency check utilizza <strong>GPT-5</strong> per analizzare l&apos;intero libro e verificare:
+                        </p>
+                        <ul className="space-y-2 ml-4">
+                            <li className="flex items-start gap-2">
+                                <span className="text-blue-600">•</span>
+                                <span><strong>Coerenza Narrativa:</strong> Arco narrativo completo, progressione logica, transizioni fluide</span>
+                            </li>
+                            <li className="flex items-start gap-2">
+                                <span className="text-purple-600">•</span>
+                                <span><strong>Coerenza Stilistica:</strong> Tono uniforme, stile consistente, POV e tempi verbali coerenti</span>
+                            </li>
+                            <li className="flex items-start gap-2">
+                                <span className="text-green-600">•</span>
+                                <span><strong>Coerenza Fattuale:</strong> Assenza di contraddizioni in fatti, numeri, date, nomi</span>
+                            </li>
+                        </ul>
+                        <p className="pt-2 text-gray-600">
+                            L&apos;analisi impiega circa 30-60 secondi e genera un report dettagliato con score 0-100, criticità rilevate e raccomandazioni specifiche.
+                        </p>
+                    </div>
+                </Card>
+            )}
         </div>
     );
 }

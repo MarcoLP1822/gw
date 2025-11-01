@@ -294,7 +294,7 @@ const instructions: InstructionSection[] = [
             {
                 title: 'Report',
                 steps: [
-                    'Issues rilevati con severità (alta, media, bassa)',
+                    'Criticità rilevate con severità (alta, media, bassa)',
                     'Suggerimenti per migliorare la coerenza',
                     'Raccomandazioni specifiche per capitolo',
                     'Il report rimane visibile per riferimento futuro',
