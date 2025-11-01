@@ -17,6 +17,31 @@ interface ChangelogEntry {
 
 const changelog: ChangelogEntry[] = [
     {
+        version: '3.3.2',
+        date: '1 Novembre 2025',
+        type: 'bugfix',
+        changes: [
+            {
+                category: 'UI/UX',
+                items: [
+                    'Responsive design per sezione progetti - filtri e card mobile',
+                ],
+            },
+            {
+                category: 'Generale',
+                items: [
+                    'Scroll automatico per evitare card espanse fuori vista',
+                ],
+            },
+            {
+                category: 'Documentazione',
+                items: [
+                    'Aggiorna sezione ISTRUZIONI alla v3.2.0',
+                ],
+            }
+        ],
+    },
+    {
         version: '3.3.1',
         date: '1 Novembre 2025',
         type: 'bugfix',
