@@ -290,38 +290,43 @@ export default function ProjectTableV2() {
                 {/* Filtri */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 mb-4">
                     <div>
-                        <label className="block text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Cerca:</label>
+                        <label className="block text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Cerca:</label>
                         <div className="relative">
                             <input
                                 type="text"
                                 placeholder="Titolo, autore o azienda..."
                                 value={searchTerm}
                                 onChange={(e) => setSearchTerm(e.target.value)}
-                                className="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-md"
+                                className="w-full pl-3 pr-10 py-2.5 text-sm border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                             />
-                            <Search className="absolute right-3 top-2.5 text-gray-400" size={18} />
+                            <Search className="absolute right-3 top-3 text-gray-400 pointer-events-none" size={18} />
                         </div>
                     </div>
 
                     <div>
-                        <label className="block text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Data creazione da:</label>
+                        <label className="block text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Data creazione da:</label>
                         <div className="relative">
                             <input
                                 type="date"
                                 value={dateFrom}
                                 onChange={(e) => setDateFrom(e.target.value)}
-                                className="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-md"
+                                className="w-full pl-3 pr-10 py-2.5 text-sm border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                             />
-                            <Calendar className="absolute right-3 top-2.5 text-gray-400 pointer-events-none" size={18} />
+                            <Calendar className="absolute right-3 top-3 text-gray-400 pointer-events-none" size={18} />
                         </div>
                     </div>
 
                     <div>
-                        <label className="block text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Stato:</label>
+                        <label className="block text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Stato:</label>
                         <select
                             value={statusFilter}
                             onChange={(e) => setStatusFilter(e.target.value)}
-                            className="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-md"
+                            className="w-full px-3 py-2.5 text-sm border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent appearance-none bg-no-repeat bg-right"
+                            style={{
+                                backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3E%3Cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3E%3C/svg%3E")`,
+                                backgroundPosition: 'right 0.5rem center',
+                                backgroundSize: '1.5em 1.5em'
+                            }}
                         >
                             <option value="">Tutti</option>
                             <option value="draft">Bozza</option>
@@ -334,17 +339,17 @@ export default function ProjectTableV2() {
                 </div>
 
                 {/* Pulsanti filtro */}
-                <div className="flex flex-col sm:flex-row gap-2">
+                <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
                     <button
                         onClick={() => { /* Filtri già applicati in real-time */ }}
-                        className="px-4 py-2 text-sm bg-gray-800 dark:bg-gray-700 text-white rounded-md hover:bg-gray-700 dark:hover:bg-gray-600 flex items-center justify-center gap-2"
+                        className="px-4 py-2.5 text-sm font-medium bg-gray-800 dark:bg-gray-700 text-white rounded-lg hover:bg-gray-700 dark:hover:bg-gray-600 transition-colors flex items-center justify-center gap-2"
                     >
                         <Filter size={18} />
                         Filtra
                     </button>
                     <button
                         onClick={clearFilters}
-                        className="px-4 py-2 text-sm bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-md hover:bg-gray-300 dark:hover:bg-gray-600"
+                        className="px-4 py-2.5 text-sm font-medium bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors"
                     >
                         Annulla filtro
                     </button>
@@ -473,49 +478,47 @@ export default function ProjectTableV2() {
                 </div>
 
                 {/* Mobile Card View */}
-                <div className="md:hidden overflow-auto flex-1 p-4 space-y-4">
+                <div className="md:hidden overflow-auto flex-1 p-3 sm:p-4 space-y-3">
                     {sortedProjects.map((project) => (
                         <div
                             key={project.id}
-                            className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-4 hover:shadow-md transition-shadow cursor-pointer"
+                            className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-4 hover:shadow-lg transition-all cursor-pointer"
                             onClick={() => handleProjectClick(project.id)}
                         >
                             {/* Header */}
-                            <div className="flex justify-between items-start mb-3">
-                                <div className="flex-1 min-w-0 pr-2">
-                                    <h3 className="font-semibold text-gray-900 dark:text-gray-100 text-base truncate">
+                            <div className="flex justify-between items-start mb-3 gap-3">
+                                <div className="flex-1 min-w-0">
+                                    <h3 className="font-bold text-gray-900 dark:text-gray-100 text-base leading-tight mb-1">
                                         {project.bookTitle}
                                     </h3>
                                     {project.bookSubtitle && (
-                                        <p className="text-xs text-gray-500 dark:text-gray-400 truncate">{project.bookSubtitle}</p>
+                                        <p className="text-xs text-gray-500 dark:text-gray-400 line-clamp-2">{project.bookSubtitle}</p>
                                     )}
                                 </div>
-                                {getStatusBadge(project.status)}
+                                <div className="flex-shrink-0">
+                                    {getStatusBadge(project.status)}
+                                </div>
                             </div>
 
                             {/* Info Grid */}
-                            <div className="space-y-2 mb-3 text-sm">
-                                <div className="flex justify-between">
-                                    <span className="text-gray-600 dark:text-gray-400">Autore:</span>
-                                    <span className="font-medium text-gray-900 dark:text-gray-200">{project.authorName}</span>
+                            <div className="space-y-2.5 mb-4 text-sm">
+                                <div className="flex justify-between items-center gap-2">
+                                    <span className="text-gray-600 dark:text-gray-400 font-medium">Autore:</span>
+                                    <span className="font-semibold text-gray-900 dark:text-gray-200 text-right">{project.authorName}</span>
                                 </div>
-                                <div className="flex justify-between">
-                                    <span className="text-gray-600 dark:text-gray-400">Azienda:</span>
-                                    <span className="font-medium text-gray-900 dark:text-gray-200 truncate ml-2">{project.company}</span>
+                                <div className="flex justify-between items-center gap-2">
+                                    <span className="text-gray-600 dark:text-gray-400 font-medium">Azienda:</span>
+                                    <span className="font-semibold text-gray-900 dark:text-gray-200 text-right truncate max-w-[60%]">{project.company}</span>
                                 </div>
-                                <div className="flex justify-between">
-                                    <span className="text-gray-600 dark:text-gray-400">Capitoli:</span>
-                                    <span className="inline-block px-2 py-0.5 bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 rounded-full text-xs font-semibold">
+                                <div className="flex justify-between items-center gap-2">
+                                    <span className="text-gray-600 dark:text-gray-400 font-medium">Capitoli:</span>
+                                    <span className="inline-block px-2.5 py-1 bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 rounded-full text-xs font-bold">
                                         {project._count.chapters || 0}
                                     </span>
                                 </div>
-                                <div className="flex justify-between">
-                                    <span className="text-gray-600 dark:text-gray-400">Creato:</span>
-                                    <span className="font-medium text-gray-900 dark:text-gray-200">{formatDate(project.createdAt)}</span>
-                                </div>
-                                <div className="flex justify-between">
-                                    <span className="text-gray-600 dark:text-gray-400">Ultima Modifica:</span>
-                                    <span className="font-medium text-gray-900 dark:text-gray-200">{formatDate(project.updatedAt)}</span>
+                                <div className="flex justify-between items-center gap-2">
+                                    <span className="text-gray-600 dark:text-gray-400 font-medium">Creato:</span>
+                                    <span className="font-semibold text-gray-900 dark:text-gray-200">{formatDate(project.createdAt)}</span>
                                 </div>
                             </div>
 
@@ -523,14 +526,14 @@ export default function ProjectTableV2() {
                             <div className="flex gap-2 pt-3 border-t border-gray-200 dark:border-gray-700">
                                 <button
                                     onClick={(e) => handleEditClick(project.id, e)}
-                                    className="flex-1 flex items-center justify-center gap-2 px-3 py-2 bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 rounded-md hover:bg-blue-100 dark:hover:bg-blue-900/30 transition-colors text-sm font-medium"
+                                    className="flex-1 flex items-center justify-center gap-2 px-3 py-2.5 bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 rounded-lg hover:bg-blue-100 dark:hover:bg-blue-900/30 transition-colors text-sm font-semibold"
                                 >
                                     <Edit2 size={16} />
                                     Modifica
                                 </button>
                                 <button
                                     onClick={(e) => handleDelete(project.id, project.bookTitle, e)}
-                                    className="flex-1 flex items-center justify-center gap-2 px-3 py-2 bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 rounded-md hover:bg-red-100 dark:hover:bg-red-900/30 transition-colors text-sm font-medium"
+                                    className="flex-1 flex items-center justify-center gap-2 px-3 py-2.5 bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 rounded-lg hover:bg-red-100 dark:hover:bg-red-900/30 transition-colors text-sm font-semibold"
                                 >
                                     <Trash2 size={16} />
                                     Elimina
