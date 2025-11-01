@@ -17,6 +17,32 @@ interface ChangelogEntry {
 
 const changelog: ChangelogEntry[] = [
     {
+        version: '2.2.0',
+        date: '1 Novembre 2025',
+        type: 'improvement',
+        changes: [
+            {
+                category: 'Consistency Check',
+                items: [
+                    'Nuova tab dedicata "Consistency" per i report di coerenza del libro',
+                    'UI migliorata con score visuale grande e 3 card con gradient per dimensioni (narrativa, stile, fattuale)',
+                    'Badge di warning per report obsoleti quando i capitoli vengono modificati',
+                    'Ottimizzazione reasoning GPT-5: da "minimal" a "medium" per maggiore accuratezza',
+                    'Aumentato maxOutputTokens da 2000 a 4000 per evitare troncamenti',
+                    'Risolto problema architetturale: ora usa funzione helper centralizzata per reasoning effort',
+                ],
+            },
+            {
+                category: 'Esperienza Utente',
+                items: [
+                    'Tab Capitoli più pulita e focalizzata (rimosso report consistency)',
+                    'Maggiore spazio visivo per report dettagliati nella nuova tab',
+                    'Info card che spiega come funziona il consistency check',
+                ],
+            },
+        ],
+    },
+    {
         version: '2.1.0',
         date: '17 Ottobre 2025',
         type: 'feature',
