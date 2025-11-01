@@ -17,6 +17,26 @@ interface ChangelogEntry {
 
 const changelog: ChangelogEntry[] = [
     {
+        version: '3.3.0',
+        date: '1 Novembre 2025',
+        type: 'feature',
+        changes: [
+            {
+                category: 'Documentazione',
+                items: [
+                    'Aggiorna sezione ISTRUZIONI alla v3.2.0',
+                    'Aggiunti permessi scrittura a GitHub Actions per auto-update changelog',
+                ],
+            },
+            {
+                category: 'Gestione Progetti',
+                items: [
+                    'Aggiornato changelog completo con tutta la storia del progetto',
+                ],
+            }
+        ],
+    },
+    {
         version: '3.2.0',
         date: '1 Novembre 2025',
         type: 'feature',
