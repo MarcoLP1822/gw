@@ -17,6 +17,31 @@ interface ChangelogEntry {
 
 const changelog: ChangelogEntry[] = [
     {
+        version: '3.4.0',
+        date: '1 Novembre 2025',
+        type: 'feature',
+        changes: [
+            {
+                category: 'Documentazione',
+                items: [
+                    'Card collassabili changelog, rimozione header sezioni, evidenziazione sidebar attiva',
+                ],
+            },
+            {
+                category: 'UI/UX',
+                items: [
+                    'Responsive design per sezione progetti - filtri e card mobile',
+                ],
+            },
+            {
+                category: 'Generale',
+                items: [
+                    'Scroll automatico per evitare card espanse fuori vista',
+                ],
+            }
+        ],
+    },
+    {
         version: '3.3.2',
         date: '1 Novembre 2025',
         type: 'bugfix',
