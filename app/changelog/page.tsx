@@ -59,6 +59,13 @@ const changelog: ChangelogEntry[] = [
                 ],
             },
             {
+                category: 'Export e Elaborazione',
+                items: [
+                    'Migliorato feedback durante export DOCX per file di grandi dimensioni',
+                    'Aumentato limite dimensione file a 50MB per upload documenti',
+                ],
+            },
+            {
                 category: 'Interfaccia Utente',
                 items: [
                     'Modal migliorato per creazione progetto con opzione upload documento',
@@ -69,23 +76,24 @@ const changelog: ChangelogEntry[] = [
         ],
     },
     {
-        version: '2.2.1',
-        date: '1 Novembre 2025',
-        type: 'improvement',
+        version: '2.3.0',
+        date: '31 Ottobre 2025',
+        type: 'feature',
         changes: [
             {
-                category: 'Ottimizzazione UI',
+                category: 'Versioning Capitoli',
                 items: [
-                    'Disattivato temporaneamente il componente WorkflowStepper nella pagina progetto',
-                    'Ridotto ingombro visivo per migliore focus sui contenuti principali',
-                    'Codice preservato per futura riattivazione',
+                    'Implementato sistema completo di versioning per i capitoli',
+                    'Funzione Undo per ripristinare versioni precedenti dei capitoli',
+                    'Storico modifiche con timestamp e possibilità di navigazione',
+                    'Preservazione automatica delle versioni ad ogni modifica',
                 ],
             },
         ],
     },
     {
         version: '2.2.0',
-        date: '31 Ottobre 2025',
+        date: '1 Novembre 2025',
         type: 'improvement',
         changes: [
             {
@@ -105,80 +113,236 @@ const changelog: ChangelogEntry[] = [
                     'Tab Capitoli più pulita e focalizzata (rimosso report consistency)',
                     'Maggiore spazio visivo per report dettagliati nella nuova tab',
                     'Info card che spiega come funziona il consistency check',
+                    'Disattivato temporaneamente WorkflowStepper per ridurre ingombro visivo',
+                ],
+            },
+        ],
+    },
+    {
+        version: '2.1.2',
+        date: '29 Ottobre 2025',
+        type: 'bugfix',
+        changes: [
+            {
+                category: 'Parametri AI',
+                items: [
+                    'Rimossi valori hardcoded nel prompt capitoli, ora usa targetWordsPerChapter dinamico',
+                    'Fix visualizzazione temperatura: mostra valore default (0.7) invece di null',
+                    'Aggiunto logging per debug configurazione AI',
+                    'Aumentato targetWordsPerChapter: default 5000, max 10000',
+                    'Aumentato limite maxTokens a 128k (limite reale di GPT-5)',
+                    'Aumentato maxTokens a 20000 per prevenire troncamento capitoli',
+                ],
+            },
+        ],
+    },
+    {
+        version: '2.1.1',
+        date: '28 Ottobre 2025',
+        type: 'bugfix',
+        changes: [
+            {
+                category: 'GPT-5 Integration',
+                items: [
+                    'Fix gestione diversi formati di risposta GPT-5 Responses API',
+                    'Gestito correttamente output_text come oggetto nelle risposte',
+                    'Estrazione testo dall\'array output[] con aumento maxOutputTokens',
+                    'Aggiunto logging completo struttura risposta per debug',
+                    'Gestito caso output_text undefined nelle risposte',
+                ],
+            },
+            {
+                category: 'Contenuti',
+                items: [
+                    'Aggiornato prompt capitoli per migliorare qualità della narrazione',
                 ],
             },
         ],
     },
     {
         version: '2.1.0',
-        date: '17 Ottobre 2025',
-        type: 'feature',
+        date: '27 Ottobre 2025',
+        type: 'bugfix',
         changes: [
             {
-                category: 'Nuove Funzionalità',
+                category: 'PDF Processing',
                 items: [
-                    'Aggiunta sezione Changelog nella sidebar per tracciare tutte le modifiche',
-                    'Sistema di versioning per migliorare la trasparenza degli aggiornamenti',
+                    'Aggiunti polyfill per PDF.js in ambiente Node.js serverless',
+                    'Sostituito pdf-parse con unpdf per compatibilità serverless',
+                    'Fix conversione Buffer a Uint8Array per unpdf',
+                ],
+            },
+        ],
+    },
+    {
+        version: '2.0.1',
+        date: '23 Ottobre 2025',
+        type: 'bugfix',
+        changes: [
+            {
+                category: 'UI Fixes',
+                items: [
+                    'Spostati pulsanti Reset e Salva in AI Settings per migliore UX',
+                    'Risolto bug selezione modello AI',
+                    'Fix errore di spelling in varie sezioni',
                 ],
             },
         ],
     },
     {
         version: '2.0.0',
-        date: '15 Ottobre 2025',
+        date: '16 Ottobre 2025',
         type: 'feature',
         changes: [
             {
                 category: 'Modelli AI',
                 items: [
                     'Aggiunto supporto per GPT-5, GPT-5 mini e GPT-5 nano',
+                    'Implementato selettore modello GPT-5 in AI Settings',
                     'Interfaccia migliorata per la selezione del modello AI',
                     'Descrizioni dettagliate per ogni modello con consigli d\'uso',
+                    'Card AI settings rese collassabili per migliore organizzazione',
                 ],
             },
             {
-                category: 'Configurazione AI',
+                category: 'Gestione Progetti',
                 items: [
+                    'Aggiunta colonna "Ultima Modifica" nella tabella progetti',
+                ],
+            },
+        ],
+    },
+    {
+        version: '1.9.0',
+        date: '17 Ottobre 2025',
+        type: 'feature',
+        changes: [
+            {
+                category: 'Documentazione',
+                items: [
+                    'Aggiunta sezione Changelog nella sidebar per tracciare tutte le modifiche',
+                    'Sistema di versioning per migliorare la trasparenza degli aggiornamenti',
+                ],
+            },
+            {
+                category: 'UI/UX',
+                items: [
+                    'Fix visualizzazione valori default in AI Settings',
+                ],
+            },
+        ],
+    },
+    {
+        version: '1.8.0',
+        date: '16 Ottobre 2025',
+        type: 'feature',
+        changes: [
+            {
+                category: 'Responsive Design',
+                items: [
+                    'Implementazione completa responsive design per tutti i dispositivi',
+                    'Ottimizzazione layout per mobile, tablet e desktop',
+                    'Navigazione adattiva e touch-friendly',
+                ],
+            },
+            {
+                category: 'Deployment',
+                items: [
+                    'Preparazione deployment su Vercel',
+                    'Fix rimozione variabili env mapping da vercel.json',
+                    'Rimozione file .old.ts che causavano errori di build',
+                    'Aggiornamento README con istruzioni deployment',
+                ],
+            },
+        ],
+    },
+    {
+        version: '1.7.0',
+        date: '13 Ottobre 2025',
+        type: 'improvement',
+        changes: [
+            {
+                category: 'AI Configuration',
+                items: [
+                    'Aggiornamento modello AI a gpt-5-mini-2025-08-07',
+                    'Implementato logging dettagliato per chiamate AI',
+                    'Cambiato modello AI per ottimizzare performance',
+                ],
+            },
+            {
+                category: 'Gestione Errori',
+                items: [
+                    'Implementata gestione errori frontend completa',
+                    'Error boundaries e fallback UI',
+                    'Messaggi di errore user-friendly',
+                ],
+            },
+            {
+                category: 'UI/UX',
+                items: [
+                    'Migliorata sezione impostazioni con nuova struttura',
+                    'Interfaccia più intuitiva e organizzata',
+                ],
+            },
+            {
+                category: 'Documentazione',
+                items: [
+                    'Rimosso README.md obsoleto dalla cartella docs',
+                    'Pulizia documentazione e file non necessari',
+                ],
+            },
+        ],
+    },
+    {
+        version: '1.6.0',
+        date: '12 Ottobre 2025',
+        type: 'feature',
+        changes: [
+            {
+                category: 'UI Components',
+                items: [
+                    'Implementati Toast notifications per feedback utente',
+                    'Aggiunto Skeleton loader per stati di caricamento',
+                    'Animazioni e transizioni migliorate',
+                ],
+            },
+            {
+                category: 'AI Settings',
+                items: [
+                    'Ripensata architettura AI settings per maggiore flessibilità',
                     'Nuova UI con sezioni collapsibili per parametri tecnici',
                     'Sezione documenti di riferimento migliorata',
                     'Editor Style Guide potenziato',
                 ],
             },
             {
-                category: 'Gestione Progetti',
+                category: 'Generazione in Batch',
                 items: [
-                    'Funzione "Reset Progetto Completo" per ricominciare da zero',
-                    'Migliore gestione dello stato dei progetti',
-                    'Alert e conferme di sicurezza per azioni distruttive',
+                    'Aggiornato funzionamento generazione batch per migliore efficienza',
+                    'Bug fixes vari relativi alla generazione multipla capitoli',
                 ],
             },
         ],
     },
     {
         version: '1.5.0',
-        date: '10 Ottobre 2025',
-        type: 'improvement',
+        date: '11 Ottobre 2025',
+        type: 'feature',
         changes: [
             {
-                category: 'UI/UX',
+                category: 'Export DOCX',
                 items: [
-                    'Design responsive migliorato per mobile e tablet',
-                    'Sidebar completamente responsiva con menu mobile',
-                    'Animazioni e transizioni più fluide',
-                ],
-            },
-            {
-                category: 'Performance',
-                items: [
-                    'Ottimizzazione caricamento componenti',
-                    'Riduzione tempo di risposta API',
+                    'Sistema completo di export in formato DOCX',
+                    'Implementata costruzione file libro completo in formato Word',
+                    'Formattazione professionale con stili e layout',
+                    'Export singoli capitoli o libro completo',
                 ],
             },
         ],
     },
     {
         version: '1.0.0',
-        date: '1 Ottobre 2025',
+        date: '10 Ottobre 2025',
         type: 'feature',
         changes: [
             {
@@ -186,9 +350,13 @@ const changelog: ChangelogEntry[] = [
                 items: [
                     'Sistema completo di generazione libri con AI',
                     'Gestione progetti e clienti',
+                    'Sistema creazione capitoli con AI',
+                    'Consistency check per verifica coerenza narrativa',
                     'Dashboard analytics',
                     'Sistema di workflow per generazione contenuti',
                     'Editor di contenuti integrato',
+                    'Database PostgreSQL con Prisma ORM',
+                    'Autenticazione e autorizzazione',
                 ],
             },
         ],
