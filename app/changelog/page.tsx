@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { History, Clock, Tag, CheckCircle2, AlertCircle, Info, Zap } from 'lucide-react';
+import { History, Clock, Tag, CheckCircle2, AlertCircle, Info, Zap, ChevronDown, ChevronRight } from 'lucide-react';
 import Sidebar from '@/components/Sidebar';
 import PageContainer from '@/components/PageContainer';
 
@@ -495,6 +495,30 @@ const getTypeBadge = (type: ChangelogEntry['type']) => {
 export default function ChangelogPage() {
     const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+    const [expandedVersions, setExpandedVersions] = useState<string[]>([]);
+
+    const toggleVersion = (version: string) => {
+        const isCurrentlyExpanded = expandedVersions.includes(version);
+
+        setExpandedVersions(prev =>
+            prev.includes(version)
+                ? [] // Chiudi la versione se è già aperta
+                : [version] // Apri solo questa versione (chiudendo tutte le altre)
+        );
+
+        // Scroll alla card dopo un breve delay per permettere l'animazione
+        if (!isCurrentlyExpanded) {
+            setTimeout(() => {
+                const element = document.getElementById(`version-${version}`);
+                if (element) {
+                    element.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'nearest'
+                    });
+                }
+            }, 100);
+        }
+    };
 
     return (
         <div className="flex h-screen overflow-hidden">
@@ -529,50 +553,67 @@ export default function ChangelogPage() {
 
                     {/* Changelog Entries */}
                     <div className="space-y-6">
-                        {changelog.map((entry, index) => (
-                            <div
-                                key={entry.version}
-                                className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden"
-                            >
-                                {/* Entry Header */}
-                                <div className="p-6 border-b border-gray-100 bg-gradient-to-r from-gray-50 to-white">
-                                    <div className="flex items-center justify-between flex-wrap gap-4">
-                                        <div className="flex items-center gap-4">
-                                            <div className="flex items-center gap-2">
-                                                <Tag className="w-5 h-5 text-gray-500" />
-                                                <span className="text-2xl font-bold text-gray-900">
-                                                    v{entry.version}
-                                                </span>
-                                            </div>
-                                            {getTypeBadge(entry.type)}
-                                        </div>
-                                        <div className="flex items-center gap-2 text-sm text-gray-500">
-                                            <Clock className="w-4 h-4" />
-                                            <span>{entry.date}</span>
-                                        </div>
-                                    </div>
-                                </div>
+                        {changelog.map((entry, index) => {
+                            const isExpanded = expandedVersions.includes(entry.version);
 
-                                {/* Entry Content */}
-                                <div className="p-6">
-                                    {entry.changes.map((change, changeIndex) => (
-                                        <div key={changeIndex} className={changeIndex > 0 ? 'mt-6' : ''}>
-                                            <h3 className="text-lg font-semibold text-gray-900 mb-3">
-                                                {change.category}
-                                            </h3>
-                                            <ul className="space-y-2">
-                                                {change.items.map((item, itemIndex) => (
-                                                    <li key={itemIndex} className="flex items-start gap-3">
-                                                        <CheckCircle2 className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" />
-                                                        <span className="text-gray-700">{item}</span>
-                                                    </li>
-                                                ))}
-                                            </ul>
+                            return (
+                                <div
+                                    key={entry.version}
+                                    id={`version-${entry.version}`}
+                                    className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden"
+                                >
+                                    {/* Entry Header - Now Clickable */}
+                                    <button
+                                        onClick={() => toggleVersion(entry.version)}
+                                        className="w-full p-6 border-b border-gray-100 bg-gradient-to-r from-gray-50 to-white hover:from-gray-100 hover:to-gray-50 transition-colors"
+                                    >
+                                        <div className="flex items-center justify-between flex-wrap gap-4">
+                                            <div className="flex items-center gap-4">
+                                                <div className="flex items-center gap-2">
+                                                    <Tag className="w-5 h-5 text-gray-500" />
+                                                    <span className="text-2xl font-bold text-gray-900">
+                                                        v{entry.version}
+                                                    </span>
+                                                </div>
+                                                {getTypeBadge(entry.type)}
+                                            </div>
+                                            <div className="flex items-center gap-3">
+                                                <div className="flex items-center gap-2 text-sm text-gray-500">
+                                                    <Clock className="w-4 h-4" />
+                                                    <span>{entry.date}</span>
+                                                </div>
+                                                {isExpanded ? (
+                                                    <ChevronDown className="w-5 h-5 text-gray-400" />
+                                                ) : (
+                                                    <ChevronRight className="w-5 h-5 text-gray-400" />
+                                                )}
+                                            </div>
                                         </div>
-                                    ))}
+                                    </button>
+
+                                    {/* Entry Content - Collapsible */}
+                                    {isExpanded && (
+                                        <div className="p-6">
+                                            {entry.changes.map((change, changeIndex) => (
+                                                <div key={changeIndex} className={changeIndex > 0 ? 'mt-6' : ''}>
+                                                    <h3 className="text-lg font-semibold text-gray-900 mb-3">
+                                                        {change.category}
+                                                    </h3>
+                                                    <ul className="space-y-2">
+                                                        {change.items.map((item, itemIndex) => (
+                                                            <li key={itemIndex} className="flex items-start gap-3">
+                                                                <CheckCircle2 className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" />
+                                                                <span className="text-gray-700">{item}</span>
+                                                            </li>
+                                                        ))}
+                                                    </ul>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    )}
                                 </div>
-                            </div>
-                        ))}
+                            );
+                        })}
                     </div>
 
                     {/* Footer */}

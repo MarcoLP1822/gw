@@ -15,6 +15,7 @@ import {
 } from 'lucide-react';
 import clsx from 'clsx';
 import { useEffect } from 'react';
+import { usePathname } from 'next/navigation';
 
 interface SidebarProps {
   collapsed: boolean;
@@ -34,6 +35,16 @@ const menuItems = [
 ];
 
 export default function Sidebar({ collapsed, onToggleAction, mobileOpen = false, onMobileClose }: SidebarProps) {
+  const pathname = usePathname();
+
+  // Funzione per verificare se il link è attivo
+  const isActive = (href: string) => {
+    if (href === '/') {
+      return pathname === '/';
+    }
+    return pathname?.startsWith(href);
+  };
+
   // Chiudi il menu mobile quando si ridimensiona lo schermo
   useEffect(() => {
     const handleResize = () => {
@@ -108,22 +119,26 @@ export default function Sidebar({ collapsed, onToggleAction, mobileOpen = false,
         {/* Navigation */}
         <nav className="flex-1 p-2">
           <ul className="space-y-1">
-            {menuItems.map((item) => (
-              <li key={item.label}>
-                <a
-                  href={item.href}
-                  className={clsx(
-                    'flex items-center gap-3 px-3 py-2.5 rounded-lg',
-                    'hover:bg-gray-800 transition-colors',
-                    'text-gray-300 hover:text-white'
-                  )}
-                  title={collapsed ? item.label : undefined}
-                >
-                  <item.icon size={20} />
-                  {!collapsed && <span>{item.label}</span>}
-                </a>
-              </li>
-            ))}
+            {menuItems.map((item) => {
+              const active = isActive(item.href);
+              return (
+                <li key={item.label}>
+                  <a
+                    href={item.href}
+                    className={clsx(
+                      'flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors',
+                      active
+                        ? 'bg-blue-600 text-white'
+                        : 'text-gray-300 hover:bg-gray-800 hover:text-white'
+                    )}
+                    title={collapsed ? item.label : undefined}
+                  >
+                    <item.icon size={20} />
+                    {!collapsed && <span>{item.label}</span>}
+                  </a>
+                </li>
+              );
+            })}
           </ul>
         </nav>
 
