@@ -7,6 +7,35 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [Unreleased]
+
+### Added
+- **Consistency Check Tab** - Dedicated UI for consistency reports
+  - New "Consistency" tab between Chapters and Export
+  - Moved consistency report from Chapters tab to dedicated space
+  - Enhanced UI with large score display (circle badge)
+  - 3 gradient cards for dimension breakdown (narrative, style, factual)
+  - Improved issues display with severity badges and color coding
+  - Warning badges for obsolete reports (when chapters are modified)
+  - Info card explaining how consistency check works
+  - Better button states (disabled during generation)
+
+### Changed
+- **Consistency Check Reasoning** - Optimized GPT-5 parameters
+  - Changed reasoning effort from `minimal` to `medium` for balanced accuracy
+  - Updated `maxOutputTokens` from 2000 to 4000 (sufficient for medium reasoning)
+  - Fixed inconsistency: now uses `getReasoningEffortForTask()` helper function
+  - Added comment: "balanced accuracy" instead of "complex analysis"
+  - Cost-effective while maintaining quality
+
+### Fixed
+- **Consistency Check Architecture** - Resolved parameter inconsistency
+  - Fixed mismatch between `responses-api.ts` (defined `'high'`) and `chapter-generation.ts` (hardcoded `'minimal'`)
+  - Now both files agree on `'medium'` as optimal reasoning level
+  - Eliminated hardcoded reasoning effort in favor of centralized helper function
+
+---
+
 ## [1.0.0] - 2025-10-11 🎉 PRODUCTION READY
 
 ### Added

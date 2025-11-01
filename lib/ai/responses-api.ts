@@ -240,9 +240,9 @@ export function getReasoningEffortForTask(taskType: string): ReasoningEffort {
         'chapter-generation': 'medium',
         'outline-generation': 'medium',
         'style-guide': 'medium',
+        'consistency-check': 'medium', // Balanced: accurate but cost-effective
 
         // Tasks complessi - high
-        'consistency-check': 'high',
         'deep-analysis': 'high',
         'complex-reasoning': 'high',
     };

@@ -686,16 +686,17 @@ ${fixPrompt}`;
         const prompt = generateFinalCheckPrompt(chapters, project.outline.structure);
 
         // 📊 LOG: Using GPT-5 for consistency check
+        const reasoningEffort = getReasoningEffortForTask('consistency-check');
         console.log(`\n🎯 CONSISTENCY CHECK WITH GPT-5`);
-        console.log(`   Reasoning Effort: minimal (consistency scoring)`);
+        console.log(`   Reasoning Effort: ${reasoningEffort} (balanced accuracy)`);
         console.log(`   Verbosity: medium (standard report)\n`);
 
-        // Use GPT-5 Responses API with minimal reasoning
+        // Use GPT-5 Responses API with medium reasoning (sweet spot: accurate + cost-effective)
         const report = await callGPT5JSON<ConsistencyReport>(prompt, {
             model: aiConfig.model as string,
-            reasoningEffort: 'minimal', // Consistency scoring is straightforward
+            reasoningEffort: reasoningEffort, // 'medium' - balanced reasoning
             verbosity: 'medium', // Standard report format
-            maxOutputTokens: 2000,
+            maxOutputTokens: 4000, // Sufficient for medium reasoning + detailed report
         });
 
         console.log(`✅ Consistency check completed`);
