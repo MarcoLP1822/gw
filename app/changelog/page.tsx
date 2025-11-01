@@ -17,6 +17,31 @@ interface ChangelogEntry {
 
 const changelog: ChangelogEntry[] = [
     {
+        version: '3.0.0',
+        date: '1 Novembre 2025',
+        type: 'feature',
+        changes: [
+            {
+                category: 'Creazione Progetti',
+                items: [
+                    'Nuova modalità di creazione progetto a partire da file esistenti',
+                    'Upload di documenti Word (.docx) per inizializzare progetti',
+                    'Estrazione automatica di titolo, descrizione e contenuto dal documento',
+                    'Integrazione con pipeline di elaborazione documenti',
+                    'Suddivisione intelligente del contenuto in capitoli',
+                ],
+            },
+            {
+                category: 'Interfaccia Utente',
+                items: [
+                    'Modal migliorato per creazione progetto con opzione upload documento',
+                    'Indicatori di caricamento durante l\'elaborazione del file',
+                    'Feedback visivo per processo di upload e parsing',
+                ],
+            },
+        ],
+    },
+    {
         version: '2.2.1',
         date: '1 Novembre 2025',
         type: 'improvement',
@@ -33,7 +58,7 @@ const changelog: ChangelogEntry[] = [
     },
     {
         version: '2.2.0',
-        date: '1 Novembre 2025',
+        date: '31 Ottobre 2025',
         type: 'improvement',
         changes: [
             {
