@@ -667,11 +667,26 @@ export default function IstruzioniPage() {
     const [expandedSections, setExpandedSections] = useState<string[]>([]);
 
     const toggleSection = (id: string) => {
+        const isCurrentlyExpanded = expandedSections.includes(id);
+
         setExpandedSections(prev =>
             prev.includes(id)
                 ? [] // Chiudi la sezione se è già aperta
                 : [id] // Apri solo questa sezione (chiudendo tutte le altre)
         );
+
+        // Scroll alla card dopo un breve delay per permettere l'animazione
+        if (!isCurrentlyExpanded) {
+            setTimeout(() => {
+                const element = document.getElementById(`section-${id}`);
+                if (element) {
+                    element.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'nearest'
+                    });
+                }
+            }, 100);
+        }
     };
 
     // Quick stats per hero section
@@ -841,56 +856,58 @@ export default function IstruzioniPage() {
                                 const Icon = section.icon;
 
                                 return (
-                                    <Card key={section.id}>
-                                        <button
-                                            onClick={() => toggleSection(section.id)}
-                                            className="w-full flex items-start gap-3 text-left"
-                                        >
-                                            <Icon className="text-blue-600 flex-shrink-0 mt-1" size={24} />
-                                            <div className="flex-1">
-                                                <div className="flex items-center justify-between">
-                                                    <h2 className="text-xl font-bold text-gray-900">
-                                                        {section.title}
-                                                    </h2>
-                                                    {isExpanded ? (
-                                                        <ChevronDown className="text-gray-400" size={20} />
-                                                    ) : (
-                                                        <ChevronRight className="text-gray-400" size={20} />
+                                    <div key={section.id} id={`section-${section.id}`}>
+                                        <Card>
+                                            <button
+                                                onClick={() => toggleSection(section.id)}
+                                                className="w-full flex items-start gap-3 text-left"
+                                            >
+                                                <Icon className="text-blue-600 flex-shrink-0 mt-1" size={24} />
+                                                <div className="flex-1">
+                                                    <div className="flex items-center justify-between">
+                                                        <h2 className="text-xl font-bold text-gray-900">
+                                                            {section.title}
+                                                        </h2>
+                                                        {isExpanded ? (
+                                                            <ChevronDown className="text-gray-400" size={20} />
+                                                        ) : (
+                                                            <ChevronRight className="text-gray-400" size={20} />
+                                                        )}
+                                                    </div>
+                                                </div>
+                                            </button>
+
+                                            {isExpanded && (
+                                                <div className="mt-4 ml-9 space-y-4">
+                                                    {section.content.map((paragraph, idx) => (
+                                                        <p key={idx} className="text-gray-700 leading-relaxed">
+                                                            {paragraph}
+                                                        </p>
+                                                    ))}
+
+                                                    {section.subsections && (
+                                                        <div className="space-y-6 mt-6">
+                                                            {section.subsections.map((subsection, subIdx) => (
+                                                                <div key={subIdx}>
+                                                                    <h3 className="text-lg font-semibold text-gray-900 mb-3">
+                                                                        {subsection.title}
+                                                                    </h3>
+                                                                    <ul className="space-y-2">
+                                                                        {subsection.steps.map((step, stepIdx) => (
+                                                                            <li key={stepIdx} className="flex gap-3 text-gray-700">
+                                                                                <span className="text-blue-600 text-xl leading-6 flex-shrink-0">•</span>
+                                                                                <span className="leading-6 flex-1">{step}</span>
+                                                                            </li>
+                                                                        ))}
+                                                                    </ul>
+                                                                </div>
+                                                            ))}
+                                                        </div>
                                                     )}
                                                 </div>
-                                            </div>
-                                        </button>
-
-                                        {isExpanded && (
-                                            <div className="mt-4 ml-9 space-y-4">
-                                                {section.content.map((paragraph, idx) => (
-                                                    <p key={idx} className="text-gray-700 leading-relaxed">
-                                                        {paragraph}
-                                                    </p>
-                                                ))}
-
-                                                {section.subsections && (
-                                                    <div className="space-y-6 mt-6">
-                                                        {section.subsections.map((subsection, subIdx) => (
-                                                            <div key={subIdx}>
-                                                                <h3 className="text-lg font-semibold text-gray-900 mb-3">
-                                                                    {subsection.title}
-                                                                </h3>
-                                                                <ul className="space-y-2">
-                                                                    {subsection.steps.map((step, stepIdx) => (
-                                                                        <li key={stepIdx} className="flex gap-3 text-gray-700">
-                                                                            <span className="text-blue-600 text-xl leading-6 flex-shrink-0">•</span>
-                                                                            <span className="leading-6 flex-1">{step}</span>
-                                                                        </li>
-                                                                    ))}
-                                                                </ul>
-                                                            </div>
-                                                        ))}
-                                                    </div>
-                                                )}
-                                            </div>
-                                        )}
-                                    </Card>
+                                            )}
+                                        </Card>
+                                    </div>
                                 );
                             })}
                         </div>
