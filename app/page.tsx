@@ -7,10 +7,11 @@ import PageContainer from '@/components/PageContainer';
 import Card from '@/components/Card';
 import NewProjectModal from '@/components/NewProjectModal';
 import DocumentBasedProjectModal from '@/components/DocumentBasedProjectModal';
+import WebBasedProjectModal from '@/components/WebBasedProjectModal';
 import { ProjectFormData } from '@/types';
 import { projectsApi } from '@/lib/api/projects';
 import { toast } from '@/lib/ui/toast';
-import { FileText, Users, Clock, CheckCircle, Plus, Loader2, Upload, Sparkles } from 'lucide-react';
+import { FileText, Users, Clock, CheckCircle, Plus, Loader2, Upload, Sparkles, Globe } from 'lucide-react';
 
 interface Stats {
   totalProjects: number;
@@ -37,6 +38,7 @@ export default function Home() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isDocumentModalOpen, setIsDocumentModalOpen] = useState(false);
+  const [isWebModalOpen, setIsWebModalOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [stats, setStats] = useState<Stats | null>(null);
   const [recentActivity, setRecentActivity] = useState<Activity[]>([]);
@@ -110,12 +112,20 @@ export default function Home() {
     setIsDocumentModalOpen(true);
   };
 
+  const handleNewProjectFromWebsite = () => {
+    setIsWebModalOpen(true);
+  };
+
   const handleCloseModal = () => {
     setIsModalOpen(false);
   };
 
   const handleCloseDocumentModal = () => {
     setIsDocumentModalOpen(false);
+  };
+
+  const handleCloseWebModal = () => {
+    setIsWebModalOpen(false);
   };
 
   const handleUploadFile = () => {
@@ -188,6 +198,60 @@ export default function Home() {
 
       // Mostra notifica di successo
       toast.success('Progetto creato con successo da documento!');
+
+      // Ricarica i dati della dashboard
+      const statsResponse = await fetch('/api/stats');
+      const statsData = await statsResponse.json();
+      if (statsData.success) {
+        setStats(statsData.stats);
+      }
+
+      // Naviga alla pagina del progetto appena creato
+      console.log('🚀 Redirecting to project:', projectId);
+      router.push(`/progetti/${projectId}`);
+
+    } catch (error) {
+      console.error('❌ Errore durante la creazione del progetto:', error);
+      toast.error('Errore durante la creazione del progetto. Riprova.');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleSubmitWebProject = async (projectData: ProjectFormData & { styleGuide: string }) => {
+    try {
+      setIsSubmitting(true);
+
+      // Estrai styleGuide dal projectData
+      const { styleGuide, ...projectDataOnly } = projectData;
+
+      console.log('🌐 Creating project from website with data:', projectDataOnly);
+
+      // Crea il progetto
+      const response = await projectsApi.create(projectDataOnly);
+      const projectId = response.project.id;
+
+      console.log('✅ Project created:', projectId);
+
+      // Salva lo style guide generato come customStyleGuide
+      console.log('💾 Saving style guide...');
+      const styleGuideResponse = await fetch(`/api/projects/${projectId}/style-guide`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ styleGuide, source: 'ai_from_website' }),
+      });
+
+      if (!styleGuideResponse.ok) {
+        console.warn('⚠️ Failed to save style guide, but project was created');
+      } else {
+        console.log('✅ Style guide saved');
+      }
+
+      // Chiudi il modal
+      setIsWebModalOpen(false);
+
+      // Mostra notifica di successo
+      toast.success('Progetto creato con successo da sito web!');
 
       // Ricarica i dati della dashboard
       const statsResponse = await fetch('/api/stats');
@@ -289,7 +353,7 @@ export default function Home() {
         )}
 
         {/* Call to Action - Nuovo Progetto e Caricamento File */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6 mb-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 mb-6">
           {/* Card Nuovo Progetto - Blu */}
           <Card>
             <div className="flex flex-col items-center justify-center py-8 sm:py-12">
@@ -353,6 +417,38 @@ export default function Home() {
               </button>
             </div>
           </Card>
+
+          {/* Card Nuovo Progetto da Sito Web - Arancione */}
+          <Card>
+            <div className="flex flex-col items-center justify-center py-8 sm:py-12">
+              <div className="mb-4 p-3 sm:p-4 bg-orange-100 rounded-full">
+                <Globe size={28} className="sm:w-8 sm:h-8 text-orange-600" />
+              </div>
+              <h3 className="text-lg sm:text-xl font-semibold text-gray-900 mb-2">
+                Crea da Sito Web
+              </h3>
+              <p className="text-sm sm:text-base text-gray-600 mb-4 sm:mb-6 text-center max-w-md px-4">
+                Analizza un sito web e l&apos;AI estrarrà le informazioni per il progetto
+              </p>
+              <button
+                onClick={handleNewProjectFromWebsite}
+                disabled={isSubmitting}
+                className="px-4 sm:px-6 py-2 sm:py-3 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition-colors flex items-center gap-2 font-medium shadow-sm disabled:opacity-50 disabled:cursor-not-allowed text-sm sm:text-base"
+              >
+                {isSubmitting ? (
+                  <>
+                    <Loader2 size={20} className="animate-spin" />
+                    Creazione...
+                  </>
+                ) : (
+                  <>
+                    <Globe size={20} />
+                    Crea da Sito Web
+                  </>
+                )}
+              </button>
+            </div>
+          </Card>
         </div>
 
         {/* Recent Activity Section */}
@@ -402,6 +498,13 @@ export default function Home() {
         isOpen={isDocumentModalOpen}
         onCloseAction={handleCloseDocumentModal}
         onSubmitAction={handleSubmitDocumentProject}
+      />
+
+      {/* Modal per nuovo progetto da sito web */}
+      <WebBasedProjectModal
+        isOpen={isWebModalOpen}
+        onCloseAction={handleCloseWebModal}
+        onSubmitAction={handleSubmitWebProject}
       />
     </div>
   );

@@ -35,6 +35,7 @@ export default function DocumentBasedProjectModal({
     const [error, setError] = useState<string | null>(null);
     const [analyzing, setAnalyzing] = useState(false);
     const [submitting, setSubmitting] = useState(false);
+    const [analysisStep, setAnalysisStep] = useState<number>(0); // 0=estrazione, 1=style guide, 2=dati progetto, 3=completato
     const [formData, setFormData] = useState<ProjectFormData>({
         authorName: '',
         authorRole: '',
@@ -87,14 +88,23 @@ export default function DocumentBasedProjectModal({
             setAnalyzing(true);
             setError(null);
             setStage('analyzing');
+            setAnalysisStep(0); // Estrazione testo
 
             const formDataToSend = new FormData();
             formDataToSend.append('file', file);
+
+            // Simula progresso visivo
+            const progressTimer1 = setTimeout(() => setAnalysisStep(1), 3000); // Style guide dopo 3s
+            const progressTimer2 = setTimeout(() => setAnalysisStep(2), 8000); // Dati progetto dopo 8s
 
             const response = await fetch('/api/projects/analyze-document', {
                 method: 'POST',
                 body: formDataToSend,
             });
+
+            clearTimeout(progressTimer1);
+            clearTimeout(progressTimer2);
+            setAnalysisStep(3); // Completato
 
             const data = await response.json();
 
@@ -129,6 +139,7 @@ export default function DocumentBasedProjectModal({
         } catch (err) {
             setError(err instanceof Error ? err.message : 'Errore durante l\'analisi');
             setStage('upload');
+            setAnalysisStep(0);
         } finally {
             setAnalyzing(false);
         }
@@ -164,6 +175,7 @@ export default function DocumentBasedProjectModal({
         setError(null);
         setAnalyzing(false);
         setSubmitting(false);
+        setAnalysisStep(0);
         setFormData({
             authorName: '',
             authorRole: '',
@@ -312,17 +324,47 @@ export default function DocumentBasedProjectModal({
                     </div>
 
                     <div className="space-y-3 max-w-md mx-auto">
-                        <div className="flex items-center gap-3 p-3 bg-blue-50 rounded-lg">
-                            <div className="w-2 h-2 bg-blue-600 rounded-full animate-pulse"></div>
-                            <p className="text-sm text-blue-900">Estrazione testo dal documento</p>
+                        <div className={`flex items-center gap-3 p-3 rounded-lg ${analysisStep >= 0 ? 'bg-blue-50' : 'bg-gray-50'
+                            }`}>
+                            {analysisStep === 0 ? (
+                                <Loader2 className="w-5 h-5 text-blue-600 animate-spin flex-shrink-0" />
+                            ) : analysisStep > 0 ? (
+                                <CheckCircle2 className="w-5 h-5 text-green-600 flex-shrink-0" />
+                            ) : (
+                                <div className="w-5 h-5 rounded-full border-2 border-gray-300 flex-shrink-0" />
+                            )}
+                            <p className={`text-sm ${analysisStep === 0 ? 'text-blue-900 font-medium' :
+                                    analysisStep > 0 ? 'text-green-900' :
+                                        'text-gray-600'
+                                }`}>Estrazione testo dal documento</p>
                         </div>
-                        <div className="flex items-center gap-3 p-3 bg-purple-50 rounded-lg">
-                            <div className="w-2 h-2 bg-purple-600 rounded-full animate-pulse"></div>
-                            <p className="text-sm text-purple-900">Generazione style guide</p>
+                        <div className={`flex items-center gap-3 p-3 rounded-lg ${analysisStep >= 1 ? 'bg-purple-50' : 'bg-gray-50'
+                            }`}>
+                            {analysisStep === 1 ? (
+                                <Loader2 className="w-5 h-5 text-purple-600 animate-spin flex-shrink-0" />
+                            ) : analysisStep > 1 ? (
+                                <CheckCircle2 className="w-5 h-5 text-green-600 flex-shrink-0" />
+                            ) : (
+                                <div className="w-5 h-5 rounded-full border-2 border-gray-300 flex-shrink-0" />
+                            )}
+                            <p className={`text-sm ${analysisStep === 1 ? 'text-purple-900 font-medium' :
+                                    analysisStep > 1 ? 'text-green-900' :
+                                        'text-gray-600'
+                                }`}>Generazione style guide</p>
                         </div>
-                        <div className="flex items-center gap-3 p-3 bg-green-50 rounded-lg">
-                            <div className="w-2 h-2 bg-green-600 rounded-full animate-pulse"></div>
-                            <p className="text-sm text-green-900">Estrazione dati progetto</p>
+                        <div className={`flex items-center gap-3 p-3 rounded-lg ${analysisStep >= 2 ? 'bg-green-50' : 'bg-gray-50'
+                            }`}>
+                            {analysisStep === 2 ? (
+                                <Loader2 className="w-5 h-5 text-green-600 animate-spin flex-shrink-0" />
+                            ) : analysisStep > 2 ? (
+                                <CheckCircle2 className="w-5 h-5 text-green-600 flex-shrink-0" />
+                            ) : (
+                                <div className="w-5 h-5 rounded-full border-2 border-gray-300 flex-shrink-0" />
+                            )}
+                            <p className={`text-sm ${analysisStep === 2 ? 'text-green-900 font-medium' :
+                                    analysisStep > 2 ? 'text-green-900' :
+                                        'text-gray-600'
+                                }`}>Estrazione dati progetto</p>
                         </div>
                     </div>
                 </div>
