@@ -17,6 +17,31 @@ interface ChangelogEntry {
 
 const changelog: ChangelogEntry[] = [
     {
+        version: '3.6.0',
+        date: '10 Novembre 2025',
+        type: 'feature',
+        changes: [
+            {
+                category: 'Gestione Progetti',
+                items: [
+                    'Add multi-level web crawling feature for website-based project creation',
+                ],
+            },
+            {
+                category: 'UI/UX',
+                items: [
+                    'Aggiorna istruzioni v3.3.2 con info corrette GPT-5 e nuove funzionalità UI',
+                ],
+            },
+            {
+                category: 'Documentazione',
+                items: [
+                    'Card collassabili changelog, rimozione header sezioni, evidenziazione sidebar attiva',
+                ],
+            }
+        ],
+    },
+    {
         version: '3.5.0',
         date: '1 Novembre 2025',
         type: 'feature',
