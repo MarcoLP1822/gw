@@ -17,6 +17,31 @@ interface ChangelogEntry {
 
 const changelog: ChangelogEntry[] = [
     {
+        version: '3.7.0',
+        date: '13 Novembre 2025',
+        type: 'feature',
+        changes: [
+            {
+                category: 'Documentazione',
+                items: [
+                    'Resolve 413 error by excluding extractedText from documents list API',
+                ],
+            },
+            {
+                category: 'Gestione Progetti',
+                items: [
+                    'Add multi-level web crawling feature for website-based project creation',
+                ],
+            },
+            {
+                category: 'UI/UX',
+                items: [
+                    'Aggiorna istruzioni v3.3.2 con info corrette GPT-5 e nuove funzionalità UI',
+                ],
+            }
+        ],
+    },
+    {
         version: '3.6.0',
         date: '10 Novembre 2025',
         type: 'feature',
