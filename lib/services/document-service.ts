@@ -19,6 +19,13 @@ export interface UploadDocumentParams {
     purpose?: 'style_reference' | 'content_reference';
 }
 
+export interface UploadDocumentFromBlobParams {
+    projectId: string;
+    blobUrl: string;
+    fileName: string;
+    purpose?: 'style_reference' | 'content_reference';
+}
+
 export interface UploadDocumentResult {
     document: ProjectDocument;
     success: boolean;
@@ -32,7 +39,112 @@ const MAX_TOTAL_WORDS = 50000; // Max 50k words total across all docs
 
 export class DocumentService {
     /**
-     * Upload and process a document
+     * Upload and process a document from Vercel Blob URL
+     */
+    static async uploadDocumentFromBlob(
+        params: UploadDocumentFromBlobParams
+    ): Promise<UploadDocumentResult> {
+        try {
+            // Check document limit
+            const existingDocsCount = await prisma.projectDocument.count({
+                where: { projectId: params.projectId },
+            });
+
+            if (existingDocsCount >= MAX_DOCUMENTS_PER_PROJECT) {
+                return {
+                    document: null as any,
+                    success: false,
+                    error: `Massimo ${MAX_DOCUMENTS_PER_PROJECT} documenti per progetto`,
+                };
+            }
+
+            // Fetch file from Vercel Blob
+            const response = await fetch(params.blobUrl);
+            if (!response.ok) {
+                throw new Error('Impossibile scaricare il file da Vercel Blob');
+            }
+
+            const arrayBuffer = await response.arrayBuffer();
+            const buffer = Buffer.from(arrayBuffer);
+            const fileSize = buffer.length;
+
+            // Validate file size
+            if (fileSize > MAX_FILE_SIZE) {
+                return {
+                    document: null as any,
+                    success: false,
+                    error: `File troppo grande. Massimo ${MAX_FILE_SIZE / 1024 / 1024}MB`,
+                };
+            }
+
+            // Determine MIME type from file extension
+            const ext = this.getFileExtension(params.fileName);
+            const mimeTypeMap: Record<string, string> = {
+                'pdf': 'application/pdf',
+                'docx': 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+                'txt': 'text/plain',
+            };
+            const mimeType = mimeTypeMap[ext] || 'application/octet-stream';
+
+            // Extract text from file
+            const extractor = await getExtractorForFile(mimeType, params.fileName);
+
+            if (!extractor.supports(mimeType, params.fileName)) {
+                return {
+                    document: null as any,
+                    success: false,
+                    error: 'Tipo di file non supportato. Usa PDF, DOCX o TXT',
+                };
+            }
+
+            const extraction = await extractor.extract(buffer, params.fileName);
+
+            // Check total word limit
+            const existingWords = await prisma.projectDocument.aggregate({
+                where: { projectId: params.projectId },
+                _sum: { wordCount: true },
+            });
+
+            const totalWords = (existingWords._sum.wordCount || 0) + extraction.wordCount;
+
+            if (totalWords > MAX_TOTAL_WORDS) {
+                return {
+                    document: null as any,
+                    success: false,
+                    error: `Limite parole superato. Massimo ${MAX_TOTAL_WORDS} parole totali`,
+                };
+            }
+
+            // Save to database
+            const document = await prisma.projectDocument.create({
+                data: {
+                    projectId: params.projectId,
+                    originalFileName: params.fileName,
+                    fileType: ext,
+                    fileSizeBytes: fileSize,
+                    extractedText: extraction.text,
+                    wordCount: extraction.wordCount,
+                    purpose: params.purpose || 'style_reference',
+                    processingStatus: 'completed',
+                },
+            });
+
+            return {
+                document,
+                success: true,
+            };
+        } catch (error) {
+            console.error('Error uploading document from blob:', error);
+            return {
+                document: null as any,
+                success: false,
+                error: error instanceof Error ? error.message : 'Errore durante il caricamento',
+            };
+        }
+    }
+
+    /**
+     * Upload and process a document (legacy method for direct uploads)
      */
     static async uploadDocument(
         params: UploadDocumentParams

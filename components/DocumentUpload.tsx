@@ -9,6 +9,8 @@
 
 import { useState, useRef } from 'react';
 import { Upload, FileText, X, Loader2, CheckCircle2, AlertCircle } from 'lucide-react';
+import { upload } from '@vercel/blob/client';
+import type { PutBlobResult } from '@vercel/blob';
 
 interface Document {
     id: string;
@@ -68,26 +70,17 @@ export default function DocumentUpload({
             setError(null);
             setUploadProgress(`Caricamento ${file.name}...`);
 
-            const formData = new FormData();
-            formData.append('file', file);
-            formData.append('purpose', 'style_reference');
-
-            const response = await fetch(`/api/projects/${projectId}/documents`, {
-                method: 'POST',
-                body: formData,
+            // Step 1: Upload directly to Vercel Blob (bypasses 4.5MB limit)
+            const blob: PutBlobResult = await upload(file.name, file, {
+                access: 'public',
+                handleUploadUrl: `/api/projects/${projectId}/documents/upload`,
+                clientPayload: JSON.stringify({
+                    purpose: 'style_reference',
+                    fileName: file.name,
+                }),
             });
 
-            // Check if response is JSON
-            const contentType = response.headers.get('content-type');
-            if (!contentType || !contentType.includes('application/json')) {
-                throw new Error('Errore del server: risposta non valida');
-            }
-
-            const data = await response.json();
-
-            if (!response.ok || !data.success) {
-                throw new Error(data.error || `Errore ${response.status}: impossibile caricare il file`);
-            }
+            console.log('File uploaded to Vercel Blob:', blob.url);
 
             setUploadProgress('Caricamento completato!');
             setTimeout(() => setUploadProgress(null), 2000);
