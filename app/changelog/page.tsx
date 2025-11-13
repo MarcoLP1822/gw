@@ -17,6 +17,26 @@ interface ChangelogEntry {
 
 const changelog: ChangelogEntry[] = [
     {
+        version: '3.10.0',
+        date: '13 Novembre 2025',
+        type: 'feature',
+        changes: [
+            {
+                category: 'Documentazione',
+                items: [
+                    'Pulizia documentazione - rimossi file obsoleti',
+                ],
+            },
+            {
+                category: 'Deployment',
+                items: [
+                    'Implementato Vercel Blob per bypass limite 4.5MB upload',
+                    'Impostato blob vercel',
+                ],
+            }
+        ],
+    },
+    {
         version: '3.9.0',
         date: '13 Novembre 2025',
         type: 'feature',
