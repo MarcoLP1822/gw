@@ -10,6 +10,16 @@ import { DocumentService } from '@/lib/services/document-service';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
+export const maxDuration = 300;
+
+// Configure body size limit for file uploads (50MB)
+export const config = {
+    api: {
+        bodyParser: {
+            sizeLimit: '50mb',
+        },
+    },
+};
 
 // GET - List all documents for a project
 export async function GET(

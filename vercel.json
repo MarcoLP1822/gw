@@ -6,7 +6,9 @@
   "regions": ["iad1"],
   "functions": {
     "app/api/**/*.ts": {
-      "maxDuration": 300
+      "maxDuration": 300,
+      "memory": 1024
     }
-  }
+  },
+  "maxBodySize": 52428800
 }
