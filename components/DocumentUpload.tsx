@@ -77,10 +77,16 @@ export default function DocumentUpload({
                 body: formData,
             });
 
+            // Check if response is JSON
+            const contentType = response.headers.get('content-type');
+            if (!contentType || !contentType.includes('application/json')) {
+                throw new Error('Errore del server: risposta non valida');
+            }
+
             const data = await response.json();
 
-            if (!data.success) {
-                throw new Error(data.error || 'Errore durante il caricamento');
+            if (!response.ok || !data.success) {
+                throw new Error(data.error || `Errore ${response.status}: impossibile caricare il file`);
             }
 
             setUploadProgress('Caricamento completato!');
@@ -93,6 +99,7 @@ export default function DocumentUpload({
 
             onUploadSuccessAction();
         } catch (err) {
+            console.error('Upload error:', err);
             setError(err instanceof Error ? err.message : 'Errore durante il caricamento');
         } finally {
             setUploading(false);

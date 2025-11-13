@@ -63,7 +63,12 @@ export async function POST(
                     success: false,
                     error: 'Nessun file fornito',
                 },
-                { status: 400 }
+                {
+                    status: 400,
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                }
             );
         }
 
@@ -89,22 +94,39 @@ export async function POST(
                     success: false,
                     error: result.error,
                 },
-                { status: 400 }
+                {
+                    status: 400,
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                }
             );
         }
 
-        return NextResponse.json({
-            success: true,
-            document: result.document,
-        });
+        return NextResponse.json(
+            {
+                success: true,
+                document: result.document,
+            },
+            {
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+            }
+        );
     } catch (error) {
         console.error('Error uploading document:', error);
         return NextResponse.json(
             {
                 success: false,
-                error: 'Errore durante il caricamento del documento',
+                error: error instanceof Error ? error.message : 'Errore durante il caricamento del documento',
             },
-            { status: 500 }
+            {
+                status: 500,
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+            }
         );
     }
 }
