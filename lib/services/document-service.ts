@@ -124,12 +124,24 @@ export class DocumentService {
     }
 
     /**
-     * Get all documents for a project
+     * Get all documents for a project (without extracted text to avoid payload size issues)
      */
     static async getProjectDocuments(projectId: string): Promise<ProjectDocument[]> {
         return prisma.projectDocument.findMany({
             where: { projectId },
             orderBy: { uploadedAt: 'desc' },
+            select: {
+                id: true,
+                projectId: true,
+                originalFileName: true,
+                fileType: true,
+                fileSizeBytes: true,
+                wordCount: true,
+                purpose: true,
+                processingStatus: true,
+                uploadedAt: true,
+                // Exclude extractedText to avoid 413 errors
+            },
         });
     }
 

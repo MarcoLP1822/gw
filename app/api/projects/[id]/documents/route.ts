@@ -21,10 +21,17 @@ export async function GET(
 
         const documents = await DocumentService.getProjectDocuments(projectId);
 
-        return NextResponse.json({
-            success: true,
-            documents,
-        });
+        return NextResponse.json(
+            {
+                success: true,
+                documents,
+            },
+            {
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+            }
+        );
     } catch (error) {
         console.error('Error fetching documents:', error);
         return NextResponse.json(
