@@ -9,6 +9,5 @@
       "maxDuration": 300,
       "memory": 1024
     }
-  },
-  "maxBodySize": 52428800
+  }
 }
