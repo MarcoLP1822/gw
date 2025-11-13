@@ -17,6 +17,26 @@ interface ChangelogEntry {
 
 const changelog: ChangelogEntry[] = [
     {
+        version: '3.8.1',
+        date: '13 Novembre 2025',
+        type: 'bugfix',
+        changes: [
+            {
+                category: 'Documentazione',
+                items: [
+                    'Gestione errori JSON nel caricamento documenti',
+                    'Resolve 413 error by excluding extractedText from documents list API',
+                ],
+            },
+            {
+                category: 'Gestione Progetti',
+                items: [
+                    'Correct TypeScript type for getProjectDocuments return value',
+                ],
+            }
+        ],
+    },
+    {
         version: '3.8.0',
         date: '13 Novembre 2025',
         type: 'feature',
