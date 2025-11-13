@@ -1,8 +1,8 @@
 # 🎉 Ghost Writing Platform - Project Summary
 
 **Status**: ✅ **PRODUCTION READY**  
-**Last Update**: 12 Ottobre 2025  
-**Version**: 2.0 - Complete System
+**Last Update**: 13 Novembre 2025  
+**Version**: 2.1 - Complete System + Vercel Blob Upload
 
 ---
 
@@ -12,9 +12,9 @@
 |--------|-------|
 | **Project Status** | ✅ Production Ready |
 | **Features Completed** | 100% |
-| **Implementation Sprints** | 5/5 + 2 UX Phases |
-| **Total Files Created** | ~50 |
-| **Lines of Code** | ~8,000+ |
+| **Implementation Sprints** | 5/5 + 2 UX Phases + File Upload |
+| **Total Files Created** | ~55 |
+| **Lines of Code** | ~8,500+ |
 | **TypeScript Errors** | 0 |
 | **Build Status** | ✅ Success |
 
@@ -32,7 +32,7 @@
 
 #### 2. **AI Outline Generation** ✅
 - Automatic outline generation (10-15 chapters)
-- Model: OpenAI gpt-5-mini-2025-08-07
+- Model: OpenAI gpt-4o-mini
 - Time: ~20 seconds
 - Cost: ~$0.003 per outline
 - Unlimited regeneration
@@ -106,6 +106,14 @@
 - Real-time progress updates
 - Robust error handling
 
+#### 13. **Document Upload & Processing** ✅
+- Upload reference documents (PDF, DOCX, TXT)
+- Vercel Blob integration (bypasses 4.5MB limit)
+- Support for files up to 50MB
+- Automatic text extraction
+- Style guide generation from documents
+- Client-side direct upload
+
 ---
 
 ## 🏗️ Architecture
@@ -153,8 +161,9 @@
                   │
 ┌─────────────────▼───────────────────────────┐
 │      EXTERNAL SERVICES                      │
-│   ├─ OpenAI API (GPT-4o, GPT-5-mini)     │
+│   ├─ OpenAI API (GPT-4o, GPT-4o-mini)      │
 │   ├─ Supabase (PostgreSQL hosting)         │
+│   ├─ Vercel Blob (file storage)            │
 │   └─ Vercel (deployment ready)             │
 └─────────────────────────────────────────────┘
 ```
@@ -168,11 +177,8 @@
 | Document | Purpose | Audience |
 |----------|---------|----------|
 | **README.md** | Main project overview, features, setup | Everyone |
-| **README_AI_SETTINGS.md** | AI configuration system guide | Developers/Users |
-| **IMPLEMENTATION_COMPLETE.md** | UX improvements final report | Developers |
-| **DASHBOARD_REAL_DATA.md** | Dashboard implementation details | Developers |
-| **TROUBLESHOOTING_GUIDE.md** | Common issues and solutions | Developers/Users |
 | **PROJECT_SUMMARY.md** | This file - high-level overview | Everyone |
+| **TROUBLESHOOTING_GUIDE.md** | Common issues and solutions | Developers/Users |
 
 ### Technical Docs (docs/ folder)
 
@@ -183,8 +189,15 @@
 | **docs/COMPONENTS.md** | React components documentation |
 | **docs/DATABASE_SETUP.md** | Database setup guide |
 | **docs/CHANGELOG.md** | Version history |
+| **docs/DEPLOYMENT.md** | Deployment guide |
+| **docs/COMMANDS.md** | CLI commands reference |
+| **docs/VERCEL_BLOB_SETUP.md** | Vercel Blob storage configuration |
+| **docs/FIX_UPLOAD_FILE_SIZE_LIMIT.md** | File upload implementation details |
+| **docs/DOCUMENT_BASED_PROJECT_CREATION.md** | Document-based project workflow |
+| **docs/WEB_BASED_PROJECT_CREATION.md** | Web-based project workflow |
+| **docs/WEB_CRAWLING_FEATURE.md** | Web crawling implementation |
+| **docs/RESPONSIVE_DESIGN.md** | Responsive design patterns |
 | **docs/TROUBLESHOOTING_PGBOUNCER.md** | PgBouncer specific issues |
-| **docs/README.md** | Documentation index |
 
 ---
 
@@ -266,7 +279,7 @@ npm run dev
 
 ## 📊 Cost Estimates
 
-Based on OpenAI pricing (GPT-5-mini):
+Based on OpenAI pricing (GPT-4o-mini):
 
 | Operation | Cost | Time |
 |-----------|------|------|
@@ -355,6 +368,6 @@ The application is complete, tested, and ready for deployment. All core features
 
 ---
 
-**Last Updated**: October 12, 2025  
-**Version**: 2.0  
+**Last Updated**: November 13, 2025  
+**Version**: 2.1  
 **Maintainers**: Ghost Writing Team
