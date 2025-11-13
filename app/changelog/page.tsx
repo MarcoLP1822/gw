@@ -17,6 +17,31 @@ interface ChangelogEntry {
 
 const changelog: ChangelogEntry[] = [
     {
+        version: '3.8.2',
+        date: '13 Novembre 2025',
+        type: 'bugfix',
+        changes: [
+            {
+                category: 'Generale',
+                items: [
+                    'Aumentato limite dimensione file upload a 50MB',
+                ],
+            },
+            {
+                category: 'Documentazione',
+                items: [
+                    'Gestione errori JSON nel caricamento documenti',
+                ],
+            },
+            {
+                category: 'Gestione Progetti',
+                items: [
+                    'Correct TypeScript type for getProjectDocuments return value',
+                ],
+            }
+        ],
+    },
+    {
         version: '3.8.1',
         date: '13 Novembre 2025',
         type: 'bugfix',
