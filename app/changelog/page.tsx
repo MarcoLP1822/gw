@@ -17,6 +17,26 @@ interface ChangelogEntry {
 
 const changelog: ChangelogEntry[] = [
     {
+        version: '3.8.0',
+        date: '13 Novembre 2025',
+        type: 'feature',
+        changes: [
+            {
+                category: 'Gestione Progetti',
+                items: [
+                    'Correct TypeScript type for getProjectDocuments return value',
+                    'Add multi-level web crawling feature for website-based project creation',
+                ],
+            },
+            {
+                category: 'Documentazione',
+                items: [
+                    'Resolve 413 error by excluding extractedText from documents list API',
+                ],
+            }
+        ],
+    },
+    {
         version: '3.7.0',
         date: '13 Novembre 2025',
         type: 'feature',
