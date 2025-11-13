@@ -12,14 +12,8 @@ export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 export const maxDuration = 300;
 
-// Configure body size limit for file uploads (50MB)
-export const config = {
-    api: {
-        bodyParser: {
-            sizeLimit: '50mb',
-        },
-    },
-};
+// Note: Body size limit is now handled by Vercel Blob client upload
+// No need for bodyParser config in App Router
 
 // GET - List all documents for a project
 export async function GET(
