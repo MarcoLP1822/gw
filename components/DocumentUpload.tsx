@@ -82,6 +82,27 @@ export default function DocumentUpload({
 
             console.log('File uploaded to Vercel Blob:', blob.url);
 
+            setUploadProgress('Elaborazione documento...');
+
+            // Step 2: Process the uploaded file (extract text, save to DB)
+            const processResponse = await fetch(`/api/projects/${projectId}/documents/process`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    blobUrl: blob.url,
+                    fileName: file.name,
+                    purpose: 'style_reference',
+                }),
+            });
+
+            const processData = await processResponse.json();
+
+            if (!processData.success) {
+                throw new Error(processData.error || 'Errore durante l\'elaborazione del documento');
+            }
+
             setUploadProgress('Caricamento completato!');
             setTimeout(() => setUploadProgress(null), 2000);
 

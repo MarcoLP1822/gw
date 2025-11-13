@@ -62,33 +62,6 @@ export async function POST(
                     }),
                 };
             },
-            onUploadCompleted: async ({ blob, tokenPayload }) => {
-                // This is called when the upload completes successfully
-                console.log('Blob upload completed:', blob.url);
-
-                try {
-                    // Parse the token payload
-                    if (!tokenPayload) {
-                        throw new Error('Token payload mancante');
-                    }
-                    const payload = JSON.parse(tokenPayload);
-                    const { projectId, purpose, fileName } = payload;
-
-                    // Store document metadata in database
-                    // Note: We now store the blob URL instead of processing the file
-                    await DocumentService.uploadDocumentFromBlob({
-                        projectId,
-                        blobUrl: blob.url,
-                        fileName,
-                        purpose: purpose as 'style_reference' | 'content_reference',
-                    });
-
-                    console.log('Document metadata stored successfully');
-                } catch (error) {
-                    console.error('Error storing document metadata:', error);
-                    throw new Error('Impossibile salvare i metadati del documento');
-                }
-            },
         });
 
         return NextResponse.json(jsonResponse);
