@@ -17,6 +17,26 @@ interface ChangelogEntry {
 
 const changelog: ChangelogEntry[] = [
     {
+        version: '3.8.4',
+        date: '13 Novembre 2025',
+        type: 'bugfix',
+        changes: [
+            {
+                category: 'Deployment',
+                items: [
+                    'Impostato blob vercel',
+                    'Rimosso maxBodySize non valido da vercel.json',
+                ],
+            },
+            {
+                category: 'Generale',
+                items: [
+                    'Aumentato limite dimensione file upload a 50MB',
+                ],
+            }
+        ],
+    },
+    {
         version: '3.8.3',
         date: '13 Novembre 2025',
         type: 'bugfix',
