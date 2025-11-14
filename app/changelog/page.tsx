@@ -17,6 +17,31 @@ interface ChangelogEntry {
 
 const changelog: ChangelogEntry[] = [
     {
+        version: '3.11.0',
+        date: '14 Novembre 2025',
+        type: 'feature',
+        changes: [
+            {
+                category: 'AI Configuration',
+                items: [
+                    'Reduce GPT-5 reasoning effort from medium to low',
+                ],
+            },
+            {
+                category: 'Documentazione',
+                items: [
+                    'Pulizia documentazione - rimossi file obsoleti',
+                ],
+            },
+            {
+                category: 'Deployment',
+                items: [
+                    'Implementato Vercel Blob per bypass limite 4.5MB upload',
+                ],
+            }
+        ],
+    },
+    {
         version: '3.10.0',
         date: '13 Novembre 2025',
         type: 'feature',
