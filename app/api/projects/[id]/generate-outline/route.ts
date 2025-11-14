@@ -70,7 +70,7 @@ ${userPrompt}`;
 
         const generatedOutline = await callGPT5JSON<GeneratedOutline>(fullPrompt, {
             model: DEFAULT_MODEL,
-            reasoningEffort: 'medium',
+            reasoningEffort: 'low',
             verbosity: 'medium',
             maxOutputTokens: 8000, // Aumentato per outline più dettagliati
         });

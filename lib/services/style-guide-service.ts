@@ -279,7 +279,7 @@ ${prompt}`;
 
         const response = await callGPT5JSON<{ styleGuide: string }>(fullPrompt, {
             model,
-            reasoningEffort: 'medium',
+            reasoningEffort: 'low',
             verbosity: 'high', // Style guide richiede dettagli
             maxOutputTokens: 8000, // Aumentato: GPT-5 usa molti token per reasoning
         });

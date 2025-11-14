@@ -41,7 +41,7 @@ export async function callGPT5(options: GPT5RequestOptions): Promise<GPT5Respons
     const {
         model,
         input,
-        reasoningEffort = 'medium',
+        reasoningEffort = 'low',
         verbosity = 'medium',
         maxOutputTokens = 20000, // Aumentato per contenuti lunghi come capitoli
         responseFormat,

@@ -219,7 +219,7 @@ model ProjectAIConfig {
   // Note: GPT-5 family (gpt-5, gpt-5-mini, gpt-5-nano)
 
   // GPT-5 Reasoning & Verbosity (sostituisce temperature/top_p)
-  reasoningEffort String @default("medium") // minimal, low, medium, high
+  reasoningEffort String @default("low") // minimal, low, medium, high
   verbosity       String @default("medium") // low, medium, high
   maxTokens       Int    @default(20000) // Max output tokens (aumentato per capitoli completi)
 

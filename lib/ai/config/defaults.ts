@@ -9,7 +9,7 @@ export const DEFAULT_AI_CONFIG = {
     model: 'gpt-5' as const,
 
     // GPT-5 Parameters
-    reasoningEffort: 'medium' as ReasoningEffort,
+    reasoningEffort: 'low' as ReasoningEffort,
     verbosity: 'medium' as Verbosity,
     maxTokens: 20000, // Aumentato per capitoli completi (evita troncamenti)
 

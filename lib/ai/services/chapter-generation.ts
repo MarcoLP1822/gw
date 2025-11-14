@@ -310,7 +310,7 @@ ${generateChapterPrompt(context)}
 
         // 📊 LOG: Quale modello stiamo usando
         console.log(`\n🎯 USING AI MODEL: ${modelToUse}`);
-        console.log(`   Reasoning Effort: ${aiConfig.reasoningEffort || 'medium'}`);
+        console.log(`   Reasoning Effort: ${aiConfig.reasoningEffort || 'low'}`);
         console.log(`   Verbosity: ${aiConfig.verbosity || 'medium'}`);
         console.log(`   Max Output Tokens: ${aiConfig.maxTokens}\n`);
 
@@ -328,7 +328,7 @@ ${generateChapterPrompt(context)}
                     keyPoints: string[];
                 }>(fullPrompt, {
                     model: modelToUse,
-                    reasoningEffort: (aiConfig.reasoningEffort as ReasoningEffort) || 'medium',
+                    reasoningEffort: (aiConfig.reasoningEffort as ReasoningEffort) || 'low',
                     verbosity: (aiConfig.verbosity as Verbosity) || 'high', // Capitoli richiedono alta verbosità
                     maxOutputTokens: aiConfig.maxTokens || 20000, // Aumentato per capitoli completi
                 });
@@ -432,7 +432,7 @@ ${fixPrompt}`;
             keyPoints: string[];
         }>(combinedPrompt, {
             model: DEFAULT_MODEL,
-            reasoningEffort: 'medium',
+            reasoningEffort: 'low',
             verbosity: 'high',
             maxOutputTokens: maxTokens, // Usa lo stesso limite della generazione iniziale
         });

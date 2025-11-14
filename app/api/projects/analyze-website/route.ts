@@ -145,7 +145,7 @@ Rispondi con un JSON nel formato:
 
     const response = await callGPT5JSON<{ styleGuide: string }>(fullPrompt, {
         model: 'gpt-5-mini',
-        reasoningEffort: 'medium',
+        reasoningEffort: 'low',
         verbosity: 'high',
         maxOutputTokens: 8000,
     });
