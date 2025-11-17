@@ -12,7 +12,7 @@ async function main() {
     const project = await prisma.project.findUnique({
         where: { id: projectId },
         include: {
-            chapters: {
+            Chapter: {
                 orderBy: { chapterNumber: 'asc' },
                 select: {
                     chapterNumber: true,
@@ -31,10 +31,10 @@ async function main() {
     }
 
     console.log('\n📘 Progetto:', project.bookTitle);
-    console.log('📊 Totale capitoli:', project.chapters.length);
+    console.log('📊 Totale capitoli:', project.Chapter.length);
     console.log('\n📝 Capitoli generati:\n');
 
-    project.chapters.forEach(ch => {
+    project.Chapter.forEach(ch => {
         const status = ch.status === 'completed' ? '✅' :
             ch.status === 'generating' ? '⏳' :
                 ch.status === 'error' ? '❌' : '⏸️';

@@ -13,16 +13,16 @@ export async function GET(
                 id: params.id
             },
             include: {
-                outline: true,
-                chapters: {
+                Outline: true,
+                Chapter: {
                     orderBy: {
                         chapterNumber: 'asc'
                     }
                 },
                 _count: {
                     select: {
-                        chapters: true,
-                        generationLogs: true
+                        Chapter: true,
+                        GenerationLog: true
                     }
                 }
             }

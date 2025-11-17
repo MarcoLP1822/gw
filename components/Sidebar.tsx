@@ -7,6 +7,7 @@ import {
   Settings,
   BarChart,
   BookOpen,
+  Book,
   ChevronLeft,
   ChevronRight,
   Menu,
@@ -30,6 +31,7 @@ const menuItems = [
   { icon: Users, label: 'Clienti', href: '/clients' },
   { icon: BarChart, label: 'Analytics', href: '/analytics' },
   { icon: BookOpen, label: 'Istruzioni', href: '/istruzioni' },
+  { icon: Book, label: 'Flipbook', href: '/flipbook' },
   { icon: History, label: 'Changelog', href: '/changelog' },
   { icon: Settings, label: 'Impostazioni', href: '/settings' },
 ];

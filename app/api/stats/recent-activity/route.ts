@@ -26,7 +26,7 @@ export async function GET() {
                 createdAt: 'desc'
             },
             include: {
-                project: {
+                Project: {
                     select: {
                         bookTitle: true
                     }
@@ -48,7 +48,7 @@ export async function GET() {
             ...recentLogs.map(log => ({
                 id: log.id,
                 type: 'generation',
-                title: log.project.bookTitle,
+                title: log.Project.bookTitle,
                 status: log.success ? 'success' : 'error',
                 timestamp: log.createdAt,
                 description: `${log.step} - ${log.success ? 'Completato' : log.errorMessage || 'Errore'}`

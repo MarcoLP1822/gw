@@ -14,22 +14,22 @@ async function fixProjectStatus() {
         // Trova tutti i progetti
         const projects = await prisma.project.findMany({
             include: {
-                outline: true,
-                chapters: true,
+                Outline: true,
+                Chapter: true,
             },
         });
 
         for (const project of projects) {
-            const outlineStructure = project.outline?.structure as any;
+            const outlineStructure = project.Outline?.structure as any;
             const totalChapters = outlineStructure?.chapters?.length || 0;
-            const completedChapters = project.chapters.filter(
+            const completedChapters = project.Chapter.filter(
                 ch => ch.status === 'completed'
             ).length;
 
             let newStatus = project.status;
             let reason = '';
 
-            if (!project.outline) {
+            if (!project.Outline) {
                 newStatus = 'draft';
                 reason = 'No outline yet';
             } else if (completedChapters === 0) {

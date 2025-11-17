@@ -17,10 +17,10 @@ export async function POST(
         const project = await prisma.project.findUnique({
             where: { id: projectId },
             include: {
-                outline: true,
-                chapters: true,
-                consistencyReports: true,
-                generationLogs: true,
+                Outline: true,
+                Chapter: true,
+                ConsistencyReport: true,
+                GenerationLog: true,
             },
         });
 

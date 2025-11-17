@@ -23,7 +23,7 @@ export class DocxGenerator {
      * Genera un documento DOCX completo dal progetto e i suoi capitoli
      */
     static generateDocument(
-        project: Project & { chapters: Chapter[] },
+        project: Project & { Chapter: Chapter[] },
         options: ExportOptions = {}
     ): Document {
         const {
@@ -49,7 +49,7 @@ export class DocxGenerator {
         }
 
         // 4. Chapters
-        const sortedChapters = [...project.chapters].sort(
+        const sortedChapters = [...project.Chapter].sort(
             (a, b) => a.chapterNumber - b.chapterNumber
         );
 

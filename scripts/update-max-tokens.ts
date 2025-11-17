@@ -19,7 +19,7 @@ async function updateMaxTokens() {
                 }
             },
             include: {
-                project: {
+                Project: {
                     select: {
                         id: true,
                         bookTitle: true
@@ -35,8 +35,8 @@ async function updateMaxTokens() {
         for (const config of configs) {
             const currentMaxTokens = config.maxTokens || 4000;
 
-            console.log(`\n📦 Progetto: ${config.project.bookTitle}`);
-            console.log(`   ID: ${config.project.id}`);
+            console.log(`\n📦 Progetto: ${config.Project.bookTitle}`);
+            console.log(`   ID: ${config.Project.id}`);
             console.log(`   Modello: ${config.model}`);
             console.log(`   Max Tokens attuale: ${currentMaxTokens}`);
 

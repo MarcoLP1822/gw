@@ -1,0 +1,55 @@
+import { Chapter } from '@prisma/client';
+
+export const mockChapter: Partial<Chapter> = {
+    id: 'test-chapter-id-1',
+    projectId: 'test-project-id-1',
+    chapterNumber: 1,
+    title: 'Introduzione',
+    content: 'Questo libro esplora la trasformazione digitale...',
+    wordCount: 5000,
+    status: 'completed',
+    aiModel: 'gpt-4o-mini',
+    generatedAt: new Date('2025-01-01'),
+    createdAt: new Date('2025-01-01'),
+    updatedAt: new Date('2025-01-01'),
+};
+
+export const mockChapters: Partial<Chapter>[] = [
+    mockChapter,
+    {
+        id: 'test-chapter-id-2',
+        projectId: 'test-project-id-1',
+        chapterNumber: 2,
+        title: 'La Situazione Attuale',
+        content: 'Il mercato odierno presenta diverse sfide...',
+        wordCount: 5200,
+        status: 'completed',
+        aiModel: 'gpt-4o-mini',
+        generatedAt: new Date('2025-01-01'),
+        createdAt: new Date('2025-01-01'),
+        updatedAt: new Date('2025-01-01'),
+    },
+    {
+        id: 'test-chapter-id-3',
+        projectId: 'test-project-id-1',
+        chapterNumber: 3,
+        title: 'Le Sfide da Affrontare',
+        content: '',
+        wordCount: 0,
+        status: 'pending',
+        createdAt: new Date('2025-01-01'),
+        updatedAt: new Date('2025-01-01'),
+    },
+    {
+        id: 'test-chapter-id-4',
+        projectId: 'test-project-id-1',
+        chapterNumber: 4,
+        title: 'Strategie di Successo',
+        content: 'Le strategie vincenti includono...',
+        wordCount: 3500,
+        status: 'generating',
+        aiModel: 'gpt-4o-mini',
+        createdAt: new Date('2025-01-01'),
+        updatedAt: new Date('2025-01-01'),
+    },
+];

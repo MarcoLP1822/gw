@@ -14,7 +14,7 @@ export async function GET(
         const project = await prisma.project.findUnique({
             where: { id },
             include: {
-                chapters: {
+                Chapter: {
                     orderBy: {
                         chapterNumber: 'asc',
                     },
@@ -30,7 +30,7 @@ export async function GET(
         }
 
         // Verifica che ci siano capitoli
-        if (!project.chapters || project.chapters.length === 0) {
+        if (!project.Chapter || project.Chapter.length === 0) {
             return NextResponse.json(
                 { error: 'Nessun capitolo disponibile per l\'esportazione' },
                 { status: 400 }

@@ -24,7 +24,7 @@ async function main() {
             ],
         },
         include: {
-            aiConfig: true,
+            ProjectAIConfig: true,
         },
     });
 
@@ -35,7 +35,7 @@ async function main() {
     for (const project of projects) {
         const hasCustomStyleGuide = !!project.customStyleGuide;
         const hasGeneratedStyleGuide = !!project.generatedStyleGuide;
-        const hasCustomSystemPrompt = project.aiConfig?.useCustomPrompts && !!project.aiConfig?.customSystemPrompt;
+        const hasCustomSystemPrompt = project.ProjectAIConfig?.useCustomPrompts && !!project.ProjectAIConfig?.customSystemPrompt;
 
         console.log(`\n📘 Progetto: ${project.bookTitle} (${project.id})`);
         console.log(`   - Custom Style Guide: ${hasCustomStyleGuide ? '✅' : '❌'}`);

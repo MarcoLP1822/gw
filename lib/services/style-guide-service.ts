@@ -147,7 +147,7 @@ export class StyleGuideService {
                 where: { id: projectId },
                 select: {
                     customStyleGuide: true,
-                    chapters: {
+                    Chapter: {
                         where: {
                             chapterNumber: { in: [1, 2] },
                             status: 'completed',
@@ -179,7 +179,7 @@ export class StyleGuideService {
                 };
             }
 
-            if (project.chapters.length < 2) {
+            if (project.Chapter.length < 2) {
                 return {
                     styleGuide: '',
                     success: false,
@@ -189,7 +189,7 @@ export class StyleGuideService {
             }
 
             // Combine chapter content
-            const chaptersText = project.chapters
+            const chaptersText = project.Chapter
                 .map((ch) => `=== CAPITOLO ${ch.chapterNumber} ===\n\n${ch.content}`)
                 .join('\n\n');
 

@@ -2150,6 +2150,7 @@ function ConsistencyTab({
 
 function ExportTab({ project }: { project: ProjectDetail }) {
     const [isExporting, setIsExporting] = useState(false);
+    const [isExportingPdf, setIsExportingPdf] = useState(false);
     const [exportError, setExportError] = useState<string | null>(null);
     const [exportSuccess, setExportSuccess] = useState(false);
 
@@ -2186,25 +2187,61 @@ function ExportTab({ project }: { project: ProjectDetail }) {
         }
     };
 
+    const handleExportPdf = async () => {
+        try {
+            setIsExportingPdf(true);
+            setExportError(null);
+            setExportSuccess(false);
+
+            toast.info('📄 Generazione PDF in corso...');
+
+            // Call API
+            const response = await fetch(`/api/projects/${project.id}/export-pdf`);
+
+            if (!response.ok) {
+                const error = await response.json();
+                throw new Error(error.error || 'Export failed');
+            }
+
+            // Download file
+            const blob = await response.blob();
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+
+            // Get filename from header
+            const contentDisposition = response.headers.get('Content-Disposition');
+            let fileName = `${project.bookTitle}-${new Date().toISOString().split('T')[0]}.pdf`;
+            if (contentDisposition) {
+                const match = contentDisposition.match(/filename[^;=\n]*=(["']?)([^;\n]*)\1/);
+                if (match && match[2]) {
+                    fileName = match[2].replace(/['"]/g, '');
+                }
+            }
+
+            a.download = fileName;
+            document.body.appendChild(a);
+            a.click();
+            window.URL.revokeObjectURL(url);
+            document.body.removeChild(a);
+
+            setExportSuccess(true);
+            toast.success('📄 PDF scaricato e salvato nella libreria Flipbook!');
+            setTimeout(() => setExportSuccess(false), 3000);
+        } catch (err) {
+            const errorMessage = err instanceof Error ? err.message : 'Errore sconosciuto';
+            setExportError(errorMessage);
+            toast.error(`Errore: ${errorMessage}`);
+        } finally {
+            setIsExportingPdf(false);
+        }
+    };
+
     return (
         <div className="max-w-4xl mx-auto space-y-6">
             {/* Status Card */}
             <Card>
                 <h3 className="text-lg font-semibold text-gray-900 mb-4">📄 Esporta Documento</h3>
-
-                <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
-                    <div className="flex items-start gap-3">
-                        <FileText className="w-5 h-5 text-blue-600 mt-0.5" />
-                        <div className="flex-1">
-                            <h4 className="font-medium text-blue-900 mb-1">
-                                Formato: Microsoft Word (DOCX)
-                            </h4>
-                            <p className="text-sm text-blue-700">
-                                Il documento include: copertina, indice, tutti i capitoli e biografia dell&apos;autore.
-                            </p>
-                        </div>
-                    </div>
-                </div>
 
                 {/* Project Stats */}
                 <div className="grid grid-cols-3 gap-4 mb-6">
@@ -2252,26 +2289,51 @@ function ExportTab({ project }: { project: ProjectDetail }) {
                     )}
 
                     {hasChapters && (
-                        <button
-                            onClick={handleExport}
-                            disabled={isExporting}
-                            className={`flex items-center gap-2 px-8 py-4 rounded-lg font-medium transition-all ${isExporting
-                                ? 'bg-blue-400 cursor-not-allowed'
-                                : 'bg-blue-600 hover:bg-blue-700 shadow-lg hover:shadow-xl'
-                                } text-white`}
-                        >
-                            {isExporting ? (
-                                <>
-                                    <Loader2 className="animate-spin" size={24} />
-                                    <span>Generazione DOCX...</span>
-                                </>
-                            ) : (
-                                <>
-                                    <Download size={24} />
-                                    <span>Scarica DOCX</span>
-                                </>
-                            )}
-                        </button>
+                        <div className="flex flex-col sm:flex-row gap-4">
+                            {/* DOCX Export Button */}
+                            <button
+                                onClick={handleExport}
+                                disabled={isExporting || isExportingPdf}
+                                className={`flex items-center gap-2 px-8 py-4 rounded-lg font-medium transition-all ${isExporting || isExportingPdf
+                                    ? 'bg-blue-400 cursor-not-allowed'
+                                    : 'bg-blue-600 hover:bg-blue-700 shadow-lg hover:shadow-xl'
+                                    } text-white`}
+                            >
+                                {isExporting ? (
+                                    <>
+                                        <Loader2 className="animate-spin" size={24} />
+                                        <span>Generazione DOCX...</span>
+                                    </>
+                                ) : (
+                                    <>
+                                        <Download size={24} />
+                                        <span>Scarica DOCX</span>
+                                    </>
+                                )}
+                            </button>
+
+                            {/* PDF Export Button */}
+                            <button
+                                onClick={handleExportPdf}
+                                disabled={isExporting || isExportingPdf}
+                                className={`flex items-center gap-2 px-8 py-4 rounded-lg font-medium transition-all ${isExporting || isExportingPdf
+                                    ? 'bg-green-400 cursor-not-allowed'
+                                    : 'bg-green-600 hover:bg-green-700 shadow-lg hover:shadow-xl'
+                                    } text-white`}
+                            >
+                                {isExportingPdf ? (
+                                    <>
+                                        <Loader2 className="animate-spin" size={24} />
+                                        <span>Generazione PDF...</span>
+                                    </>
+                                ) : (
+                                    <>
+                                        <FileText size={24} />
+                                        <span>Scarica PDF</span>
+                                    </>
+                                )}
+                            </button>
+                        </div>
                     )}
 
                     {/* Success Message */}
@@ -2302,7 +2364,10 @@ function ExportTab({ project }: { project: ProjectDetail }) {
                 <h3 className="text-lg font-semibold text-gray-900 mb-3">ℹ️ Informazioni sull&apos;Export</h3>
                 <div className="space-y-2 text-sm text-gray-700">
                     <p>
-                        <strong>Formato:</strong> Microsoft Word (.docx) compatibile con Word 2013+
+                        <strong>Formato DOCX:</strong> Microsoft Word (.docx) compatibile con Word 2013+
+                    </p>
+                    <p>
+                        <strong>Formato PDF:</strong> Il PDF viene automaticamente salvato nella libreria Flipbook per la visualizzazione online
                     </p>
                     <p>
                         <strong>Contenuto:</strong> Copertina personalizzata, copyright, indice automatico,
@@ -2313,7 +2378,7 @@ function ExportTab({ project }: { project: ProjectDetail }) {
                         tipografici standard
                     </p>
                     <p>
-                        <strong>Editing:</strong> Puoi modificare ulteriormente il documento in Microsoft Word,
+                        <strong>Editing:</strong> Puoi modificare ulteriormente il documento DOCX in Microsoft Word,
                         Google Docs o LibreOffice
                     </p>
                 </div>

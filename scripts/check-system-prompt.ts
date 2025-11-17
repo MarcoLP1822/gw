@@ -12,7 +12,7 @@ async function main() {
     const project = await prisma.project.findUnique({
         where: { id: projectId },
         include: {
-            aiConfig: true,
+            ProjectAIConfig: true,
         },
     });
 
@@ -24,19 +24,19 @@ async function main() {
     console.log('\n📘 Progetto:', project.bookTitle);
     console.log('📝 ID:', project.id);
     console.log('\n🔧 AI Config:');
-    console.log('   - useCustomPrompts:', project.aiConfig?.useCustomPrompts);
-    console.log('   - Has customSystemPrompt:', !!project.aiConfig?.customSystemPrompt);
+    console.log('   - useCustomPrompts:', project.ProjectAIConfig?.useCustomPrompts);
+    console.log('   - Has customSystemPrompt:', !!project.ProjectAIConfig?.customSystemPrompt);
 
-    if (project.aiConfig?.customSystemPrompt) {
+    if (project.ProjectAIConfig?.customSystemPrompt) {
         console.log('\n📄 Custom System Prompt (primi 500 caratteri):');
         console.log('━'.repeat(80));
-        console.log(project.aiConfig.customSystemPrompt.substring(0, 500));
+        console.log(project.ProjectAIConfig.customSystemPrompt.substring(0, 500));
         console.log('━'.repeat(80));
-        console.log(`\n... (totale ${project.aiConfig.customSystemPrompt.length} caratteri)`);
+        console.log(`\n... (totale ${project.ProjectAIConfig.customSystemPrompt.length} caratteri)`);
 
         // Cerca "Sole" o "Colette" nel prompt
-        const hasSole = project.aiConfig.customSystemPrompt.includes('Sole');
-        const hasColette = project.aiConfig.customSystemPrompt.includes('Colette');
+        const hasSole = project.ProjectAIConfig.customSystemPrompt.includes('Sole');
+        const hasColette = project.ProjectAIConfig.customSystemPrompt.includes('Colette');
 
         if (hasSole || hasColette) {
             console.log('\n⚠️ CONFLITTO RILEVATO!');

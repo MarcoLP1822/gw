@@ -120,14 +120,14 @@ export class ChapterGenerationService {
         // Verifica che il progetto esista
         const project = await prisma.project.findUnique({
             where: { id: projectId },
-            include: { outline: true },
+            include: { Outline: true },
         });
 
         if (!project) {
             throw ApiErrors.notFound('Progetto', projectId);
         }
 
-        if (!project.outline) {
+        if (!project.Outline) {
             throw ApiErrors.prerequisiteNotMet(
                 "Genera prima l'outline del libro",
                 { projectId, chapterNumber }
@@ -167,10 +167,10 @@ export class ChapterGenerationService {
         // Carica progetto e outline
         const project = await prisma.project.findUnique({
             where: { id: projectId },
-            include: { outline: true },
+            include: { Outline: true },
         });
 
-        if (!project || !project.outline) {
+        if (!project || !project.Outline) {
             throw ApiErrors.notFound('Progetto o outline', projectId);
         }
 
@@ -238,7 +238,7 @@ export class ChapterGenerationService {
         }
 
         // Estrai info capitolo corrente dall'outline
-        const outlineStructure = project.outline.structure as any;
+        const outlineStructure = project.Outline.structure as any;
         const currentChapterInfo = outlineStructure.chapters[chapterNumber - 1];
 
         return {
@@ -593,16 +593,16 @@ ${fixPrompt}`;
         const project = await prisma.project.findUnique({
             where: { id: projectId },
             include: {
-                outline: true,
-                chapters: true,
+                Outline: true,
+                Chapter: true,
             },
         });
 
-        if (!project || !project.outline) return;
+        if (!project || !project.Outline) return;
 
-        const outlineStructure = project.outline.structure as any;
+        const outlineStructure = project.Outline.structure as any;
         const totalChapters = outlineStructure.chapters?.length || 0;
-        const completedChapters = project.chapters.filter(
+        const completedChapters = project.Chapter.filter(
             ch => ch.status === 'completed'
         ).length;
 
@@ -664,26 +664,26 @@ ${fixPrompt}`;
         const project = await prisma.project.findUnique({
             where: { id: projectId },
             include: {
-                outline: true,
-                chapters: { orderBy: { chapterNumber: 'asc' } },
-                aiConfig: true, // Include AI config
+                Outline: true,
+                Chapter: { orderBy: { chapterNumber: 'asc' } },
+                ProjectAIConfig: true, // Include AI config
             },
         });
 
-        if (!project || !project.outline) {
+        if (!project || !project.Outline) {
             throw new Error('Progetto o outline non trovato');
         }
 
         // Get AI config (or use default)
-        const aiConfig = project.aiConfig || await AIConfigService.getOrCreate(projectId);
+        const aiConfig = project.ProjectAIConfig || await AIConfigService.getOrCreate(projectId);
 
-        const chapters = project.chapters.map((ch) => ({
+        const chapters = project.Chapter.map((ch) => ({
             number: ch.chapterNumber,
             title: ch.title,
             content: ch.content,
         }));
 
-        const prompt = generateFinalCheckPrompt(chapters, project.outline.structure);
+        const prompt = generateFinalCheckPrompt(chapters, project.Outline.structure);
 
         // 📊 LOG: Using GPT-5 for consistency check
         const reasoningEffort = getReasoningEffortForTask('consistency-check');
