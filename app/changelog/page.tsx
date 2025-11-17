@@ -17,6 +17,31 @@ interface ChangelogEntry {
 
 const changelog: ChangelogEntry[] = [
     {
+        version: '3.11.1',
+        date: '17 Novembre 2025',
+        type: 'improvement',
+        changes: [
+            {
+                category: 'Generale',
+                items: [
+                    'Rimosse statistiche dal flipbook per accorciare la pagina',
+                ],
+            },
+            {
+                category: 'AI Configuration',
+                items: [
+                    'Reduce GPT-5 reasoning effort from medium to low',
+                ],
+            },
+            {
+                category: 'Documentazione',
+                items: [
+                    'Pulizia documentazione - rimossi file obsoleti',
+                ],
+            }
+        ],
+    },
+    {
         version: '3.11.0',
         date: '14 Novembre 2025',
         type: 'feature',
