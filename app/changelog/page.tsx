@@ -17,6 +17,26 @@ interface ChangelogEntry {
 
 const changelog: ChangelogEntry[] = [
     {
+        version: '3.11.4',
+        date: '17 Novembre 2025',
+        type: 'bugfix',
+        changes: [
+            {
+                category: 'AI Configuration',
+                items: [
+                    'Next.js 15+ compatibility - async params and Prisma model IDs',
+                    'Aggiornato ai-config route per Next.js 15/16 params asincroni',
+                ],
+            },
+            {
+                category: 'Generale',
+                items: [
+                    'Aggiornato anche metodo PATCH per params asincroni',
+                ],
+            }
+        ],
+    },
+    {
         version: '3.11.3',
         date: '17 Novembre 2025',
         type: 'bugfix',
