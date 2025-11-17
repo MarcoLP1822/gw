@@ -55,6 +55,7 @@ interface ProjectDetail {
     updatedAt: Date;
     outline?: any;
     Outline?: any;
+    consistencyReport?: any;
     Chapter: any[];
     _count: {
         Chapter: number;
@@ -1867,9 +1868,12 @@ function ConsistencyTab({
     regeneratingChapter
 }: ConsistencyTabProps) {
     const [runningCheck, setRunningCheck] = useState(false);
-    const [consistencyReport, setConsistencyReport] = useState<any>(null);
-    const [hasExistingReport, setHasExistingReport] = useState(false);
-    const [lastReportDate, setLastReportDate] = useState<Date | null>(null);
+
+    // Usa il report già incluso nel progetto
+    const existingReport = (project as any).consistencyReport;
+    const consistencyReport = existingReport?.report || null;
+    const hasExistingReport = !!existingReport;
+    const lastReportDate = existingReport?.createdAt ? new Date(existingReport.createdAt) : null;
 
     // Calcolo variabili necessarie
     const completedChapters = project.Chapter.filter(ch => ch.status === 'completed').length;
@@ -1882,29 +1886,6 @@ function ConsistencyTab({
         return chapterUpdated > lastReportDate;
     });
 
-    // Check se esiste già un consistency report
-    useEffect(() => {
-        const checkExistingReport = async () => {
-            try {
-                const response = await fetch(`/api/projects/${project.id}/consistency-check`);
-                if (response.ok) {
-                    const data = await response.json();
-                    if (data.report) {
-                        setConsistencyReport(data.report);
-                        setHasExistingReport(true);
-                        setLastReportDate(new Date(data.report.createdAt || Date.now()));
-                    }
-                }
-            } catch (error) {
-                console.error('Error checking for existing report:', error);
-            }
-        };
-
-        if (allChaptersComplete) {
-            checkExistingReport();
-        }
-    }, [project.id, allChaptersComplete]);
-
     const handleConsistencyCheck = async () => {
         setRunningCheck(true);
         try {
@@ -1912,10 +1893,9 @@ function ConsistencyTab({
                 method: 'POST',
             });
             const data = await response.json();
-            setConsistencyReport(data.report);
-            setHasExistingReport(true);
-            setLastReportDate(new Date());
             toast.success('✅ Consistency check completato!');
+            // Ricarica i dati del progetto per mostrare il nuovo report
+            await onRefresh();
         } catch (error) {
             console.error('Error running consistency check:', error);
             toast.error('Errore durante il consistency check');

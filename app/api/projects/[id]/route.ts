@@ -23,6 +23,12 @@ export async function GET(
                         chapterNumber: 'asc'
                     }
                 },
+                ConsistencyReport: {
+                    orderBy: {
+                        createdAt: 'desc'
+                    },
+                    take: 1
+                },
                 _count: {
                     select: {
                         Chapter: true,
@@ -41,9 +47,19 @@ export async function GET(
         }
 
         console.log('✅ Project found:', project.bookTitle);
+        console.log('📋 Outline present:', !!project.Outline);
+        console.log('📊 Consistency reports:', project.ConsistencyReport?.length || 0);
+
+        // Normalizza i dati per il frontend (lowercase per compatibilità)
+        const normalizedProject = {
+            ...project,
+            outline: project.Outline, // Aggiungi versione lowercase
+            consistencyReport: project.ConsistencyReport?.[0] || null
+        };
+
         return NextResponse.json({
             success: true,
-            project
+            project: normalizedProject
         });
 
     } catch (error) {
