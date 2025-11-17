@@ -106,20 +106,21 @@ export async function DELETE(
  */
 export async function PATCH(
     request: NextRequest,
-    { params }: { params: { id: string } }
+    { params }: { params: Promise<{ id: string }> }
 ) {
     try {
+        const { id } = await params;
         const body = await request.json();
 
         // Recupera config attuale
-        const currentConfig = await AIConfigService.getOrCreate(params.id);
+        const currentConfig = await AIConfigService.getOrCreate(id);
 
         // Merge con i nuovi dati
         const mergedData = {
             ...currentConfig,
             ...body,
             // Assicurati che projectId non venga sovrascritto
-            projectId: params.id,
+            projectId: id,
         };
 
         // Valida il risultato
@@ -135,7 +136,7 @@ export async function PATCH(
         }
 
         // Aggiorna
-        const config = await AIConfigService.update(params.id, mergedData);
+        const config = await AIConfigService.update(id, mergedData);
 
         return NextResponse.json(config);
     } catch (error: any) {
