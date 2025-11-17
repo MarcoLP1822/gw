@@ -17,6 +17,31 @@ interface ChangelogEntry {
 
 const changelog: ChangelogEntry[] = [
     {
+        version: '3.11.5',
+        date: '17 Novembre 2025',
+        type: 'bugfix',
+        changes: [
+            {
+                category: 'UI/UX',
+                items: [
+                    'Exclude test files from Vercel production build',
+                ],
+            },
+            {
+                category: 'AI Configuration',
+                items: [
+                    'Next.js 15+ compatibility - async params and Prisma model IDs',
+                ],
+            },
+            {
+                category: 'Generale',
+                items: [
+                    'Aggiornato anche metodo PATCH per params asincroni',
+                ],
+            }
+        ],
+    },
+    {
         version: '3.11.4',
         date: '17 Novembre 2025',
         type: 'bugfix',
