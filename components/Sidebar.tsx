@@ -86,7 +86,7 @@ export default function Sidebar({ collapsed, onToggleAction, mobileOpen = false,
       <div
         className={clsx(
           'bg-gray-900 text-white transition-all duration-300 flex flex-col',
-          'fixed lg:relative inset-y-0 left-0 z-50',
+          'fixed inset-y-0 left-0 z-50 h-screen',
           // Desktop
           'lg:translate-x-0',
           collapsed ? 'lg:w-16' : 'lg:w-64',

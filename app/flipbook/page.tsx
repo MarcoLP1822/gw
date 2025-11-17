@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import dynamic from 'next/dynamic';
+import clsx from 'clsx';
 import Sidebar from '@/components/Sidebar';
 import PageContainer from '@/components/PageContainer';
 import BookSelector from '@/components/BookSelector';
@@ -73,7 +74,10 @@ export default function FlipbookPage() {
                 onMobileClose={() => setMobileOpen(false)}
             />
 
-            <div className="flex-1 overflow-auto">
+            <div className={clsx(
+                "flex-1 overflow-auto transition-all duration-300",
+                sidebarCollapsed ? "lg:ml-16" : "lg:ml-64"
+            )}>
                 <PageContainer
                     title="📚 Flipbook - Libreria Digitale"
                     onMenuClick={() => setMobileOpen(true)}
