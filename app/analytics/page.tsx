@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import clsx from 'clsx';
 import Sidebar from '@/components/Sidebar';
 import PageContainer from '@/components/PageContainer';
 import Card from '@/components/Card';
@@ -122,201 +123,206 @@ export default function AnalyticsPage() {
             />
 
             {/* Analytics Content */}
-            <PageContainer
-                title="Analytics"
-                description="Analisi e statistiche delle tue attività"
-                onMenuClick={() => setMobileMenuOpen(true)}
-            >
-                {/* Stats Cards */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mb-6">
-                    {stats.map((stat, index) => (
-                        <Card key={index} padding="lg">
-                            <div className="flex items-start justify-between">
-                                <div className="flex-1">
-                                    <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">{stat.label}</p>
-                                    <p className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-2">{stat.value}</p>
-                                    <div className="flex items-center gap-1">
-                                        {stat.trend === 'up' ? (
-                                            <TrendingUp size={16} className="text-green-600 dark:text-green-400" />
-                                        ) : (
-                                            <TrendingDown size={16} className="text-red-600 dark:text-red-400" />
-                                        )}
-                                        <span className={`text-sm font-medium ${stat.trend === 'up' ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'
-                                            }`}>
-                                            {stat.change}
-                                        </span>
-                                        <span className="text-sm text-gray-500 dark:text-gray-500">vs mese scorso</span>
-                                    </div>
-                                </div>
-                                <div className={`p-3 rounded-lg bg-gray-100 dark:bg-gray-700`}>
-                                    <stat.icon className={stat.color} size={24} />
-                                </div>
-                            </div>
-                        </Card>
-                    ))}
-                </div>
-
-                {/* Charts Row */}
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-                    {/* Projects Chart */}
-                    <Card padding="lg">
-                        <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">Progetti per Mese</h3>
-                        {loading ? (
-                            <div className="space-y-3">
-                                {[1, 2, 3, 4, 5, 6].map((i) => (
-                                    <div key={i} className="animate-pulse flex items-center gap-3">
-                                        <div className="h-4 bg-gray-200 rounded w-8"></div>
-                                        <div className="flex-1 h-8 bg-gray-200 rounded"></div>
-                                    </div>
-                                ))}
-                            </div>
-                        ) : analytics && analytics.monthlyData.length > 0 ? (
-                            <div className="space-y-3">
-                                {analytics.monthlyData.map((data, index) => (
-                                    <div key={index} className="flex items-center gap-3">
-                                        <span className="text-sm font-medium text-gray-600 dark:text-gray-400 w-12">{data.month}</span>
-                                        <div className="flex-1 bg-gray-200 dark:bg-gray-700 rounded-full h-8 relative overflow-hidden">
-                                            <div
-                                                className="bg-blue-600 dark:bg-blue-500 h-full rounded-full flex items-center justify-end pr-3"
-                                                style={{
-                                                    width: `${Math.max(10, Math.min(100, (data.projects / Math.max(...analytics.monthlyData.map(m => m.projects))) * 100))}%`
-                                                }}
-                                            >
-                                                <span className="text-xs font-semibold text-white">
-                                                    {data.projects}
-                                                </span>
-                                            </div>
-                                        </div>
-                                    </div>
-                                ))}
-                            </div>
-                        ) : (
-                            <p className="text-gray-500">Nessun dato disponibile</p>
-                        )}
-                    </Card>
-
-                    {/* Words Chart */}
-                    <Card padding="lg">
-                        <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">Parole Scritte per Mese</h3>
-                        {loading ? (
-                            <div className="space-y-3">
-                                {[1, 2, 3, 4, 5, 6].map((i) => (
-                                    <div key={i} className="animate-pulse flex items-center gap-3">
-                                        <div className="h-4 bg-gray-200 rounded w-8"></div>
-                                        <div className="flex-1 h-8 bg-gray-200 rounded"></div>
-                                    </div>
-                                ))}
-                            </div>
-                        ) : analytics && analytics.monthlyData.length > 0 ? (
-                            <div className="space-y-3">
-                                {analytics.monthlyData.map((data, index) => (
-                                    <div key={index} className="flex items-center gap-3">
-                                        <span className="text-sm font-medium text-gray-600 dark:text-gray-400 w-12">{data.month}</span>
-                                        <div className="flex-1 bg-gray-200 dark:bg-gray-700 rounded-full h-8 relative overflow-hidden">
-                                            <div
-                                                className="bg-green-600 dark:bg-green-500 h-full rounded-full flex items-center justify-end pr-3"
-                                                style={{
-                                                    width: `${Math.max(10, Math.min(100, (data.words / Math.max(...analytics.monthlyData.map(m => m.words))) * 100))}%`
-                                                }}
-                                            >
-                                                <span className="text-xs font-semibold text-white">
-                                                    {(data.words / 1000).toFixed(1)}k
-                                                </span>
-                                            </div>
-                                        </div>
-                                    </div>
-                                ))}
-                            </div>
-                        ) : (
-                            <p className="text-gray-500">Nessun dato disponibile</p>
-                        )}
-                    </Card>
-                </div>
-
-                {/* Bottom Row */}
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                    {/* Top Projects */}
-                    <Card padding="lg">
-                        <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">Top Progetti</h3>
-                        {loading ? (
-                            <div className="space-y-3">
-                                {[1, 2, 3].map((i) => (
-                                    <div key={i} className="animate-pulse flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
-                                        <div className="flex-1">
-                                            <div className="h-4 bg-gray-200 rounded w-3/4 mb-2"></div>
-                                            <div className="h-3 bg-gray-200 rounded w-1/2"></div>
-                                        </div>
-                                        <div className="h-6 bg-gray-200 rounded w-16"></div>
-                                    </div>
-                                ))}
-                            </div>
-                        ) : analytics && analytics.topProjects.length > 0 ? (
-                            <div className="space-y-3">
-                                {analytics.topProjects.map((project) => (
-                                    <div key={project.id} className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
-                                        <div>
-                                            <p className="font-medium text-gray-900 dark:text-gray-100">{project.title}</p>
-                                            <p className="text-sm text-gray-600 dark:text-gray-400">
-                                                {project.author} • {project.chapters} capitoli
-                                            </p>
-                                        </div>
-                                        <div className="text-right">
-                                            <span className="text-lg font-bold text-blue-600 dark:text-blue-400">
-                                                {(project.totalWords / 1000).toFixed(1)}k
+            <div className={clsx(
+                "flex-1 overflow-auto transition-all duration-300",
+                sidebarCollapsed ? "lg:ml-16" : "lg:ml-64"
+            )}>
+                <PageContainer
+                    title="Analytics"
+                    description="Analisi e statistiche delle tue attività"
+                    onMenuClick={() => setMobileMenuOpen(true)}
+                >
+                    {/* Stats Cards */}
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mb-6">
+                        {stats.map((stat, index) => (
+                            <Card key={index} padding="lg">
+                                <div className="flex items-start justify-between">
+                                    <div className="flex-1">
+                                        <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">{stat.label}</p>
+                                        <p className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-2">{stat.value}</p>
+                                        <div className="flex items-center gap-1">
+                                            {stat.trend === 'up' ? (
+                                                <TrendingUp size={16} className="text-green-600 dark:text-green-400" />
+                                            ) : (
+                                                <TrendingDown size={16} className="text-red-600 dark:text-red-400" />
+                                            )}
+                                            <span className={`text-sm font-medium ${stat.trend === 'up' ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'
+                                                }`}>
+                                                {stat.change}
                                             </span>
-                                            <p className="text-xs text-gray-500">parole</p>
+                                            <span className="text-sm text-gray-500 dark:text-gray-500">vs mese scorso</span>
                                         </div>
                                     </div>
-                                ))}
-                            </div>
-                        ) : (
-                            <p className="text-gray-500">Nessun progetto disponibile</p>
-                        )}
-                    </Card>
+                                    <div className={`p-3 rounded-lg bg-gray-100 dark:bg-gray-700`}>
+                                        <stat.icon className={stat.color} size={24} />
+                                    </div>
+                                </div>
+                            </Card>
+                        ))}
+                    </div>
 
-                    {/* Project Status */}
-                    <Card padding="lg">
-                        <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">Stato Progetti</h3>
-                        {loading ? (
-                            <div className="space-y-3">
-                                {[1, 2, 3].map((i) => (
-                                    <div key={i} className="animate-pulse flex items-start gap-3 p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
-                                        <div className="w-2 h-2 bg-gray-300 rounded-full mt-2"></div>
-                                        <div className="flex-1">
-                                            <div className="h-4 bg-gray-200 rounded w-3/4 mb-2"></div>
-                                            <div className="h-3 bg-gray-200 rounded w-1/2"></div>
+                    {/* Charts Row */}
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+                        {/* Projects Chart */}
+                        <Card padding="lg">
+                            <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">Progetti per Mese</h3>
+                            {loading ? (
+                                <div className="space-y-3">
+                                    {[1, 2, 3, 4, 5, 6].map((i) => (
+                                        <div key={i} className="animate-pulse flex items-center gap-3">
+                                            <div className="h-4 bg-gray-200 rounded w-8"></div>
+                                            <div className="flex-1 h-8 bg-gray-200 rounded"></div>
                                         </div>
-                                    </div>
-                                ))}
-                            </div>
-                        ) : analytics && analytics.topProjects.length > 0 ? (
-                            <div className="space-y-3">
-                                {analytics.topProjects.slice(0, 5).map((project) => (
-                                    <div key={project.id} className="flex items-start gap-3 p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
-                                        <div className={`w-2 h-2 rounded-full mt-2 ${project.status === 'completed' ? 'bg-green-600' :
-                                            project.status === 'generating_chapters' ? 'bg-blue-600' :
-                                                project.status === 'error' ? 'bg-red-600' :
-                                                    'bg-gray-600'
-                                            }`}></div>
-                                        <div className="flex-1">
-                                            <p className="text-sm font-medium text-gray-900 dark:text-gray-100">{project.title}</p>
-                                            <p className="text-xs text-gray-600 dark:text-gray-400">
-                                                {project.status === 'completed' ? 'Completato' :
-                                                    project.status === 'generating_chapters' ? 'In generazione' :
-                                                        project.status === 'generating_outline' ? 'Creando outline' :
-                                                            project.status === 'error' ? 'Errore' :
-                                                                'In bozza'} • {project.chapters} cap
-                                            </p>
+                                    ))}
+                                </div>
+                            ) : analytics && analytics.monthlyData.length > 0 ? (
+                                <div className="space-y-3">
+                                    {analytics.monthlyData.map((data, index) => (
+                                        <div key={index} className="flex items-center gap-3">
+                                            <span className="text-sm font-medium text-gray-600 dark:text-gray-400 w-12">{data.month}</span>
+                                            <div className="flex-1 bg-gray-200 dark:bg-gray-700 rounded-full h-8 relative overflow-hidden">
+                                                <div
+                                                    className="bg-blue-600 dark:bg-blue-500 h-full rounded-full flex items-center justify-end pr-3"
+                                                    style={{
+                                                        width: `${Math.max(10, Math.min(100, (data.projects / Math.max(...analytics.monthlyData.map(m => m.projects))) * 100))}%`
+                                                    }}
+                                                >
+                                                    <span className="text-xs font-semibold text-white">
+                                                        {data.projects}
+                                                    </span>
+                                                </div>
+                                            </div>
                                         </div>
-                                    </div>
-                                ))}
-                            </div>
-                        ) : (
-                            <p className="text-gray-500">Nessun progetto disponibile</p>
-                        )}
-                    </Card>
-                </div>
-            </PageContainer>
+                                    ))}
+                                </div>
+                            ) : (
+                                <p className="text-gray-500">Nessun dato disponibile</p>
+                            )}
+                        </Card>
+
+                        {/* Words Chart */}
+                        <Card padding="lg">
+                            <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">Parole Scritte per Mese</h3>
+                            {loading ? (
+                                <div className="space-y-3">
+                                    {[1, 2, 3, 4, 5, 6].map((i) => (
+                                        <div key={i} className="animate-pulse flex items-center gap-3">
+                                            <div className="h-4 bg-gray-200 rounded w-8"></div>
+                                            <div className="flex-1 h-8 bg-gray-200 rounded"></div>
+                                        </div>
+                                    ))}
+                                </div>
+                            ) : analytics && analytics.monthlyData.length > 0 ? (
+                                <div className="space-y-3">
+                                    {analytics.monthlyData.map((data, index) => (
+                                        <div key={index} className="flex items-center gap-3">
+                                            <span className="text-sm font-medium text-gray-600 dark:text-gray-400 w-12">{data.month}</span>
+                                            <div className="flex-1 bg-gray-200 dark:bg-gray-700 rounded-full h-8 relative overflow-hidden">
+                                                <div
+                                                    className="bg-green-600 dark:bg-green-500 h-full rounded-full flex items-center justify-end pr-3"
+                                                    style={{
+                                                        width: `${Math.max(10, Math.min(100, (data.words / Math.max(...analytics.monthlyData.map(m => m.words))) * 100))}%`
+                                                    }}
+                                                >
+                                                    <span className="text-xs font-semibold text-white">
+                                                        {(data.words / 1000).toFixed(1)}k
+                                                    </span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            ) : (
+                                <p className="text-gray-500">Nessun dato disponibile</p>
+                            )}
+                        </Card>
+                    </div>
+
+                    {/* Bottom Row */}
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                        {/* Top Projects */}
+                        <Card padding="lg">
+                            <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">Top Progetti</h3>
+                            {loading ? (
+                                <div className="space-y-3">
+                                    {[1, 2, 3].map((i) => (
+                                        <div key={i} className="animate-pulse flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                                            <div className="flex-1">
+                                                <div className="h-4 bg-gray-200 rounded w-3/4 mb-2"></div>
+                                                <div className="h-3 bg-gray-200 rounded w-1/2"></div>
+                                            </div>
+                                            <div className="h-6 bg-gray-200 rounded w-16"></div>
+                                        </div>
+                                    ))}
+                                </div>
+                            ) : analytics && analytics.topProjects.length > 0 ? (
+                                <div className="space-y-3">
+                                    {analytics.topProjects.map((project) => (
+                                        <div key={project.id} className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                                            <div>
+                                                <p className="font-medium text-gray-900 dark:text-gray-100">{project.title}</p>
+                                                <p className="text-sm text-gray-600 dark:text-gray-400">
+                                                    {project.author} • {project.chapters} capitoli
+                                                </p>
+                                            </div>
+                                            <div className="text-right">
+                                                <span className="text-lg font-bold text-blue-600 dark:text-blue-400">
+                                                    {(project.totalWords / 1000).toFixed(1)}k
+                                                </span>
+                                                <p className="text-xs text-gray-500">parole</p>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            ) : (
+                                <p className="text-gray-500">Nessun progetto disponibile</p>
+                            )}
+                        </Card>
+
+                        {/* Project Status */}
+                        <Card padding="lg">
+                            <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">Stato Progetti</h3>
+                            {loading ? (
+                                <div className="space-y-3">
+                                    {[1, 2, 3].map((i) => (
+                                        <div key={i} className="animate-pulse flex items-start gap-3 p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                                            <div className="w-2 h-2 bg-gray-300 rounded-full mt-2"></div>
+                                            <div className="flex-1">
+                                                <div className="h-4 bg-gray-200 rounded w-3/4 mb-2"></div>
+                                                <div className="h-3 bg-gray-200 rounded w-1/2"></div>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            ) : analytics && analytics.topProjects.length > 0 ? (
+                                <div className="space-y-3">
+                                    {analytics.topProjects.slice(0, 5).map((project) => (
+                                        <div key={project.id} className="flex items-start gap-3 p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                                            <div className={`w-2 h-2 rounded-full mt-2 ${project.status === 'completed' ? 'bg-green-600' :
+                                                project.status === 'generating_chapters' ? 'bg-blue-600' :
+                                                    project.status === 'error' ? 'bg-red-600' :
+                                                        'bg-gray-600'
+                                                }`}></div>
+                                            <div className="flex-1">
+                                                <p className="text-sm font-medium text-gray-900 dark:text-gray-100">{project.title}</p>
+                                                <p className="text-xs text-gray-600 dark:text-gray-400">
+                                                    {project.status === 'completed' ? 'Completato' :
+                                                        project.status === 'generating_chapters' ? 'In generazione' :
+                                                            project.status === 'generating_outline' ? 'Creando outline' :
+                                                                project.status === 'error' ? 'Errore' :
+                                                                    'In bozza'} • {project.chapters} cap
+                                                </p>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            ) : (
+                                <p className="text-gray-500">Nessun progetto disponibile</p>
+                            )}
+                        </Card>
+                    </div>
+                </PageContainer>
+            </div>
         </div>
     );
 }

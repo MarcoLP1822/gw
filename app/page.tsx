@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import clsx from 'clsx';
 import Sidebar from '@/components/Sidebar';
 import PageContainer from '@/components/PageContainer';
 import Card from '@/components/Card';
@@ -317,174 +318,179 @@ export default function Home() {
       />
 
       {/* Dashboard Content */}
-      <PageContainer
-        title="Dashboard"
-        description="Panoramica generale della tua attività"
-        onMenuClick={() => setMobileMenuOpen(true)}
-      >
-        {/* Stats Cards */}
-        {loading ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mb-6">
-            {[1, 2, 3, 4].map((i) => (
-              <Card key={i} padding="lg">
-                <div className="animate-pulse">
-                  <div className="h-4 bg-gray-200 rounded w-1/2 mb-2"></div>
-                  <div className="h-8 bg-gray-200 rounded w-1/3"></div>
-                </div>
-              </Card>
-            ))}
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mb-6">
-            {statsConfig.map((stat, index) => (
-              <Card key={index} padding="lg">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm text-gray-600 mb-1">{stat.label}</p>
-                    <p className="text-2xl sm:text-3xl font-bold text-gray-900">{stat.value}</p>
-                  </div>
-                  <div className={`${stat.color} p-3 rounded-lg`}>
-                    <stat.icon className="text-white" size={24} />
-                  </div>
-                </div>
-              </Card>
-            ))}
-          </div>
-        )}
-
-        {/* Call to Action - Nuovo Progetto e Caricamento File */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 mb-6">
-          {/* Card Nuovo Progetto - Blu */}
-          <Card>
-            <div className="flex flex-col items-center justify-center py-8 sm:py-12">
-              <div className="mb-4 p-3 sm:p-4 bg-blue-100 rounded-full">
-                <Plus size={28} className="sm:w-8 sm:h-8 text-blue-600" />
-              </div>
-              <h3 className="text-lg sm:text-xl font-semibold text-gray-900 mb-2">
-                Crea un Nuovo Progetto
-              </h3>
-              <p className="text-sm sm:text-base text-gray-600 mb-4 sm:mb-6 text-center max-w-md px-4">
-                Inizia un nuovo progetto di ghost writing e gestisci tutti i dettagli in un unico posto
-              </p>
-              <button
-                onClick={handleNewProject}
-                disabled={isSubmitting}
-                className="px-4 sm:px-6 py-2 sm:py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2 font-medium shadow-sm disabled:opacity-50 disabled:cursor-not-allowed text-sm sm:text-base"
-              >
-                {isSubmitting ? (
-                  <>
-                    <Loader2 size={20} className="animate-spin" />
-                    Creazione...
-                  </>
-                ) : (
-                  <>
-                    <Plus size={20} />
-                    Nuovo Progetto
-                  </>
-                )}
-              </button>
-            </div>
-          </Card>
-
-          {/* Card Nuovo Progetto da Documento - Verde */}
-          <Card>
-            <div className="flex flex-col items-center justify-center py-8 sm:py-12">
-              <div className="mb-4 p-3 sm:p-4 bg-green-100 rounded-full">
-                <Sparkles size={28} className="sm:w-8 sm:h-8 text-green-600" />
-              </div>
-              <h3 className="text-lg sm:text-xl font-semibold text-gray-900 mb-2">
-                Crea da Documento
-              </h3>
-              <p className="text-sm sm:text-base text-gray-600 mb-4 sm:mb-6 text-center max-w-md px-4">
-                Carica un documento e l&apos;AI compilerà automaticamente i campi del progetto
-              </p>
-              <button
-                onClick={handleNewProjectFromDocument}
-                disabled={isSubmitting}
-                className="px-4 sm:px-6 py-2 sm:py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors flex items-center gap-2 font-medium shadow-sm disabled:opacity-50 disabled:cursor-not-allowed text-sm sm:text-base"
-              >
-                {isSubmitting ? (
-                  <>
-                    <Loader2 size={20} className="animate-spin" />
-                    Creazione...
-                  </>
-                ) : (
-                  <>
-                    <Sparkles size={20} />
-                    Crea da Documento
-                  </>
-                )}
-              </button>
-            </div>
-          </Card>
-
-          {/* Card Nuovo Progetto da Sito Web - Arancione */}
-          <Card>
-            <div className="flex flex-col items-center justify-center py-8 sm:py-12">
-              <div className="mb-4 p-3 sm:p-4 bg-orange-100 rounded-full">
-                <Globe size={28} className="sm:w-8 sm:h-8 text-orange-600" />
-              </div>
-              <h3 className="text-lg sm:text-xl font-semibold text-gray-900 mb-2">
-                Crea da Sito Web
-              </h3>
-              <p className="text-sm sm:text-base text-gray-600 mb-4 sm:mb-6 text-center max-w-md px-4">
-                Analizza un sito web e l&apos;AI estrarrà le informazioni per il progetto
-              </p>
-              <button
-                onClick={handleNewProjectFromWebsite}
-                disabled={isSubmitting}
-                className="px-4 sm:px-6 py-2 sm:py-3 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition-colors flex items-center gap-2 font-medium shadow-sm disabled:opacity-50 disabled:cursor-not-allowed text-sm sm:text-base"
-              >
-                {isSubmitting ? (
-                  <>
-                    <Loader2 size={20} className="animate-spin" />
-                    Creazione...
-                  </>
-                ) : (
-                  <>
-                    <Globe size={20} />
-                    Crea da Sito Web
-                  </>
-                )}
-              </button>
-            </div>
-          </Card>
-        </div>
-
-        {/* Recent Activity Section */}
-        <Card padding="lg">
-          <h2 className="text-lg sm:text-xl font-semibold text-gray-900 mb-4">Attività Recente</h2>
+      <div className={clsx(
+        "flex-1 overflow-auto transition-all duration-300",
+        sidebarCollapsed ? "lg:ml-16" : "lg:ml-64"
+      )}>
+        <PageContainer
+          title="Dashboard"
+          description="Panoramica generale della tua attività"
+          onMenuClick={() => setMobileMenuOpen(true)}
+        >
+          {/* Stats Cards */}
           {loading ? (
-            <div className="space-y-3">
-              {[1, 2, 3].map((i) => (
-                <div key={i} className="animate-pulse flex items-start gap-3 p-3 bg-gray-50 rounded-lg">
-                  <div className="w-2 h-2 bg-gray-300 rounded-full mt-2"></div>
-                  <div className="flex-1">
-                    <div className="h-4 bg-gray-200 rounded w-3/4 mb-2"></div>
-                    <div className="h-3 bg-gray-200 rounded w-1/2"></div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mb-6">
+              {[1, 2, 3, 4].map((i) => (
+                <Card key={i} padding="lg">
+                  <div className="animate-pulse">
+                    <div className="h-4 bg-gray-200 rounded w-1/2 mb-2"></div>
+                    <div className="h-8 bg-gray-200 rounded w-1/3"></div>
                   </div>
-                </div>
-              ))}
-            </div>
-          ) : recentActivity.length > 0 ? (
-            <div className="space-y-3">
-              {recentActivity.slice(0, 5).map((activity) => (
-                <div key={activity.id} className="flex items-start gap-2 sm:gap-3 p-2 sm:p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
-                  <div className={`w-2 h-2 ${getActivityColor(activity.type)} rounded-full mt-2 flex-shrink-0`}></div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-xs sm:text-sm font-medium text-gray-900 break-words">{activity.description}</p>
-                    <p className="text-xs text-gray-600 break-words">
-                      {activity.title} {activity.author && `- ${activity.author}`} • {formatTimestamp(activity.timestamp)}
-                    </p>
-                  </div>
-                </div>
+                </Card>
               ))}
             </div>
           ) : (
-            <p className="text-sm sm:text-base text-gray-600">Nessuna attività recente</p>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mb-6">
+              {statsConfig.map((stat, index) => (
+                <Card key={index} padding="lg">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm text-gray-600 mb-1">{stat.label}</p>
+                      <p className="text-2xl sm:text-3xl font-bold text-gray-900">{stat.value}</p>
+                    </div>
+                    <div className={`${stat.color} p-3 rounded-lg`}>
+                      <stat.icon className="text-white" size={24} />
+                    </div>
+                  </div>
+                </Card>
+              ))}
+            </div>
           )}
-        </Card>
-      </PageContainer>
+
+          {/* Call to Action - Nuovo Progetto e Caricamento File */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 mb-6">
+            {/* Card Nuovo Progetto - Blu */}
+            <Card>
+              <div className="flex flex-col items-center justify-center py-8 sm:py-12">
+                <div className="mb-4 p-3 sm:p-4 bg-blue-100 rounded-full">
+                  <Plus size={28} className="sm:w-8 sm:h-8 text-blue-600" />
+                </div>
+                <h3 className="text-lg sm:text-xl font-semibold text-gray-900 mb-2">
+                  Crea un Nuovo Progetto
+                </h3>
+                <p className="text-sm sm:text-base text-gray-600 mb-4 sm:mb-6 text-center max-w-md px-4">
+                  Inizia un nuovo progetto di ghost writing e gestisci tutti i dettagli in un unico posto
+                </p>
+                <button
+                  onClick={handleNewProject}
+                  disabled={isSubmitting}
+                  className="px-4 sm:px-6 py-2 sm:py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2 font-medium shadow-sm disabled:opacity-50 disabled:cursor-not-allowed text-sm sm:text-base"
+                >
+                  {isSubmitting ? (
+                    <>
+                      <Loader2 size={20} className="animate-spin" />
+                      Creazione...
+                    </>
+                  ) : (
+                    <>
+                      <Plus size={20} />
+                      Nuovo Progetto
+                    </>
+                  )}
+                </button>
+              </div>
+            </Card>
+
+            {/* Card Nuovo Progetto da Documento - Verde */}
+            <Card>
+              <div className="flex flex-col items-center justify-center py-8 sm:py-12">
+                <div className="mb-4 p-3 sm:p-4 bg-green-100 rounded-full">
+                  <Sparkles size={28} className="sm:w-8 sm:h-8 text-green-600" />
+                </div>
+                <h3 className="text-lg sm:text-xl font-semibold text-gray-900 mb-2">
+                  Crea da Documento
+                </h3>
+                <p className="text-sm sm:text-base text-gray-600 mb-4 sm:mb-6 text-center max-w-md px-4">
+                  Carica un documento e l&apos;AI compilerà automaticamente i campi del progetto
+                </p>
+                <button
+                  onClick={handleNewProjectFromDocument}
+                  disabled={isSubmitting}
+                  className="px-4 sm:px-6 py-2 sm:py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors flex items-center gap-2 font-medium shadow-sm disabled:opacity-50 disabled:cursor-not-allowed text-sm sm:text-base"
+                >
+                  {isSubmitting ? (
+                    <>
+                      <Loader2 size={20} className="animate-spin" />
+                      Creazione...
+                    </>
+                  ) : (
+                    <>
+                      <Sparkles size={20} />
+                      Crea da Documento
+                    </>
+                  )}
+                </button>
+              </div>
+            </Card>
+
+            {/* Card Nuovo Progetto da Sito Web - Arancione */}
+            <Card>
+              <div className="flex flex-col items-center justify-center py-8 sm:py-12">
+                <div className="mb-4 p-3 sm:p-4 bg-orange-100 rounded-full">
+                  <Globe size={28} className="sm:w-8 sm:h-8 text-orange-600" />
+                </div>
+                <h3 className="text-lg sm:text-xl font-semibold text-gray-900 mb-2">
+                  Crea da Sito Web
+                </h3>
+                <p className="text-sm sm:text-base text-gray-600 mb-4 sm:mb-6 text-center max-w-md px-4">
+                  Analizza un sito web e l&apos;AI estrarrà le informazioni per il progetto
+                </p>
+                <button
+                  onClick={handleNewProjectFromWebsite}
+                  disabled={isSubmitting}
+                  className="px-4 sm:px-6 py-2 sm:py-3 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition-colors flex items-center gap-2 font-medium shadow-sm disabled:opacity-50 disabled:cursor-not-allowed text-sm sm:text-base"
+                >
+                  {isSubmitting ? (
+                    <>
+                      <Loader2 size={20} className="animate-spin" />
+                      Creazione...
+                    </>
+                  ) : (
+                    <>
+                      <Globe size={20} />
+                      Crea da Sito Web
+                    </>
+                  )}
+                </button>
+              </div>
+            </Card>
+          </div>
+
+          {/* Recent Activity Section */}
+          <Card padding="lg">
+            <h2 className="text-lg sm:text-xl font-semibold text-gray-900 mb-4">Attività Recente</h2>
+            {loading ? (
+              <div className="space-y-3">
+                {[1, 2, 3].map((i) => (
+                  <div key={i} className="animate-pulse flex items-start gap-3 p-3 bg-gray-50 rounded-lg">
+                    <div className="w-2 h-2 bg-gray-300 rounded-full mt-2"></div>
+                    <div className="flex-1">
+                      <div className="h-4 bg-gray-200 rounded w-3/4 mb-2"></div>
+                      <div className="h-3 bg-gray-200 rounded w-1/2"></div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : recentActivity.length > 0 ? (
+              <div className="space-y-3">
+                {recentActivity.slice(0, 5).map((activity) => (
+                  <div key={activity.id} className="flex items-start gap-2 sm:gap-3 p-2 sm:p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
+                    <div className={`w-2 h-2 ${getActivityColor(activity.type)} rounded-full mt-2 flex-shrink-0`}></div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-xs sm:text-sm font-medium text-gray-900 break-words">{activity.description}</p>
+                      <p className="text-xs text-gray-600 break-words">
+                        {activity.title} {activity.author && `- ${activity.author}`} • {formatTimestamp(activity.timestamp)}
+                      </p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <p className="text-sm sm:text-base text-gray-600">Nessuna attività recente</p>
+            )}
+          </Card>
+        </PageContainer>
+      </div>
 
       {/* Modal per nuovo progetto */}
       <NewProjectModal

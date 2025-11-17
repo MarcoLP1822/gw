@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import clsx from 'clsx';
 import { History, Clock, Tag, CheckCircle2, AlertCircle, Info, Zap, ChevronDown, ChevronRight } from 'lucide-react';
 import Sidebar from '@/components/Sidebar';
 import PageContainer from '@/components/PageContainer';
@@ -943,109 +944,114 @@ export default function ChangelogPage() {
                 mobileOpen={mobileMenuOpen}
                 onMobileClose={() => setMobileMenuOpen(false)}
             />
-            <PageContainer
-                title="Changelog"
-                onMenuClick={() => setMobileMenuOpen(true)}
-            >
-                <div className="max-w-4xl mx-auto">
-                    {/* Header */}
-                    <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
-                        <div className="flex items-start gap-4">
-                            <div className="p-3 bg-purple-100 rounded-lg">
-                                <History className="w-6 h-6 text-purple-600" />
-                            </div>
-                            <div>
-                                <h2 className="text-xl font-semibold text-gray-900 mb-2">
-                                    Storico delle Modifiche
-                                </h2>
-                                <p className="text-gray-600">
-                                    Tutte le modifiche, miglioramenti e nuove funzionalità del sistema Ghost Writing.
-                                    Manteniamo traccia di ogni aggiornamento per garantire trasparenza e facilitare il debugging.
-                                </p>
-                            </div>
-                        </div>
-                    </div>
-
-                    {/* Changelog Entries */}
-                    <div className="space-y-6">
-                        {changelog.map((entry, index) => {
-                            const isExpanded = expandedVersions.includes(entry.version);
-
-                            return (
-                                <div
-                                    key={entry.version}
-                                    id={`version-${entry.version}`}
-                                    className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden"
-                                >
-                                    {/* Entry Header - Now Clickable */}
-                                    <button
-                                        onClick={() => toggleVersion(entry.version)}
-                                        className="w-full p-6 border-b border-gray-100 bg-gradient-to-r from-gray-50 to-white hover:from-gray-100 hover:to-gray-50 transition-colors"
-                                    >
-                                        <div className="flex items-center justify-between flex-wrap gap-4">
-                                            <div className="flex items-center gap-4">
-                                                <div className="flex items-center gap-2">
-                                                    <Tag className="w-5 h-5 text-gray-500" />
-                                                    <span className="text-2xl font-bold text-gray-900">
-                                                        v{entry.version}
-                                                    </span>
-                                                </div>
-                                                {getTypeBadge(entry.type)}
-                                            </div>
-                                            <div className="flex items-center gap-3">
-                                                <div className="flex items-center gap-2 text-sm text-gray-500">
-                                                    <Clock className="w-4 h-4" />
-                                                    <span>{entry.date}</span>
-                                                </div>
-                                                {isExpanded ? (
-                                                    <ChevronDown className="w-5 h-5 text-gray-400" />
-                                                ) : (
-                                                    <ChevronRight className="w-5 h-5 text-gray-400" />
-                                                )}
-                                            </div>
-                                        </div>
-                                    </button>
-
-                                    {/* Entry Content - Collapsible */}
-                                    {isExpanded && (
-                                        <div className="p-6">
-                                            {entry.changes.map((change, changeIndex) => (
-                                                <div key={changeIndex} className={changeIndex > 0 ? 'mt-6' : ''}>
-                                                    <h3 className="text-lg font-semibold text-gray-900 mb-3">
-                                                        {change.category}
-                                                    </h3>
-                                                    <ul className="space-y-2">
-                                                        {change.items.map((item, itemIndex) => (
-                                                            <li key={itemIndex} className="flex items-start gap-3">
-                                                                <CheckCircle2 className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" />
-                                                                <span className="text-gray-700">{item}</span>
-                                                            </li>
-                                                        ))}
-                                                    </ul>
-                                                </div>
-                                            ))}
-                                        </div>
-                                    )}
+            <div className={clsx(
+                "flex-1 overflow-auto transition-all duration-300",
+                sidebarCollapsed ? "lg:ml-16" : "lg:ml-64"
+            )}>
+                <PageContainer
+                    title="Changelog"
+                    onMenuClick={() => setMobileMenuOpen(true)}
+                >
+                    <div className="max-w-4xl mx-auto">
+                        {/* Header */}
+                        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
+                            <div className="flex items-start gap-4">
+                                <div className="p-3 bg-purple-100 rounded-lg">
+                                    <History className="w-6 h-6 text-purple-600" />
                                 </div>
-                            );
-                        })}
-                    </div>
+                                <div>
+                                    <h2 className="text-xl font-semibold text-gray-900 mb-2">
+                                        Storico delle Modifiche
+                                    </h2>
+                                    <p className="text-gray-600">
+                                        Tutte le modifiche, miglioramenti e nuove funzionalità del sistema Ghost Writing.
+                                        Manteniamo traccia di ogni aggiornamento per garantire trasparenza e facilitare il debugging.
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
 
-                    {/* Footer */}
-                    <div className="mt-8 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-                        <div className="flex items-start gap-3">
-                            <Info className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />
-                            <div className="text-sm text-blue-900">
-                                <p className="font-medium mb-1">Note sulla Versione</p>
-                                <p>
-                                    Seguiamo il Semantic Versioning (MAJOR.MINOR.PATCH). Gli aggiornamenti MAJOR possono contenere
-                                    breaking changes, i MINOR introducono nuove funzionalità, i PATCH correggono bug.
-                                </p>
+                        {/* Changelog Entries */}
+                        <div className="space-y-6">
+                            {changelog.map((entry, index) => {
+                                const isExpanded = expandedVersions.includes(entry.version);
+
+                                return (
+                                    <div
+                                        key={entry.version}
+                                        id={`version-${entry.version}`}
+                                        className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden"
+                                    >
+                                        {/* Entry Header - Now Clickable */}
+                                        <button
+                                            onClick={() => toggleVersion(entry.version)}
+                                            className="w-full p-6 border-b border-gray-100 bg-gradient-to-r from-gray-50 to-white hover:from-gray-100 hover:to-gray-50 transition-colors"
+                                        >
+                                            <div className="flex items-center justify-between flex-wrap gap-4">
+                                                <div className="flex items-center gap-4">
+                                                    <div className="flex items-center gap-2">
+                                                        <Tag className="w-5 h-5 text-gray-500" />
+                                                        <span className="text-2xl font-bold text-gray-900">
+                                                            v{entry.version}
+                                                        </span>
+                                                    </div>
+                                                    {getTypeBadge(entry.type)}
+                                                </div>
+                                                <div className="flex items-center gap-3">
+                                                    <div className="flex items-center gap-2 text-sm text-gray-500">
+                                                        <Clock className="w-4 h-4" />
+                                                        <span>{entry.date}</span>
+                                                    </div>
+                                                    {isExpanded ? (
+                                                        <ChevronDown className="w-5 h-5 text-gray-400" />
+                                                    ) : (
+                                                        <ChevronRight className="w-5 h-5 text-gray-400" />
+                                                    )}
+                                                </div>
+                                            </div>
+                                        </button>
+
+                                        {/* Entry Content - Collapsible */}
+                                        {isExpanded && (
+                                            <div className="p-6">
+                                                {entry.changes.map((change, changeIndex) => (
+                                                    <div key={changeIndex} className={changeIndex > 0 ? 'mt-6' : ''}>
+                                                        <h3 className="text-lg font-semibold text-gray-900 mb-3">
+                                                            {change.category}
+                                                        </h3>
+                                                        <ul className="space-y-2">
+                                                            {change.items.map((item, itemIndex) => (
+                                                                <li key={itemIndex} className="flex items-start gap-3">
+                                                                    <CheckCircle2 className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" />
+                                                                    <span className="text-gray-700">{item}</span>
+                                                                </li>
+                                                            ))}
+                                                        </ul>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        )}
+                                    </div>
+                                );
+                            })}
+                        </div>
+
+                        {/* Footer */}
+                        <div className="mt-8 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                            <div className="flex items-start gap-3">
+                                <Info className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />
+                                <div className="text-sm text-blue-900">
+                                    <p className="font-medium mb-1">Note sulla Versione</p>
+                                    <p>
+                                        Seguiamo il Semantic Versioning (MAJOR.MINOR.PATCH). Gli aggiornamenti MAJOR possono contenere
+                                        breaking changes, i MINOR introducono nuove funzionalità, i PATCH correggono bug.
+                                    </p>
+                                </div>
                             </div>
                         </div>
                     </div>
-                </div>
-            </PageContainer>
+                </PageContainer>
+            </div>
         </div>
     );
 }

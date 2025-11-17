@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import clsx from 'clsx';
 import Sidebar from '@/components/Sidebar';
 import PageContainer from '@/components/PageContainer';
 import ClientTable from '@/components/ClientTable';
@@ -20,13 +21,18 @@ export default function ClientiPage() {
             />
 
             {/* Client Table */}
-            <PageContainer
-                title="Clienti"
-                description="Gestisci i tuoi clienti"
-                onMenuClick={() => setMobileMenuOpen(true)}
-            >
-                <ClientTable />
-            </PageContainer>
+            <div className={clsx(
+                "flex-1 overflow-auto transition-all duration-300",
+                sidebarCollapsed ? "lg:ml-16" : "lg:ml-64"
+            )}>
+                <PageContainer
+                    title="Clienti"
+                    description="Gestisci i tuoi clienti"
+                    onMenuClick={() => setMobileMenuOpen(true)}
+                >
+                    <ClientTable />
+                </PageContainer>
+            </div>
         </div>
     );
 }

@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import clsx from 'clsx';
 import Sidebar from '@/components/Sidebar';
 import PageContainer from '@/components/PageContainer';
 import Card from '@/components/Card';
@@ -718,221 +719,226 @@ export default function IstruzioniPage() {
             />
 
             {/* Main Content */}
-            <PageContainer
-                title="Istruzioni"
-                description="Guida completa all'utilizzo della piattaforma Ghost Writing AI"
-                onMenuClick={() => setMobileMenuOpen(true)}
-            >
-                <div className="max-w-6xl mx-auto space-y-6 sm:space-y-8">
-                    {/* Hero Section */}
-                    <Card className="bg-gradient-to-br from-blue-600 to-purple-700 text-white">
-                        <div className="text-center py-8 sm:py-12 px-4">
-                            <BookOpen className="mx-auto mb-4" size={48} />
-                            <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-4">Benvenuto su Ghost Writing AI</h1>
-                            <p className="text-base sm:text-lg md:text-xl text-blue-100 mb-6 sm:mb-8 max-w-2xl mx-auto">
-                                Crea libri professionali in pochi minuti con l&apos;intelligenza artificiale.<br />
-                                Dall&apos;idea al manoscritto completo, tutto in un&apos;unica piattaforma.
-                            </p>
+            <div className={clsx(
+                "flex-1 overflow-auto transition-all duration-300",
+                sidebarCollapsed ? "lg:ml-16" : "lg:ml-64"
+            )}>
+                <PageContainer
+                    title="Istruzioni"
+                    description="Guida completa all'utilizzo della piattaforma Ghost Writing AI"
+                    onMenuClick={() => setMobileMenuOpen(true)}
+                >
+                    <div className="max-w-6xl mx-auto space-y-6 sm:space-y-8">
+                        {/* Hero Section */}
+                        <Card className="bg-gradient-to-br from-blue-600 to-purple-700 text-white">
+                            <div className="text-center py-8 sm:py-12 px-4">
+                                <BookOpen className="mx-auto mb-4" size={48} />
+                                <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-4">Benvenuto su Ghost Writing AI</h1>
+                                <p className="text-base sm:text-lg md:text-xl text-blue-100 mb-6 sm:mb-8 max-w-2xl mx-auto">
+                                    Crea libri professionali in pochi minuti con l&apos;intelligenza artificiale.<br />
+                                    Dall&apos;idea al manoscritto completo, tutto in un&apos;unica piattaforma.
+                                </p>
 
-                            {/* Quick Stats Grid */}
-                            <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4 max-w-3xl mx-auto">
-                                {quickStats.map((stat, idx) => (
-                                    <div key={idx} className="bg-white/10 backdrop-blur rounded-lg p-4">
-                                        <stat.icon className="mx-auto mb-2" size={32} />
-                                        <div className="text-2xl font-bold">{stat.value}</div>
-                                        <div className="text-sm text-blue-100">{stat.label}</div>
-                                    </div>
+                                {/* Quick Stats Grid */}
+                                <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4 max-w-3xl mx-auto">
+                                    {quickStats.map((stat, idx) => (
+                                        <div key={idx} className="bg-white/10 backdrop-blur rounded-lg p-4">
+                                            <stat.icon className="mx-auto mb-2" size={32} />
+                                            <div className="text-2xl font-bold">{stat.value}</div>
+                                            <div className="text-sm text-blue-100">{stat.label}</div>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        </Card>
+
+                        {/* Quick Start Section */}
+                        <div>
+                            <h2 className="text-2xl font-bold text-gray-900 mb-6 flex items-center gap-2">
+                                <Zap className="text-yellow-500" size={28} />
+                                Quick Start - 6 Passi per il Tuo Libro
+                            </h2>
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                {quickStartSteps.map((step) => (
+                                    <Card key={step.number} className="hover:shadow-lg transition-shadow">
+                                        <div className="flex items-start gap-4">
+                                            <div className="flex-shrink-0">
+                                                <div className="w-12 h-12 rounded-full bg-blue-600 text-white flex items-center justify-center font-bold text-lg">
+                                                    {step.number}
+                                                </div>
+                                            </div>
+                                            <div className="flex-1">
+                                                <div className="flex items-center gap-2 mb-2">
+                                                    <step.icon className="text-blue-600" size={20} />
+                                                    <h3 className="font-semibold text-gray-900">{step.title}</h3>
+                                                </div>
+                                                <p className="text-sm text-gray-600">{step.desc}</p>
+                                            </div>
+                                        </div>
+                                    </Card>
                                 ))}
                             </div>
                         </div>
-                    </Card>
 
-                    {/* Quick Start Section */}
-                    <div>
-                        <h2 className="text-2xl font-bold text-gray-900 mb-6 flex items-center gap-2">
-                            <Zap className="text-yellow-500" size={28} />
-                            Quick Start - 6 Passi per il Tuo Libro
-                        </h2>
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                            {quickStartSteps.map((step) => (
-                                <Card key={step.number} className="hover:shadow-lg transition-shadow">
+                        {/* Feature Highlights */}
+                        <div>
+                            <h2 className="text-2xl font-bold text-gray-900 mb-6 flex items-center gap-2">
+                                <Target className="text-green-500" size={28} />
+                                Funzionalità Principali
+                            </h2>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <Card className="bg-gradient-to-br from-blue-50 to-blue-100 border-blue-200">
                                     <div className="flex items-start gap-4">
-                                        <div className="flex-shrink-0">
-                                            <div className="w-12 h-12 rounded-full bg-blue-600 text-white flex items-center justify-center font-bold text-lg">
-                                                {step.number}
-                                            </div>
+                                        <div className="p-3 bg-blue-600 rounded-lg">
+                                            <Sparkles className="text-white" size={24} />
                                         </div>
-                                        <div className="flex-1">
-                                            <div className="flex items-center gap-2 mb-2">
-                                                <step.icon className="text-blue-600" size={20} />
-                                                <h3 className="font-semibold text-gray-900">{step.title}</h3>
-                                            </div>
-                                            <p className="text-sm text-gray-600">{step.desc}</p>
+                                        <div>
+                                            <h3 className="font-bold text-gray-900 mb-2">Generazione AI Avanzata</h3>
+                                            <p className="text-sm text-gray-700">
+                                                GPT-5-mini con reasoning &quot;medium&quot; per velocità, qualità e costi ottimizzati.
+                                                Context window espanso, style guide automatico e batch generation.
+                                            </p>
                                         </div>
                                     </div>
                                 </Card>
-                            ))}
+
+                                <Card className="bg-gradient-to-br from-purple-50 to-purple-100 border-purple-200">
+                                    <div className="flex items-start gap-4">
+                                        <div className="p-3 bg-purple-600 rounded-lg">
+                                            <Settings className="text-white" size={24} />
+                                        </div>
+                                        <div>
+                                            <h3 className="font-bold text-gray-900 mb-2">Controllo Totale</h3>
+                                            <p className="text-sm text-gray-700">
+                                                Parametri AI configurabili, 8 preset stile, test in tempo reale.
+                                                Tooltips su ogni parametro. Modifica manuale sempre disponibile.
+                                            </p>
+                                        </div>
+                                    </div>
+                                </Card>
+
+                                <Card className="bg-gradient-to-br from-green-50 to-green-100 border-green-200">
+                                    <div className="flex items-start gap-4">
+                                        <div className="p-3 bg-green-600 rounded-lg">
+                                            <CheckCircle className="text-white" size={24} />
+                                        </div>
+                                        <div>
+                                            <h3 className="font-bold text-gray-900 mb-2">Qualità Garantita</h3>
+                                            <p className="text-sm text-gray-700">
+                                                Consistency check con tab dedicato, score 0-100, 3 dimensioni di analisi.
+                                                Report dettagliato con severità issues e raccomandazioni specifiche.
+                                            </p>
+                                        </div>
+                                    </div>
+                                </Card>
+
+                                <Card className="bg-gradient-to-br from-orange-50 to-orange-100 border-orange-200">
+                                    <div className="flex items-start gap-4">
+                                        <div className="p-3 bg-orange-600 rounded-lg">
+                                            <TrendingUp className="text-white" size={24} />
+                                        </div>
+                                        <div>
+                                            <h3 className="font-bold text-gray-900 mb-2">UX Moderna</h3>
+                                            <p className="text-sm text-gray-700">
+                                                Toast notifications, skeleton loaders, tooltips accessibili.
+                                                Batch generation, sidebar con evidenziazione sezione attiva, card collassabili.
+                                                Design responsive ottimizzato per mobile. Tutto fluido e intuitivo.
+                                            </p>
+                                        </div>
+                                    </div>
+                                </Card>
+                            </div>
                         </div>
-                    </div>
 
-                    {/* Feature Highlights */}
-                    <div>
-                        <h2 className="text-2xl font-bold text-gray-900 mb-6 flex items-center gap-2">
-                            <Target className="text-green-500" size={28} />
-                            Funzionalità Principali
-                        </h2>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <Card className="bg-gradient-to-br from-blue-50 to-blue-100 border-blue-200">
-                                <div className="flex items-start gap-4">
-                                    <div className="p-3 bg-blue-600 rounded-lg">
-                                        <Sparkles className="text-white" size={24} />
-                                    </div>
-                                    <div>
-                                        <h3 className="font-bold text-gray-900 mb-2">Generazione AI Avanzata</h3>
-                                        <p className="text-sm text-gray-700">
-                                            GPT-5-mini con reasoning &quot;medium&quot; per velocità, qualità e costi ottimizzati.
-                                            Context window espanso, style guide automatico e batch generation.
-                                        </p>
-                                    </div>
-                                </div>
-                            </Card>
+                        {/* Detailed Instructions Accordion */}
+                        <div>
+                            <h2 className="text-2xl font-bold text-gray-900 mb-6 flex items-center gap-2">
+                                <BookOpen className="text-gray-700" size={28} />
+                                Guida Dettagliata
+                            </h2>
+                            <div className="space-y-3">
+                                {instructions.map((section) => {
+                                    const isExpanded = expandedSections.includes(section.id);
+                                    const Icon = section.icon;
 
-                            <Card className="bg-gradient-to-br from-purple-50 to-purple-100 border-purple-200">
-                                <div className="flex items-start gap-4">
-                                    <div className="p-3 bg-purple-600 rounded-lg">
-                                        <Settings className="text-white" size={24} />
-                                    </div>
-                                    <div>
-                                        <h3 className="font-bold text-gray-900 mb-2">Controllo Totale</h3>
-                                        <p className="text-sm text-gray-700">
-                                            Parametri AI configurabili, 8 preset stile, test in tempo reale.
-                                            Tooltips su ogni parametro. Modifica manuale sempre disponibile.
-                                        </p>
-                                    </div>
-                                </div>
-                            </Card>
+                                    return (
+                                        <div key={section.id} id={`section-${section.id}`}>
+                                            <Card>
+                                                <button
+                                                    onClick={() => toggleSection(section.id)}
+                                                    className="w-full flex items-start gap-3 text-left"
+                                                >
+                                                    <Icon className="text-blue-600 flex-shrink-0 mt-1" size={24} />
+                                                    <div className="flex-1">
+                                                        <div className="flex items-center justify-between">
+                                                            <h2 className="text-xl font-bold text-gray-900">
+                                                                {section.title}
+                                                            </h2>
+                                                            {isExpanded ? (
+                                                                <ChevronDown className="text-gray-400" size={20} />
+                                                            ) : (
+                                                                <ChevronRight className="text-gray-400" size={20} />
+                                                            )}
+                                                        </div>
+                                                    </div>
+                                                </button>
 
-                            <Card className="bg-gradient-to-br from-green-50 to-green-100 border-green-200">
-                                <div className="flex items-start gap-4">
-                                    <div className="p-3 bg-green-600 rounded-lg">
-                                        <CheckCircle className="text-white" size={24} />
-                                    </div>
-                                    <div>
-                                        <h3 className="font-bold text-gray-900 mb-2">Qualità Garantita</h3>
-                                        <p className="text-sm text-gray-700">
-                                            Consistency check con tab dedicato, score 0-100, 3 dimensioni di analisi.
-                                            Report dettagliato con severità issues e raccomandazioni specifiche.
-                                        </p>
-                                    </div>
-                                </div>
-                            </Card>
+                                                {isExpanded && (
+                                                    <div className="mt-4 ml-9 space-y-4">
+                                                        {section.content.map((paragraph, idx) => (
+                                                            <p key={idx} className="text-gray-700 leading-relaxed">
+                                                                {paragraph}
+                                                            </p>
+                                                        ))}
 
-                            <Card className="bg-gradient-to-br from-orange-50 to-orange-100 border-orange-200">
-                                <div className="flex items-start gap-4">
-                                    <div className="p-3 bg-orange-600 rounded-lg">
-                                        <TrendingUp className="text-white" size={24} />
-                                    </div>
-                                    <div>
-                                        <h3 className="font-bold text-gray-900 mb-2">UX Moderna</h3>
-                                        <p className="text-sm text-gray-700">
-                                            Toast notifications, skeleton loaders, tooltips accessibili.
-                                            Batch generation, sidebar con evidenziazione sezione attiva, card collassabili.
-                                            Design responsive ottimizzato per mobile. Tutto fluido e intuitivo.
-                                        </p>
-                                    </div>
-                                </div>
-                            </Card>
-                        </div>
-                    </div>
-
-                    {/* Detailed Instructions Accordion */}
-                    <div>
-                        <h2 className="text-2xl font-bold text-gray-900 mb-6 flex items-center gap-2">
-                            <BookOpen className="text-gray-700" size={28} />
-                            Guida Dettagliata
-                        </h2>
-                        <div className="space-y-3">
-                            {instructions.map((section) => {
-                                const isExpanded = expandedSections.includes(section.id);
-                                const Icon = section.icon;
-
-                                return (
-                                    <div key={section.id} id={`section-${section.id}`}>
-                                        <Card>
-                                            <button
-                                                onClick={() => toggleSection(section.id)}
-                                                className="w-full flex items-start gap-3 text-left"
-                                            >
-                                                <Icon className="text-blue-600 flex-shrink-0 mt-1" size={24} />
-                                                <div className="flex-1">
-                                                    <div className="flex items-center justify-between">
-                                                        <h2 className="text-xl font-bold text-gray-900">
-                                                            {section.title}
-                                                        </h2>
-                                                        {isExpanded ? (
-                                                            <ChevronDown className="text-gray-400" size={20} />
-                                                        ) : (
-                                                            <ChevronRight className="text-gray-400" size={20} />
+                                                        {section.subsections && (
+                                                            <div className="space-y-6 mt-6">
+                                                                {section.subsections.map((subsection, subIdx) => (
+                                                                    <div key={subIdx}>
+                                                                        <h3 className="text-lg font-semibold text-gray-900 mb-3">
+                                                                            {subsection.title}
+                                                                        </h3>
+                                                                        <ul className="space-y-2">
+                                                                            {subsection.steps.map((step, stepIdx) => (
+                                                                                <li key={stepIdx} className="flex gap-3 text-gray-700">
+                                                                                    <span className="text-blue-600 text-xl leading-6 flex-shrink-0">•</span>
+                                                                                    <span className="leading-6 flex-1">{step}</span>
+                                                                                </li>
+                                                                            ))}
+                                                                        </ul>
+                                                                    </div>
+                                                                ))}
+                                                            </div>
                                                         )}
                                                     </div>
-                                                </div>
-                                            </button>
-
-                                            {isExpanded && (
-                                                <div className="mt-4 ml-9 space-y-4">
-                                                    {section.content.map((paragraph, idx) => (
-                                                        <p key={idx} className="text-gray-700 leading-relaxed">
-                                                            {paragraph}
-                                                        </p>
-                                                    ))}
-
-                                                    {section.subsections && (
-                                                        <div className="space-y-6 mt-6">
-                                                            {section.subsections.map((subsection, subIdx) => (
-                                                                <div key={subIdx}>
-                                                                    <h3 className="text-lg font-semibold text-gray-900 mb-3">
-                                                                        {subsection.title}
-                                                                    </h3>
-                                                                    <ul className="space-y-2">
-                                                                        {subsection.steps.map((step, stepIdx) => (
-                                                                            <li key={stepIdx} className="flex gap-3 text-gray-700">
-                                                                                <span className="text-blue-600 text-xl leading-6 flex-shrink-0">•</span>
-                                                                                <span className="leading-6 flex-1">{step}</span>
-                                                                            </li>
-                                                                        ))}
-                                                                    </ul>
-                                                                </div>
-                                                            ))}
-                                                        </div>
-                                                    )}
-                                                </div>
-                                            )}
-                                        </Card>
-                                    </div>
-                                );
-                            })}
+                                                )}
+                                            </Card>
+                                        </div>
+                                    );
+                                })}
+                            </div>
                         </div>
+
+                        {/* Footer con supporto */}
+                        <Card>
+                            <div className="text-center py-6">
+                                <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                                    Hai bisogno di aiuto?
+                                </h3>
+                                <p className="text-gray-600 mb-4">
+                                    Se hai domande o problemi, contatta il supporto tecnico.
+                                </p>
+                                <a
+                                    href="mailto:support@ghostwriting.ai"
+                                    className="inline-flex items-center gap-2 px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                                >
+                                    <span>Contatta il Supporto</span>
+                                </a>
+                            </div>
+                        </Card>
                     </div>
-
-                    {/* Footer con supporto */}
-                    <Card>
-                        <div className="text-center py-6">
-                            <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                                Hai bisogno di aiuto?
-                            </h3>
-                            <p className="text-gray-600 mb-4">
-                                Se hai domande o problemi, contatta il supporto tecnico.
-                            </p>
-                            <a
-                                href="mailto:support@ghostwriting.ai"
-                                className="inline-flex items-center gap-2 px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-                            >
-                                <span>Contatta il Supporto</span>
-                            </a>
-                        </div>
-                    </Card>
-                </div>
-            </PageContainer>
+                </PageContainer>
+            </div>
         </div>
     );
 }
