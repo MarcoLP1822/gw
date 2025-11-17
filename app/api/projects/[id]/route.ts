@@ -8,7 +8,10 @@ export async function GET(
     { params }: { params: Promise<{ id: string }> }
 ) {
     try {
+        console.log('📥 GET /api/projects/[id] - Request received');
         const { id } = await params;
+        console.log('🔍 Project ID:', id);
+
         const project = await prisma.project.findUnique({
             where: {
                 id
@@ -30,19 +33,26 @@ export async function GET(
         });
 
         if (!project) {
+            console.log('❌ Project not found:', id);
             return NextResponse.json(
                 { error: 'Progetto non trovato' },
                 { status: 404 }
             );
         }
 
+        console.log('✅ Project found:', project.bookTitle);
         return NextResponse.json({
             success: true,
             project
         });
 
     } catch (error) {
-        console.error('Error fetching project:', error);
+        console.error('❌ Error fetching project:', error);
+        console.error('Error details:', {
+            name: error instanceof Error ? error.name : 'Unknown',
+            message: error instanceof Error ? error.message : 'Unknown error',
+            stack: error instanceof Error ? error.stack : undefined
+        });
         return NextResponse.json(
             { error: 'Errore durante il recupero del progetto' },
             { status: 500 }

@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import clsx from 'clsx';
 import Sidebar from '@/components/Sidebar';
 import Card from '@/components/Card';
 import NewProjectModal from '@/components/NewProjectModal';
@@ -53,14 +54,15 @@ interface ProjectDetail {
     createdAt: Date;
     updatedAt: Date;
     outline?: any;
-    chapters: any[];
+    Outline?: any;
+    Chapter: any[];
     _count: {
-        chapters: number;
-        generationLogs: number;
+        Chapter: number;
+        GenerationLog: number;
     };
 }
 
-export default function ProgettoDetailPage({ params }: { params: { id: string } }) {
+export default function ProgettoDetailPage({ params }: { params: { id: string } | Promise<{ id: string }> }) {
     const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
     const [activeTab, setActiveTab] = useState<TabType>('overview');
@@ -68,6 +70,7 @@ export default function ProgettoDetailPage({ params }: { params: { id: string } 
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+    const [projectId, setProjectId] = useState<string | null>(null);
 
     // 🚀 GLOBAL GENERATION STATES (persistent across tab changes)
     const [isGeneratingOutline, setIsGeneratingOutline] = useState(false);
@@ -78,25 +81,49 @@ export default function ProgettoDetailPage({ params }: { params: { id: string } 
 
     const router = useRouter();
 
+    // 🔧 Handle params (can be Promise in Next.js 15)
+    useEffect(() => {
+        const resolveParams = async () => {
+            try {
+                const resolvedParams = params instanceof Promise ? await params : params;
+                console.log('🔍 Resolved project ID:', resolvedParams.id);
+                setProjectId(resolvedParams.id);
+            } catch (err) {
+                console.error('❌ Error resolving params:', err);
+                setError('Errore nel caricamento dei parametri');
+            }
+        };
+        resolveParams();
+    }, [params]);
+
     const fetchProject = async () => {
+        if (!projectId) {
+            console.log('⏳ Waiting for project ID...');
+            return;
+        }
+
         try {
+            console.log('📥 Fetching project with ID:', projectId);
             setLoading(true);
             setError(null);
-            const response = await projectsApi.getById(params.id);
+            const response = await projectsApi.getById(projectId);
+            console.log('✅ Project fetched successfully:', response.project?.bookTitle);
             setProject(response.project);
         } catch (err) {
+            console.error('❌ Error fetching project:', err);
             setError(err instanceof Error ? err.message : 'Errore durante il caricamento');
-            console.error('Error fetching project:', err);
         } finally {
             setLoading(false);
         }
     };
 
     useEffect(() => {
+        if (!projectId) return;
+
         fetchProject();
 
         // Ripristina lo stato della generazione se esiste
-        const savedState = GenerationStateManager.getForProject(params.id);
+        const savedState = GenerationStateManager.getForProject(projectId);
         if (savedState && savedState.isGenerating) {
             setGeneratingChapter(savedState.currentChapter);
             setStopBatchGeneration(savedState.stopRequested);
@@ -104,15 +131,17 @@ export default function ProgettoDetailPage({ params }: { params: { id: string } 
         }
 
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [params.id]);
+    }, [projectId]);
 
     const handleDelete = async () => {
+        if (!projectId) return;
+
         if (!confirm('Sei sicuro di voler eliminare questo progetto? Questa azione è irreversibile.')) {
             return;
         }
 
         try {
-            await projectsApi.delete(params.id);
+            await projectsApi.delete(projectId);
             toast.success('Progetto eliminato con successo');
             router.push('/progetti');
         } catch (err) {
@@ -122,8 +151,10 @@ export default function ProgettoDetailPage({ params }: { params: { id: string } 
     };
 
     const handleUpdateProject = async (formData: ProjectFormData) => {
+        if (!projectId) return;
+
         try {
-            await projectsApi.update(params.id, formData);
+            await projectsApi.update(projectId, formData);
             await fetchProject(); // Ricarica i dati aggiornati
         } catch (err) {
             console.error('Error updating project:', err);
@@ -178,7 +209,12 @@ export default function ProgettoDetailPage({ params }: { params: { id: string } 
                     mobileOpen={mobileMenuOpen}
                     onMobileClose={() => setMobileMenuOpen(false)}
                 />
-                <ProjectDetailPageSkeleton />
+                <div className={clsx(
+                    "flex-1 transition-all duration-300",
+                    sidebarCollapsed ? "lg:ml-16" : "lg:ml-64"
+                )}>
+                    <ProjectDetailPageSkeleton />
+                </div>
             </div>
         );
     }
@@ -193,7 +229,10 @@ export default function ProgettoDetailPage({ params }: { params: { id: string } 
                     mobileOpen={mobileMenuOpen}
                     onMobileClose={() => setMobileMenuOpen(false)}
                 />
-                <div className="flex-1 flex items-center justify-center p-4 sm:p-6">
+                <div className={clsx(
+                    "flex-1 flex items-center justify-center p-4 sm:p-3 transition-all duration-300",
+                    sidebarCollapsed ? "lg:ml-16" : "lg:ml-64"
+                )}>
                     <Card className="max-w-md">
                         <div className="text-center">
                             <AlertCircle className="w-12 h-12 text-red-500 mx-auto mb-4" />
@@ -223,10 +262,13 @@ export default function ProgettoDetailPage({ params }: { params: { id: string } 
             />
 
             {/* Main Content */}
-            <div className="flex-1 flex flex-col overflow-hidden">
+            <div className={clsx(
+                "flex-1 flex flex-col overflow-hidden transition-all duration-300",
+                sidebarCollapsed ? "lg:ml-16" : "lg:ml-64"
+            )}>
                 {/* Header - Compatto */}
-                <div className="bg-white border-b border-gray-200 px-4 sm:px-6 py-3">
-                    <div className="flex items-center justify-between mb-3">
+                <div className="bg-white border-b border-gray-200 px-3 sm:px-4 py-2">
+                    <div className="flex items-center justify-between mb-2">
                         <button
                             onClick={() => router.push('/progetti')}
                             className="flex items-center gap-2 text-gray-600 hover:text-gray-900 transition-colors text-sm"
@@ -254,7 +296,7 @@ export default function ProgettoDetailPage({ params }: { params: { id: string } 
                             <span className="hidden sm:inline">•</span>
                             <span className="hidden sm:inline truncate">{project.company}</span>
                             <span className="hidden sm:inline">•</span>
-                            <span>{project._count.chapters} cap.</span>
+                            <span>{project._count.Chapter} cap.</span>
 
                             {/* Indicatore generazione in corso con pulsante Stop */}
                             {(generatingChapter !== null || regeneratingChapter !== null) && (
@@ -323,14 +365,14 @@ export default function ProgettoDetailPage({ params }: { params: { id: string } 
                     projectData={{
                         hasAIConfig: true, // Assuming AI config exists (can be enhanced)
                         hasOutline: !!project.outline,
-                        chaptersCompleted: project.chapters.filter(ch => ch.status === 'completed').length,
+                        chaptersCompleted: project.Chapter.filter(ch => ch.status === 'completed').length,
                         totalChapters: project.outline?.structure ? (project.outline.structure as any).chapters?.length || 0 : 0,
                         hasConsistencyCheck: false // Can be enhanced with actual check
                     }}
                 /> */}
 
                 {/* Tab Content */}
-                <div className="flex-1 overflow-auto p-4 sm:p-6">
+                <div className="flex-1 overflow-auto p-3 sm:p-4">
                     {/* Keep all tabs mounted but show/hide with CSS for state persistence */}
                     <div style={{ display: activeTab === 'overview' ? 'block' : 'none' }}>
                         <OverviewTab
@@ -427,14 +469,14 @@ function OverviewTab({ project, onRefresh, onEdit }: {
     onEdit: () => void;
 }) {
     return (
-        <div className="max-w-4xl mx-auto space-y-6">
+        <div className="max-w-4xl mx-auto space-y-3">
             {/* Informazioni Autore */}
             <Card>
-                <h2 className="text-xl font-semibold text-gray-900 mb-4 flex items-center gap-2">
+                <h2 className="text-lg font-semibold text-gray-900 mb-2 flex items-center gap-2">
                     <BookOpen size={20} />
                     Informazioni Autore
                 </h2>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
                     <InfoField label="Nome" value={project.authorName} />
                     <InfoField label="Ruolo" value={project.authorRole} />
                     <InfoField label="Azienda" value={project.company} />
@@ -444,8 +486,8 @@ function OverviewTab({ project, onRefresh, onEdit }: {
 
             {/* Informazioni Libro */}
             <Card>
-                <h2 className="text-xl font-semibold text-gray-900 mb-4">Informazioni Libro</h2>
-                <div className="space-y-4">
+                <h2 className="text-lg font-semibold text-gray-900 mb-2">Informazioni Libro</h2>
+                <div className="space-y-2">
                     <InfoField label="Titolo Libro" value={project.bookTitle} />
                     {project.bookSubtitle && (
                         <InfoField label="Sottotitolo" value={project.bookSubtitle} />
@@ -459,8 +501,8 @@ function OverviewTab({ project, onRefresh, onEdit }: {
 
             {/* Hero's Journey */}
             <Card>
-                <h2 className="text-xl font-semibold text-gray-900 mb-4">Struttura Narrativa (Hero&apos;s Journey)</h2>
-                <div className="space-y-4">
+                <h2 className="text-lg font-semibold text-gray-900 mb-2">Struttura Narrativa (Hero&apos;s Journey)</h2>
+                <div className="space-y-2">
                     <InfoField label="Situazione di Partenza" value={project.currentSituation} multiline />
                     <InfoField label="Sfida Affrontata" value={project.challengeFaced} multiline />
                     <InfoField label="Trasformazione" value={project.transformation} multiline />
@@ -471,8 +513,8 @@ function OverviewTab({ project, onRefresh, onEdit }: {
 
             {/* Obiettivi Business */}
             <Card>
-                <h2 className="text-xl font-semibold text-gray-900 mb-4">Obiettivi Business</h2>
-                <div className="space-y-4">
+                <h2 className="text-lg font-semibold text-gray-900 mb-2">Obiettivi Business</h2>
+                <div className="space-y-2">
                     <InfoField label="Obiettivi" value={project.businessGoals} multiline />
                     <InfoField label="Valore Unico" value={project.uniqueValue} multiline />
                 </div>
@@ -481,15 +523,15 @@ function OverviewTab({ project, onRefresh, onEdit }: {
             {/* Note Aggiuntive */}
             {project.additionalNotes && (
                 <Card>
-                    <h2 className="text-xl font-semibold text-gray-900 mb-4">Note Aggiuntive</h2>
+                    <h2 className="text-lg font-semibold text-gray-900 mb-2">Note Aggiuntive</h2>
                     <InfoField label="" value={project.additionalNotes} multiline />
                 </Card>
             )}
 
             {/* Metadata */}
             <Card>
-                <h2 className="text-xl font-semibold text-gray-900 mb-4">Metadati</h2>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                <h2 className="text-lg font-semibold text-gray-900 mb-2">Metadati</h2>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-sm">
                     <div>
                         <span className="text-gray-500">Creato:</span>
                         <p className="text-gray-900 mt-1">{new Date(project.createdAt).toLocaleDateString('it-IT', {
@@ -699,7 +741,7 @@ function OutlineTab({
 
     const handleDeleteChapter = async (chapterNumber: number) => {
         // Verifica se il capitolo è già stato generato
-        const chapterExists = project.chapters.some(ch => ch.chapterNumber === chapterNumber);
+        const chapterExists = project.Chapter.some(ch => ch.chapterNumber === chapterNumber);
 
         if (chapterExists) {
             toast.error('Non puoi eliminare un capitolo già generato');
@@ -744,7 +786,7 @@ function OutlineTab({
     const handleBatchGenerateAll = async () => {
         const outline = project.outline?.structure as any;
         const totalChapters = outline?.chapters?.length || 0;
-        const existingChapters = project.chapters.map(ch => ch.chapterNumber);
+        const existingChapters = project.Chapter.map(ch => ch.chapterNumber);
         const remaining = Array.from({ length: totalChapters }, (_, i) => i + 1)
             .filter(num => !existingChapters.includes(num));
 
@@ -859,7 +901,7 @@ function OutlineTab({
     const handleBatchGenerateNext = async (count: number) => {
         const outline = project.outline?.structure as any;
         const totalChapters = outline?.chapters?.length || 0;
-        const existingChapters = project.chapters.map(ch => ch.chapterNumber);
+        const existingChapters = project.Chapter.map(ch => ch.chapterNumber);
         const remaining = Array.from({ length: totalChapters }, (_, i) => i + 1)
             .filter(num => !existingChapters.includes(num))
             .slice(0, count);
@@ -968,7 +1010,7 @@ function OutlineTab({
         if (chapterNumber === 1) return true;
 
         // Verifica se il capitolo precedente è completato
-        const previousChapter = project.chapters.find(
+        const previousChapter = project.Chapter.find(
             (ch) => ch.chapterNumber === chapterNumber - 1
         );
         return previousChapter?.status === 'completed';
@@ -976,7 +1018,7 @@ function OutlineTab({
 
     // Funzione per determinare lo stato del pulsante
     const getChapterButtonState = (chapterNumber: number) => {
-        const existingChapter = project.chapters.find(
+        const existingChapter = project.Chapter.find(
             (ch) => ch.chapterNumber === chapterNumber
         );
 
@@ -1007,7 +1049,7 @@ function OutlineTab({
                     <div className="text-center py-12">
                         <Sparkles className="w-16 h-16 text-indigo-300 mx-auto mb-4" />
                         <h3 className="text-xl font-semibold text-gray-900 mb-2">Genera l&apos;Outline del Tuo Libro</h3>
-                        <p className="text-gray-600 mb-6">
+                        <p className="text-gray-600 mb-3">
                             L&apos;AI analizzerà le informazioni che hai fornito e creerà una struttura completa per il tuo libro.
                         </p>
 
@@ -1020,7 +1062,7 @@ function OutlineTab({
                         <button
                             onClick={handleGenerateOutline}
                             disabled={isGeneratingOutline || generatingChapter !== null}
-                            className="px-6 py-3 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 disabled:bg-indigo-300 disabled:cursor-not-allowed flex items-center gap-2 mx-auto transition-colors"
+                            className="px-3 py-3 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 disabled:bg-indigo-300 disabled:cursor-not-allowed flex items-center gap-2 mx-auto transition-colors"
                         >
                             {isGeneratingOutline ? (
                                 <>
@@ -1047,10 +1089,10 @@ function OutlineTab({
     // Parse outline structure
     const outline = project.outline.structure as any;
     const totalChapters = outline.chapters?.length || 0;
-    const completedChapters = project.chapters.filter(ch => ch.status === 'completed').length;
+    const completedChapters = project.Chapter.filter(ch => ch.status === 'completed').length;
 
     return (
-        <div className="max-w-4xl mx-auto space-y-6">
+        <div className="max-w-4xl mx-auto space-y-3">
             {/* Header con titolo e sottotitolo */}
             <Card>
                 <div className="flex items-start justify-between mb-4">
@@ -1079,7 +1121,7 @@ function OutlineTab({
 
                 <p className="text-gray-700 whitespace-pre-wrap">{outline.description}</p>
 
-                <div className="mt-4 flex items-center gap-4 text-sm text-gray-500">
+                <div className="mt-4 flex items-center gap-2 text-sm text-gray-500">
                     <span className="flex items-center gap-1">
                         <BookOpen size={16} />
                         {completedChapters}/{totalChapters} capitoli generati
@@ -1147,13 +1189,13 @@ function OutlineTab({
                 </button>
             </div>
 
-            <div className="space-y-4">
+            <div className="space-y-2">
                 {outline.chapters?.map((chapter: any, index: number) => {
                     const buttonState = getChapterButtonState(chapter.number);
 
                     return (
                         <Card key={index}>
-                            <div className="flex items-start gap-4">
+                            <div className="flex items-start gap-2">
                                 <div className="flex-shrink-0 w-12 h-12 bg-indigo-100 rounded-lg flex items-center justify-center">
                                     <span className="text-lg font-bold text-indigo-600">{chapter.number}</span>
                                 </div>
@@ -1327,12 +1369,12 @@ function ChapterEditModal({ chapter, existingChapters, isOpen, onClose, onSave, 
     return (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
             <div className="bg-white rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-                <div className="p-6">
-                    <h2 className="text-2xl font-bold text-gray-900 mb-6">
+                <div className="p-3">
+                    <h2 className="text-2xl font-bold text-gray-900 mb-3">
                         {isNewChapter ? 'Aggiungi Capitolo' : 'Modifica Capitolo'}
                     </h2>
 
-                    <form onSubmit={handleSubmit} className="space-y-4">
+                    <form onSubmit={handleSubmit} className="space-y-2">
                         {/* Selettore posizione - solo per nuovi capitoli */}
                         {isNewChapter && (
                             <div>
@@ -1497,13 +1539,13 @@ function ChaptersTab({
         );
     };
 
-    // Calcolo variabili necessarie per l'useEffect
-    const completedChapters = project.chapters.filter(ch => ch.status === 'completed').length;
-    const allChaptersComplete = project.outline &&
-        completedChapters === (project.outline.structure as any).chapters?.length;
+    // Calcolo variabili necessarie per l'useEffect (con safe check)
+    const completedChapters = project.Chapter?.filter(ch => ch.status === 'completed').length || 0;
+    const allChaptersComplete = project.Outline &&
+        completedChapters === (project.Outline.structure as any).chapters?.length;
 
     // Verifica se ci sono capitoli modificati dopo l'ultimo report
-    const contentChanged = lastReportDate !== null && project.chapters.some((chapter: any) => {
+    const contentChanged = lastReportDate !== null && project.Chapter?.some((chapter: any) => {
         const chapterUpdated = new Date(chapter.updatedAt);
         return chapterUpdated > lastReportDate;
     });
@@ -1635,14 +1677,14 @@ function ChaptersTab({
         }
     };
 
-    if (project.chapters.length === 0) {
+    if (project.Chapter.length === 0) {
         return (
             <div className="max-w-4xl mx-auto">
                 <Card>
                     <div className="text-center py-12">
                         <FileText className="w-16 h-16 text-gray-300 mx-auto mb-4" />
                         <h3 className="text-xl font-semibold text-gray-900 mb-2">Nessun Capitolo Generato</h3>
-                        <p className="text-gray-600 mb-6">
+                        <p className="text-gray-600 mb-3">
                             I capitoli del libro non sono ancora stati generati con l&apos;AI.
                         </p>
                         <p className="text-sm text-gray-500">
@@ -1654,16 +1696,16 @@ function ChaptersTab({
         );
     }
 
-    const totalWords = project.chapters.reduce((sum, ch) => sum + ch.wordCount, 0);
+    const totalWords = project.Chapter.reduce((sum, ch) => sum + ch.wordCount, 0);
 
     return (
-        <div className="max-w-4xl mx-auto space-y-6">
+        <div className="max-w-4xl mx-auto space-y-3">
             {/* Header con statistiche */}
             <Card>
                 <div className="flex items-center justify-between mb-4">
                     <div>
                         <h2 className="text-xl font-bold text-gray-900 mb-1">Capitoli Generati</h2>
-                        <div className="flex items-center gap-4 text-sm text-gray-500">
+                        <div className="flex items-center gap-2 text-sm text-gray-500">
                             <span>{completedChapters} capitoli</span>
                             <span>•</span>
                             <span>{totalWords.toLocaleString()} parole totali</span>
@@ -1673,8 +1715,8 @@ function ChaptersTab({
             </Card>
 
             {/* Lista capitoli */}
-            <div className="space-y-4">
-                {project.chapters.map((chapter) => {
+            <div className="space-y-2">
+                {project.Chapter.map((chapter) => {
                     const isExpanded = expandedChapters.includes(chapter.chapterNumber);
 
                     return (
@@ -1838,12 +1880,12 @@ function ConsistencyTab({
     const [lastReportDate, setLastReportDate] = useState<Date | null>(null);
 
     // Calcolo variabili necessarie
-    const completedChapters = project.chapters.filter(ch => ch.status === 'completed').length;
+    const completedChapters = project.Chapter.filter(ch => ch.status === 'completed').length;
     const allChaptersComplete = project.outline &&
         completedChapters === (project.outline.structure as any).chapters?.length;
 
     // Verifica se ci sono capitoli modificati dopo l'ultimo report
-    const contentChanged = lastReportDate !== null && project.chapters.some((chapter: any) => {
+    const contentChanged = lastReportDate !== null && project.Chapter.some((chapter: any) => {
         const chapterUpdated = new Date(chapter.updatedAt);
         return chapterUpdated > lastReportDate;
     });
@@ -1891,7 +1933,7 @@ function ConsistencyTab({
     };
 
     return (
-        <div className="max-w-4xl mx-auto space-y-6">
+        <div className="max-w-4xl mx-auto space-y-3">
             {/* Header Card */}
             <Card>
                 <div className="flex items-start justify-between mb-4">
@@ -1931,7 +1973,7 @@ function ConsistencyTab({
                         <button
                             onClick={handleConsistencyCheck}
                             disabled={runningCheck || regeneratingChapter !== null || generatingChapter !== null}
-                            className={`w-full px-6 py-3 text-white text-base font-medium rounded-lg flex items-center justify-center gap-3 transition-colors disabled:cursor-not-allowed ${contentChanged
+                            className={`w-full px-3 py-3 text-white text-base font-medium rounded-lg flex items-center justify-center gap-3 transition-colors disabled:cursor-not-allowed ${contentChanged
                                 ? 'bg-orange-600 hover:bg-orange-700 disabled:bg-orange-300'
                                 : hasExistingReport
                                     ? 'bg-green-600 hover:bg-green-700 disabled:bg-green-300'
@@ -1967,9 +2009,9 @@ function ConsistencyTab({
             {/* Consistency Report (se disponibile) */}
             {consistencyReport && (
                 <Card>
-                    <div className="space-y-6">
+                    <div className="space-y-3">
                         {/* Header con Overall Score */}
-                        <div className="flex items-start gap-4">
+                        <div className="flex items-start gap-2">
                             <div className="flex-shrink-0 w-24 h-24 rounded-full bg-purple-100 flex items-center justify-center">
                                 <div className="text-center">
                                     <div className="text-3xl font-bold text-purple-600">
@@ -1994,7 +2036,7 @@ function ConsistencyTab({
 
                         {/* Score breakdown cards */}
                         {consistencyReport.narrative && consistencyReport.style && consistencyReport.consistency && (
-                            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
                                 <div className="bg-gradient-to-br from-blue-50 to-blue-100 rounded-lg p-4 border border-blue-200">
                                     <div className="text-xs font-semibold text-blue-600 uppercase mb-2">Coerenza Narrativa</div>
                                     <div className="text-3xl font-bold text-blue-900 mb-1">
@@ -2154,13 +2196,13 @@ function ExportTab({ project }: { project: ProjectDetail }) {
     const [exportError, setExportError] = useState<string | null>(null);
     const [exportSuccess, setExportSuccess] = useState(false);
 
-    const hasChapters = project.chapters && project.chapters.length > 0;
+    const hasChapters = project.Chapter && project.Chapter.length > 0;
 
     // Verifica se tutti i capitoli previsti nell'outline sono stati generati
     // L'outline è salvato come JSON nel campo structure
     const outlineStructure = project.outline?.structure as any;
     const totalChaptersExpected = outlineStructure?.chapters?.length || 0;
-    const chaptersGenerated = project.chapters?.length || 0;
+    const chaptersGenerated = project.Chapter?.length || 0;
     const allChaptersGenerated = totalChaptersExpected > 0 && chaptersGenerated >= totalChaptersExpected;
 
     const handleExport = async () => {
@@ -2238,28 +2280,28 @@ function ExportTab({ project }: { project: ProjectDetail }) {
     };
 
     return (
-        <div className="max-w-4xl mx-auto space-y-6">
+        <div className="max-w-4xl mx-auto space-y-3">
             {/* Status Card */}
             <Card>
                 <h3 className="text-lg font-semibold text-gray-900 mb-4">📄 Esporta Documento</h3>
 
                 {/* Project Stats */}
-                <div className="grid grid-cols-3 gap-4 mb-6">
+                <div className="grid grid-cols-3 gap-2 mb-3">
                     <div className="bg-gray-50 rounded-lg p-4">
                         <div className="text-2xl font-bold text-gray-900">
-                            {project.chapters?.length || 0}
+                            {project.Chapter?.length || 0}
                         </div>
                         <div className="text-sm text-gray-600">Capitoli generati</div>
                     </div>
                     <div className="bg-gray-50 rounded-lg p-4">
                         <div className="text-2xl font-bold text-gray-900">
-                            {project.chapters?.reduce((sum: number, ch: any) => sum + (ch.wordCount || 0), 0).toLocaleString() || 0}
+                            {project.Chapter?.reduce((sum: number, ch: any) => sum + (ch.wordCount || 0), 0).toLocaleString() || 0}
                         </div>
                         <div className="text-sm text-gray-600">Parole totali</div>
                     </div>
                     <div className="bg-gray-50 rounded-lg p-4">
                         <div className="text-2xl font-bold text-gray-900">
-                            {Math.ceil((project.chapters?.reduce((sum: number, ch: any) => sum + (ch.wordCount || 0), 0) || 0) / 250)}
+                            {Math.ceil((project.Chapter?.reduce((sum: number, ch: any) => sum + (ch.wordCount || 0), 0) || 0) / 250)}
                         </div>
                         <div className="text-sm text-gray-600">Pagine stimate</div>
                     </div>
@@ -2289,7 +2331,7 @@ function ExportTab({ project }: { project: ProjectDetail }) {
                     )}
 
                     {hasChapters && (
-                        <div className="flex flex-col sm:flex-row gap-4">
+                        <div className="flex flex-col sm:flex-row gap-2">
                             {/* DOCX Export Button */}
                             <button
                                 onClick={handleExport}
