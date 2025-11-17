@@ -8,10 +8,11 @@ import { prisma } from '@/lib/db';
  */
 export async function POST(
     request: NextRequest,
-    { params }: { params: { id: string } }
+    { params }: { params: Promise<{ id: string }> }
 ) {
     try {
-        const projectId = params.id;
+        const { id } = await params;
+        const projectId = id;
 
         // Verifica che il progetto esista
         const project = await prisma.project.findUnique({

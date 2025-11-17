@@ -12,11 +12,12 @@ export const runtime = 'nodejs';
  */
 export async function POST(
     request: NextRequest,
-    { params }: { params: { id: string; chapterNumber: string } }
+    { params }: { params: Promise<{ id: string; chapterNumber: string }> }
 ) {
     try {
-        const projectId = params.id;
-        const chapterNumber = parseInt(params.chapterNumber, 10);
+        const { id, chapterNumber: chapterNumberStr } = await params;
+        const projectId = id;
+        const chapterNumber = parseInt(chapterNumberStr, 10);
 
         if (isNaN(chapterNumber) || chapterNumber < 1) {
             const error = ApiErrors.validation('Numero capitolo non valido');

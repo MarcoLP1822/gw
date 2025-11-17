@@ -17,9 +17,10 @@ export const maxDuration = 300;
 
 export async function POST(
     request: NextRequest,
-    { params }: { params: { id: string } }
+    { params }: { params: Promise<{ id: string }> }
 ) {
-    const projectId = params.id;
+    const { id } = await params;
+    const projectId = id;
     const body = (await request.json()) as HandleUploadBody;
 
     try {

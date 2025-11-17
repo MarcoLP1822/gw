@@ -10,10 +10,10 @@ import { put } from '@vercel/blob';
 
 export async function GET(
     request: NextRequest,
-    { params }: { params: { id: string } }
+    { params }: { params: Promise<{ id: string }> }
 ) {
     try {
-        const { id } = params;
+        const { id } = await params;
 
         // 1. Fetch project + chapters
         const project = await prisma.project.findUnique({
@@ -72,6 +72,7 @@ export async function GET(
             // Save to Supabase
             await prisma.exportedBook.create({
                 data: {
+                    id: `${id}-v${existingBook ? existingBook.version + 1 : 1}`,
                     projectId: id,
                     title: project.bookTitle,
                     fileName,

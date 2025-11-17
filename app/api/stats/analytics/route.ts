@@ -18,7 +18,7 @@ export async function GET() {
                 createdAt: true,
                 status: true,
                 updatedAt: true,
-                chapters: {
+                Chapter: {
                     select: {
                         id: true,
                         wordCount: true
@@ -45,7 +45,7 @@ export async function GET() {
                 data.completed++;
             }
 
-            const totalWords = project.chapters.reduce((sum, ch) => sum + (ch.wordCount || 0), 0);
+            const totalWords = project.Chapter.reduce((sum, ch) => sum + (ch.wordCount || 0), 0);
             data.words += totalWords;
         });
 
@@ -66,7 +66,7 @@ export async function GET() {
         const topProjects = await prisma.project.findMany({
             take: 5,
             orderBy: {
-                chapters: {
+                Chapter: {
                     _count: 'desc'
                 }
             },
@@ -77,10 +77,10 @@ export async function GET() {
                 status: true,
                 _count: {
                     select: {
-                        chapters: true
+                        Chapter: true
                     }
                 },
-                chapters: {
+                Chapter: {
                     select: {
                         wordCount: true
                     }
@@ -92,8 +92,8 @@ export async function GET() {
             id: project.id,
             title: project.bookTitle,
             author: project.authorName,
-            chapters: project._count.chapters,
-            totalWords: project.chapters.reduce((sum, ch) => sum + (ch.wordCount || 0), 0),
+            chapters: project._count.Chapter,
+            totalWords: project.Chapter.reduce((sum, ch) => sum + (ch.wordCount || 0), 0),
             status: project.status
         }));
 

@@ -13,10 +13,11 @@ export const dynamic = 'force-dynamic';
 // POST - Generate style guide from uploaded documents using AI
 export async function POST(
     request: NextRequest,
-    { params }: { params: { id: string } }
+    { params }: { params: Promise<{ id: string }> }
 ) {
     try {
-        const projectId = params.id;
+        const { id } = await params;
+        const projectId = id;
 
         const result = await StyleGuideService.generateFromDocuments(projectId);
 

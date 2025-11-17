@@ -31,7 +31,7 @@ interface ExportedBook {
     totalWords: number;
     totalPages: number;
     generatedAt: string;
-    project: {
+    Project: {
         authorName: string;
     };
 }

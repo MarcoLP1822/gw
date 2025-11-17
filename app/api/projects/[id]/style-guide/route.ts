@@ -14,10 +14,11 @@ export const dynamic = 'force-dynamic';
 // GET - Get active style guide for project
 export async function GET(
     request: NextRequest,
-    { params }: { params: { id: string } }
+    { params }: { params: Promise<{ id: string }> }
 ) {
     try {
-        const projectId = params.id;
+        const { id } = await params;
+        const projectId = id;
 
         const styleGuide = await StyleGuideService.getActiveStyleGuide(projectId);
 
@@ -41,10 +42,11 @@ export async function GET(
 // PUT - Save or update custom style guide
 export async function PUT(
     request: NextRequest,
-    { params }: { params: { id: string } }
+    { params }: { params: Promise<{ id: string }> }
 ) {
     try {
-        const projectId = params.id;
+        const { id } = await params;
+        const projectId = id;
         const { styleGuide } = await request.json();
 
         if (typeof styleGuide !== 'string') {
@@ -91,10 +93,11 @@ export async function PUT(
 // DELETE - Delete custom style guide
 export async function DELETE(
     request: NextRequest,
-    { params }: { params: { id: string } }
+    { params }: { params: Promise<{ id: string }> }
 ) {
     try {
-        const projectId = params.id;
+        const { id } = await params;
+        const projectId = id;
 
         const success = await StyleGuideService.deleteCustomStyleGuide(projectId);
 

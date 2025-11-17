@@ -7,10 +7,11 @@ import { chapterGenerationService } from '@/lib/ai/services/chapter-generation';
  */
 export async function POST(
     request: NextRequest,
-    { params }: { params: { id: string } }
+    { params }: { params: Promise<{ id: string }> }
 ) {
     try {
-        const projectId = params.id;
+        const { id } = await params;
+        const projectId = id;
 
         console.log(`🔍 Running consistency check for project ${projectId}`);
 
@@ -40,11 +41,12 @@ export async function POST(
  */
 export async function GET(
     request: NextRequest,
-    { params }: { params: { id: string } }
+    { params }: { params: Promise<{ id: string }> }
 ) {
     try {
+        const { id } = await params;
         const { prisma } = await import('@/lib/db');
-        const projectId = params.id;
+        const projectId = id;
 
         const report = await prisma.consistencyReport.findFirst({
             where: { projectId },
@@ -80,11 +82,12 @@ export async function GET(
  */
 export async function DELETE(
     request: NextRequest,
-    { params }: { params: { id: string } }
+    { params }: { params: Promise<{ id: string }> }
 ) {
     try {
+        const { id } = await params;
         const { prisma } = await import('@/lib/db');
-        const projectId = params.id;
+        const projectId = id;
 
         const deleted = await prisma.consistencyReport.deleteMany({
             where: { projectId },

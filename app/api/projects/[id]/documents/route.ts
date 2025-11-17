@@ -18,10 +18,11 @@ export const maxDuration = 300;
 // GET - List all documents for a project
 export async function GET(
     request: NextRequest,
-    { params }: { params: { id: string } }
+    { params }: { params: Promise<{ id: string }> }
 ) {
     try {
-        const projectId = params.id;
+        const { id } = await params;
+        const projectId = id;
 
         const documents = await DocumentService.getProjectDocuments(projectId);
 
@@ -51,10 +52,11 @@ export async function GET(
 // POST - Upload a document
 export async function POST(
     request: NextRequest,
-    { params }: { params: { id: string } }
+    { params }: { params: Promise<{ id: string }> }
 ) {
     try {
-        const projectId = params.id;
+        const { id } = await params;
+        const projectId = id;
 
         // Parse multipart form data
         const formData = await request.formData();

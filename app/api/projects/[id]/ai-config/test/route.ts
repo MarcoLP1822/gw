@@ -11,9 +11,10 @@ import type { ProjectAIConfig } from '@prisma/client';
  */
 export async function POST(
     request: NextRequest,
-    { params }: { params: { id: string } }
+    { params }: { params: Promise<{ id: string }> }
 ) {
     try {
+        const { id } = await params;
         const body = await request.json();
 
         // Valida la configurazione
@@ -30,7 +31,7 @@ export async function POST(
 
         // Recupera il progetto
         const project = await prisma.project.findUnique({
-            where: { id: params.id },
+            where: { id },
         });
 
         if (!project) {
@@ -44,7 +45,7 @@ export async function POST(
         const testConfig: any = {
             ...DEFAULT_AI_CONFIG,
             ...body,
-            projectId: params.id,
+            projectId: id,
         };
 
         // Converti il progetto Prisma a ProjectFormData per il PromptBuilder

@@ -6,12 +6,13 @@ import { NextRequest, NextResponse } from 'next/server';
  */
 export async function GET(
     request: NextRequest,
-    { params }: { params: { id: string; chapterNumber: string } }
+    { params }: { params: Promise<{ id: string; chapterNumber: string }> }
 ) {
     try {
+        const { id, chapterNumber: chapterNumberStr } = await params;
         const { prisma } = await import('@/lib/db');
-        const projectId = params.id;
-        const chapterNumber = parseInt(params.chapterNumber, 10);
+        const projectId = id;
+        const chapterNumber = parseInt(chapterNumberStr, 10);
 
         const chapter = await prisma.chapter.findUnique({
             where: {
@@ -45,12 +46,13 @@ export async function GET(
  */
 export async function PUT(
     request: NextRequest,
-    { params }: { params: { id: string; chapterNumber: string } }
+    { params }: { params: Promise<{ id: string; chapterNumber: string }> }
 ) {
     try {
+        const { id, chapterNumber: chapterNumberStr } = await params;
         const { prisma } = await import('@/lib/db');
-        const projectId = params.id;
-        const chapterNumber = parseInt(params.chapterNumber, 10);
+        const projectId = id;
+        const chapterNumber = parseInt(chapterNumberStr, 10);
         const body = await request.json();
 
         const { content, modifiedBy = 'user' } = body;

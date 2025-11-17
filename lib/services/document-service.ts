@@ -7,6 +7,7 @@
 import { prisma } from '@/lib/db';
 import { getExtractorForFile } from '../document-processing/text-extractor';
 import type { ProjectDocument } from '@prisma/client';
+import { randomUUID } from 'crypto';
 
 export interface UploadDocumentParams {
     projectId: string;
@@ -118,6 +119,7 @@ export class DocumentService {
             // Save to database
             const document = await prisma.projectDocument.create({
                 data: {
+                    id: randomUUID(),
                     projectId: params.projectId,
                     originalFileName: params.fileName,
                     fileType: ext,
@@ -210,6 +212,7 @@ export class DocumentService {
             // Save to database
             const document = await prisma.projectDocument.create({
                 data: {
+                    id: randomUUID(),
                     projectId: params.projectId,
                     originalFileName: params.file.name,
                     fileType: this.getFileExtension(params.file.name),

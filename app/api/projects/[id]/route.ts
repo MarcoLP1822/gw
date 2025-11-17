@@ -5,12 +5,13 @@ import { ProjectFormData } from '@/types';
 // GET /api/projects/[id] - Ottieni dettagli progetto singolo
 export async function GET(
     request: NextRequest,
-    { params }: { params: { id: string } }
+    { params }: { params: Promise<{ id: string }> }
 ) {
     try {
+        const { id } = await params;
         const project = await prisma.project.findUnique({
             where: {
-                id: params.id
+                id
             },
             include: {
                 Outline: true,
@@ -52,14 +53,15 @@ export async function GET(
 // PUT /api/projects/[id] - Aggiorna progetto
 export async function PUT(
     request: NextRequest,
-    { params }: { params: { id: string } }
+    { params }: { params: Promise<{ id: string }> }
 ) {
     try {
+        const { id } = await params;
         const body: Partial<ProjectFormData> & { status?: string } = await request.json();
 
         // Verifica che il progetto esista
         const existingProject = await prisma.project.findUnique({
-            where: { id: params.id }
+            where: { id }
         });
 
         if (!existingProject) {
@@ -72,7 +74,7 @@ export async function PUT(
         // Aggiorna il progetto
         const updatedProject = await prisma.project.update({
             where: {
-                id: params.id
+                id
             },
             data: {
                 // Aggiorna solo i campi forniti
@@ -115,12 +117,13 @@ export async function PUT(
 // DELETE /api/projects/[id] - Elimina progetto
 export async function DELETE(
     request: NextRequest,
-    { params }: { params: { id: string } }
+    { params }: { params: Promise<{ id: string }> }
 ) {
     try {
+        const { id } = await params;
         // Verifica che il progetto esista
         const existingProject = await prisma.project.findUnique({
-            where: { id: params.id }
+            where: { id }
         });
 
         if (!existingProject) {
@@ -133,7 +136,7 @@ export async function DELETE(
         // Elimina il progetto (cascade delete eliminerà anche outline, chapters, logs)
         await prisma.project.delete({
             where: {
-                id: params.id
+                id
             }
         });
 

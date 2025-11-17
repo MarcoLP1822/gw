@@ -7,10 +7,11 @@ import { prisma } from '@/lib/db';
  */
 export async function PATCH(
     request: NextRequest,
-    { params }: { params: { id: string } }
+    { params }: { params: Promise<{ id: string }> }
 ) {
     try {
-        const projectId = params.id;
+        const { id } = await params;
+        const projectId = id;
         const { structure } = await request.json();
 
         // Verifica che il progetto esista

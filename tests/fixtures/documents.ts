@@ -1,36 +1,36 @@
-import { Document } from '@prisma/client';
+import { ProjectDocument } from '@prisma/client';
 
-export const mockDocument: Partial<Document> = {
+export const mockDocument: Partial<ProjectDocument> = {
     id: 'test-document-id-1',
     projectId: 'test-project-id-1',
-    fileName: 'business-plan.pdf',
-    fileUrl: 'https://blob.vercel-storage.com/business-plan.pdf',
-    fileType: 'application/pdf',
-    fileSize: 1024 * 1024, // 1MB
+    originalFileName: 'business-plan.pdf',
+    fileType: 'pdf',
+    fileSizeBytes: 1024 * 1024, // 1MB
     extractedText: 'Questo è il contenuto estratto dal documento PDF...',
+    wordCount: 100,
     uploadedAt: new Date('2025-01-01'),
 };
 
-export const mockDocuments: Partial<Document>[] = [
+export const mockDocuments: Partial<ProjectDocument>[] = [
     mockDocument,
     {
         id: 'test-document-id-2',
         projectId: 'test-project-id-1',
-        fileName: 'market-analysis.docx',
-        fileUrl: 'https://blob.vercel-storage.com/market-analysis.docx',
-        fileType: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-        fileSize: 512 * 1024, // 512KB
+        originalFileName: 'market-analysis.docx',
+        fileType: 'docx',
+        fileSizeBytes: 512 * 1024, // 512KB
         extractedText: 'Analisi di mercato: Il settore tech sta crescendo...',
+        wordCount: 150,
         uploadedAt: new Date('2025-01-01'),
     },
     {
         id: 'test-document-id-3',
         projectId: 'test-project-id-1',
-        fileName: 'presentation.pptx',
-        fileUrl: 'https://blob.vercel-storage.com/presentation.pptx',
-        fileType: 'application/vnd.openxmlformats-officedocument.presentationml.presentation',
-        fileSize: 2048 * 1024, // 2MB
-        extractedText: null, // Not yet processed
+        originalFileName: 'presentation.pptx',
+        fileType: 'pptx',
+        fileSizeBytes: 2048 * 1024, // 2MB
+        extractedText: 'Slide 1: Introduction...',
+        wordCount: 200,
         uploadedAt: new Date('2025-01-01'),
     },
 ];

@@ -5,10 +5,10 @@ import { Packer } from 'docx';
 
 export async function GET(
     request: NextRequest,
-    { params }: { params: { id: string } }
+    { params }: { params: Promise<{ id: string }> }
 ) {
     try {
-        const { id } = params;
+        const { id } = await params;
 
         // Recupera progetto con tutti i capitoli
         const project = await prisma.project.findUnique({

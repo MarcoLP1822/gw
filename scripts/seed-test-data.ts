@@ -1,4 +1,5 @@
 import { PrismaClient } from '@prisma/client';
+import { randomUUID } from 'crypto';
 
 const prisma = new PrismaClient();
 
@@ -13,9 +14,11 @@ async function main() {
     if (!user) {
         user = await prisma.user.create({
             data: {
+                id: randomUUID(),
                 email: 'test@ghostwriter.com',
                 name: 'Test User',
-                role: 'ghost_writer'
+                role: 'ghost_writer',
+                updatedAt: new Date()
             }
         });
         console.log('✅ User created:', user.email);
@@ -110,8 +113,10 @@ async function main() {
         if (!existingProject) {
             const project = await prisma.project.create({
                 data: {
+                    id: randomUUID(),
                     ...projectData,
-                    userId: user.id
+                    userId: user.id,
+                    updatedAt: new Date()
                 }
             });
 
@@ -124,6 +129,7 @@ async function main() {
                 for (let i = 1; i <= chaptersCount; i++) {
                     await prisma.chapter.create({
                         data: {
+                            id: randomUUID(),
                             projectId: project.id,
                             chapterNumber: i,
                             title: `Capitolo ${i}: Titolo di esempio`,
@@ -131,7 +137,8 @@ async function main() {
                             wordCount: Math.floor(Math.random() * 1000) + 1500, // 1500-2500 parole
                             status: 'completed',
                             aiModel: 'gpt-5-mini-2025-08-07',
-                            generatedAt: new Date(Date.now() - Math.random() * 30 * 24 * 60 * 60 * 1000) // Ultimi 30 giorni
+                            generatedAt: new Date(Date.now() - Math.random() * 30 * 24 * 60 * 60 * 1000), // Ultimi 30 giorni
+                            updatedAt: new Date()
                         }
                     });
                 }
@@ -139,6 +146,7 @@ async function main() {
                 // Aggiungi log di generazione
                 await prisma.generationLog.create({
                     data: {
+                        id: randomUUID(),
                         projectId: project.id,
                         step: 'outline',
                         aiModel: 'gpt-5-mini-2025-08-07',
@@ -154,6 +162,7 @@ async function main() {
                 for (let i = 1; i <= chaptersCount; i++) {
                     await prisma.generationLog.create({
                         data: {
+                            id: randomUUID(),
                             projectId: project.id,
                             step: `chapter_${i}`,
                             aiModel: 'gpt-5-mini-2025-08-07',
@@ -174,6 +183,7 @@ async function main() {
                 for (let i = 1; i <= chaptersCount; i++) {
                     await prisma.chapter.create({
                         data: {
+                            id: randomUUID(),
                             projectId: project.id,
                             chapterNumber: i,
                             title: `Capitolo ${i}: In corso`,
@@ -181,7 +191,8 @@ async function main() {
                             wordCount: Math.floor(Math.random() * 500) + 1000,
                             status: 'completed',
                             aiModel: 'gpt-5-mini-2025-08-07',
-                            generatedAt: new Date()
+                            generatedAt: new Date(),
+                            updatedAt: new Date()
                         }
                     });
                 }

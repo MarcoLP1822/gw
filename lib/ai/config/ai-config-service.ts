@@ -1,6 +1,7 @@
 import { prisma } from '@/lib/db';
 import type { ProjectAIConfig } from '@prisma/client';
 import { DEFAULT_AI_CONFIG, validateAIConfig } from './defaults';
+import { randomUUID } from 'crypto';
 
 /**
  * Service per gestire le configurazioni AI dei progetti
@@ -30,8 +31,10 @@ export class AIConfigService {
     static async createDefault(projectId: string): Promise<ProjectAIConfig> {
         const config = await prisma.projectAIConfig.create({
             data: {
+                id: randomUUID(),
                 projectId,
                 ...DEFAULT_AI_CONFIG,
+                updatedAt: new Date(),
             },
         });
 
@@ -55,11 +58,13 @@ export class AIConfigService {
         const config = await prisma.projectAIConfig.upsert({
             where: { projectId },
             create: {
+                id: randomUUID(),
                 projectId,
                 ...DEFAULT_AI_CONFIG,
                 ...data,
+                updatedAt: new Date(),
             },
-            update: data,
+            update: { ...data, updatedAt: new Date() },
         });
 
         return config;
@@ -72,8 +77,10 @@ export class AIConfigService {
         const config = await prisma.projectAIConfig.upsert({
             where: { projectId },
             create: {
+                id: randomUUID(),
                 projectId,
                 ...DEFAULT_AI_CONFIG,
+                updatedAt: new Date(),
             },
             update: DEFAULT_AI_CONFIG,
         });
@@ -134,8 +141,10 @@ export class AIConfigService {
 
         const newConfig = await prisma.projectAIConfig.create({
             data: {
+                id: randomUUID(),
                 projectId: targetProjectId,
                 ...configData,
+                updatedAt: new Date(),
             },
         });
 

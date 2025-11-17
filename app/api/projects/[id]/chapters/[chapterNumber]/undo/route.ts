@@ -8,12 +8,13 @@ import { NextRequest, NextResponse } from 'next/server';
  */
 export async function POST(
     request: NextRequest,
-    { params }: { params: { id: string; chapterNumber: string } }
+    { params }: { params: Promise<{ id: string; chapterNumber: string }> }
 ) {
     try {
+        const { id, chapterNumber: chapterNumberStr } = await params;
         const { prisma } = await import('@/lib/db');
-        const projectId = params.id;
-        const chapterNumber = parseInt(params.chapterNumber, 10);
+        const projectId = id;
+        const chapterNumber = parseInt(chapterNumberStr, 10);
 
         // Recupera il capitolo corrente
         const currentChapter = await prisma.chapter.findUnique({

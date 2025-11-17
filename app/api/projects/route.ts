@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
 import { ProjectFormData } from '@/types';
 import { handleApiError, ApiErrors } from '@/lib/errors/api-errors';
+import { randomUUID } from 'crypto';
 
 // POST /api/projects - Crea un nuovo progetto
 export async function POST(request: NextRequest) {
@@ -25,9 +26,11 @@ export async function POST(request: NextRequest) {
         if (!user) {
             user = await prisma.user.create({
                 data: {
+                    id: randomUUID(),
                     email: 'demo@ghostwriting.com',
                     name: 'Demo User',
-                    role: 'ghost_writer'
+                    role: 'ghost_writer',
+                    updatedAt: new Date()
                 }
             });
         }
@@ -35,6 +38,7 @@ export async function POST(request: NextRequest) {
         // Crea il progetto nel database
         const project = await prisma.project.create({
             data: {
+                id: randomUUID(),
                 userId: user.id,
                 authorName: body.authorName,
                 authorRole: body.authorRole,
@@ -53,6 +57,7 @@ export async function POST(request: NextRequest) {
                 estimatedPages: body.estimatedPages ? parseInt(String(body.estimatedPages), 10) : null,
                 additionalNotes: body.additionalNotes || null,
                 status: 'draft',
+                updatedAt: new Date(),
             }
         });
 
@@ -96,7 +101,7 @@ export async function GET(request: NextRequest) {
                 // Include conteggio capitoli se esistono
                 _count: {
                     select: {
-                        chapters: true
+                        Chapter: true
                     }
                 }
             }

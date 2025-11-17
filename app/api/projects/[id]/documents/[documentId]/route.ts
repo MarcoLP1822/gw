@@ -14,10 +14,11 @@ export const dynamic = 'force-dynamic';
 // GET - Get document details
 export async function GET(
     request: NextRequest,
-    { params }: { params: { id: string; documentId: string } }
+    { params }: { params: Promise<{ id: string; documentId: string }> }
 ) {
     try {
-        const document = await DocumentService.getDocument(params.documentId);
+        const { id, documentId } = await params;
+        const document = await DocumentService.getDocument(documentId);
 
         if (!document) {
             return NextResponse.json(
@@ -48,10 +49,11 @@ export async function GET(
 // DELETE - Delete document
 export async function DELETE(
     request: NextRequest,
-    { params }: { params: { id: string; documentId: string } }
+    { params }: { params: Promise<{ id: string; documentId: string }> }
 ) {
     try {
-        const success = await DocumentService.deleteDocument(params.documentId);
+        const { id, documentId } = await params;
+        const success = await DocumentService.deleteDocument(documentId);
 
         if (!success) {
             return NextResponse.json(

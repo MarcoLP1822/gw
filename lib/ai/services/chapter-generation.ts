@@ -1,6 +1,7 @@
 import { prisma } from '@/lib/db';
 import { openai, DEFAULT_MODEL, logAPICall } from '@/lib/ai/openai-client';
 import { callGPT5JSON, getReasoningEffortForTask, getVerbosityForOutput, ReasoningEffort, Verbosity } from '@/lib/ai/responses-api';
+import { randomUUID } from 'crypto';
 import {
     generateChapterPrompt,
     generateStyleGuidePrompt,
@@ -506,6 +507,7 @@ ${fixPrompt}`;
                 updatedAt: new Date(),
             },
             create: {
+                id: randomUUID(),
                 projectId,
                 chapterNumber,
                 title: extractedTitle,
@@ -521,6 +523,7 @@ ${fixPrompt}`;
                 keyNumbers: result.metadata.keyNumbers || {},
                 summary: result.summary || null,
                 keyPoints: result.keyPoints || [],
+                updatedAt: new Date(),
             },
         });
 
@@ -642,6 +645,7 @@ ${fixPrompt}`;
     ) {
         await prisma.generationLog.create({
             data: {
+                id: randomUUID(),
                 projectId,
                 step: `chapter_${chapterNumber}`,
                 aiModel,
@@ -705,6 +709,7 @@ ${fixPrompt}`;
         // Salva report nel DB
         await prisma.consistencyReport.create({
             data: {
+                id: randomUUID(),
                 projectId,
                 report: report as any,
                 overallScore: report.overallScore || 0,

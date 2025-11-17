@@ -4,6 +4,7 @@ import { DEFAULT_MODEL, logAPICall } from '@/lib/ai/openai-client';
 import { callGPT5JSON } from '@/lib/ai/responses-api';
 import { generateOutlinePrompt, SYSTEM_PROMPT } from '@/lib/ai/prompts/outline-generator';
 import { GeneratedOutline } from '@/types';
+import { randomUUID } from 'crypto';
 
 /**
  * POST /api/projects/[id]/generate-outline
@@ -11,10 +12,12 @@ import { GeneratedOutline } from '@/types';
  */
 export async function POST(
     request: NextRequest,
-    { params }: { params: { id: string } }
+    { params }: { params: Promise<{ id: string }> }
 ) {
+    const { id } = await params;
+    const projectId = id;
+
     try {
-        const projectId = params.id;
 
         // 1. Recupera il progetto dal database
         const project = await prisma.project.findUnique({
@@ -87,6 +90,7 @@ ${userPrompt}`;
         const outline = await prisma.outline.upsert({
             where: { projectId },
             create: {
+                id: projectId,
                 projectId,
                 structure: generatedOutline as any, // Prisma accetta JSON
                 totalChapters: generatedOutline.chapters.length,
@@ -111,6 +115,7 @@ ${userPrompt}`;
         // 6. Log della generazione per tracking costi
         await prisma.generationLog.create({
             data: {
+                id: randomUUID(),
                 projectId,
                 step: 'outline',
                 aiModel: DEFAULT_MODEL,
@@ -142,7 +147,8 @@ ${userPrompt}`;
         try {
             await prisma.generationLog.create({
                 data: {
-                    projectId: params.id,
+                    id: randomUUID(),
+                    projectId,
                     step: 'outline',
                     aiModel: DEFAULT_MODEL,
                     promptTokens: 0,
