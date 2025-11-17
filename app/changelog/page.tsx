@@ -18,6 +18,26 @@ interface ChangelogEntry {
 
 const changelog: ChangelogEntry[] = [
     {
+        version: '3.14.0',
+        date: '17 Novembre 2025',
+        type: 'feature',
+        changes: [
+            {
+                category: 'Generale',
+                items: [
+                    'Clean up repository: remove obsolete files and scripts',
+                    'Aggiunto margine sinistro a tutte le pagine per sidebar fissa',
+                ],
+            },
+            {
+                category: 'Gestione Progetti',
+                items: [
+                    'Aggiunto margine alle pagine dettaglio progetto e cliente',
+                ],
+            }
+        ],
+    },
+    {
         version: '3.13.0',
         date: '17 Novembre 2025',
         type: 'feature',
