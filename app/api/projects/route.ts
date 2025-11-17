@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { logger } from '@/lib/logger';
 import { prisma } from '@/lib/db';
 import { ProjectFormData } from '@/types';
 import { handleApiError, ApiErrors } from '@/lib/errors/api-errors';
@@ -73,7 +74,7 @@ export async function POST(request: NextRequest) {
         }, { status: 201 });
 
     } catch (error) {
-        console.error('Error creating project:', error);
+        logger.error('Error creating project', error);
         const apiError = handleApiError(error);
         return NextResponse.json(apiError.toJSON(), { status: apiError.statusCode });
     }
@@ -132,7 +133,7 @@ export async function GET(request: NextRequest) {
         });
 
     } catch (error) {
-        console.error('Error fetching projects:', error);
+        logger.error('Error fetching projects', error);
         return NextResponse.json(
             { error: 'Errore durante il recupero dei progetti' },
             { status: 500 }

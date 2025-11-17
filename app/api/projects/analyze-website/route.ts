@@ -5,6 +5,7 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
+import { logger } from '@/lib/logger';
 import { extractFromWebsite, extractFromMultipleUrls, crawlWebsite } from '@/lib/content-extraction/web-extractor';
 import { callGPT5JSON } from '@/lib/ai/responses-api';
 import { ProjectFormData } from '@/types';
@@ -36,10 +37,10 @@ export async function POST(request: NextRequest) {
             );
         }
 
-        console.log('🌐 Analyzing website:', url || urls, crawl ? `(crawl mode: depth ${maxDepth}, max ${maxPages} pages)` : '');
+        logger.info('Analyzing website', { url: url || urls, crawl, maxDepth, maxPages });
 
         // Extract content from website(s)
-        console.log('🔍 Extracting content from website...');
+        logger.info('Extracting content from website');
 
         let extraction;
         if (crawl && url) {
@@ -60,17 +61,19 @@ export async function POST(request: NextRequest) {
             );
         }
 
-        console.log(`✅ Content extracted: ${extraction.wordCount} words from ${extraction.metadata.url}`);
+        logger.debug('Content extracted', { wordCount: extraction.wordCount, url: extraction.metadata.url });
+
+        // 3. Analyze with GPT-5
 
         // Parallel processing: Generate style guide + Extract project data
-        console.log('🤖 Starting AI analysis...');
+        logger.info('🤖 Starting AI analysis...');
 
         const [styleGuide, projectData] = await Promise.all([
             generateStyleGuideFromText(extractedText),
             extractProjectDataFromText(extractedText)
         ]);
 
-        console.log('✅ Analysis complete');
+        logger.info('✅ Analysis complete');
 
         return NextResponse.json({
             success: true,
@@ -86,7 +89,7 @@ export async function POST(request: NextRequest) {
         });
 
     } catch (error) {
-        console.error('❌ Error analyzing website:', error);
+        logger.error('❌ Error analyzing website', error);
 
         // Provide user-friendly error messages
         let errorMessage = 'Errore durante l\'analisi del sito web';
@@ -232,7 +235,7 @@ IMPORTANTE: Usa stringa vuota "" per campi non trovati. NON inventare informazio
 
         return cleanedData as Partial<ProjectFormData>;
     } catch (error) {
-        console.error('Error extracting project data:', error);
+        logger.error('Error extracting project data', error);
         // Return empty object on error - user will fill manually
         return {};
     }

@@ -9,6 +9,7 @@ import { projectsApi } from '@/lib/api/projects';
 import { ProjectTableSkeleton } from '@/components/ui/Skeleton';
 import { toast } from '@/lib/ui/toast';
 import { ProjectFormData } from '@/types';
+import { logger } from '@/lib/logger';
 
 type SortField = 'bookTitle' | 'authorName' | 'company' | 'status' | 'chapters' | 'createdAt' | 'updatedAt';
 type SortDirection = 'asc' | 'desc' | null;
@@ -65,7 +66,7 @@ export default function ProjectTableV2() {
             setProjects(response.projects);
         } catch (err) {
             setError(err instanceof Error ? err.message : 'Errore durante il caricamento');
-            console.error('Error fetching projects:', err);
+            logger.error('Error fetching projects', err);
         } finally {
             setLoading(false);
         }
@@ -173,7 +174,7 @@ export default function ProjectTableV2() {
             fetchProjects();
         } catch (err) {
             toast.error('❌ Errore durante l\'eliminazione del progetto');
-            console.error('Error deleting project:', err);
+            logger.error('Error deleting project', err);
         }
     };
 
@@ -183,13 +184,13 @@ export default function ProjectTableV2() {
             // Fetch full project details
             const response = await projectsApi.getById(projectId);
             const projectDetail = response.project; // Estrae il progetto dalla response
-            console.log('Loaded project details:', projectDetail); // Debug
+            logger.debug('Loaded project details', { projectId, title: projectDetail.bookTitle });
             setEditingProject(projectDetail as any);
             // Aspetta che lo stato sia aggiornato prima di aprire il modal
             setTimeout(() => setIsEditModalOpen(true), 0);
         } catch (err) {
             toast.error('❌ Errore nel caricamento del progetto');
-            console.error('Error loading project:', err);
+            logger.error('Error loading project', err);
         }
     };
 
@@ -204,7 +205,7 @@ export default function ProjectTableV2() {
             fetchProjects(); // Ricarica la lista
         } catch (err) {
             toast.error('❌ Errore durante l\'aggiornamento del progetto');
-            console.error('Error updating project:', err);
+            logger.error('Error updating project', err);
         }
     };
 

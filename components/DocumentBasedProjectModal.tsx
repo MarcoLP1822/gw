@@ -16,6 +16,7 @@ import Modal from './Modal';
 import { ProjectFormData } from '@/types';
 import { Upload, Loader2, FileText, CheckCircle2, AlertCircle, Sparkles } from 'lucide-react';
 import { User, Building2, Target, BookOpen, Lightbulb, Users as UsersIcon, TrendingUp } from 'lucide-react';
+import { logger } from '@/lib/logger';
 
 interface DocumentBasedProjectModalProps {
     isOpen: boolean;
@@ -155,8 +156,11 @@ export default function DocumentBasedProjectModal({
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        console.log('📤 Submitting document-based project with data:', formData);
-        console.log('📝 Style guide length:', styleGuide.length);
+        logger.info('Submitting document-based project', {
+            authorName: formData.authorName,
+            bookTitle: formData.bookTitle,
+            styleGuideLength: styleGuide.length
+        });
 
         setSubmitting(true);
 
@@ -334,8 +338,8 @@ export default function DocumentBasedProjectModal({
                                 <div className="w-5 h-5 rounded-full border-2 border-gray-300 flex-shrink-0" />
                             )}
                             <p className={`text-sm ${analysisStep === 0 ? 'text-blue-900 font-medium' :
-                                    analysisStep > 0 ? 'text-green-900' :
-                                        'text-gray-600'
+                                analysisStep > 0 ? 'text-green-900' :
+                                    'text-gray-600'
                                 }`}>Estrazione testo dal documento</p>
                         </div>
                         <div className={`flex items-center gap-3 p-3 rounded-lg ${analysisStep >= 1 ? 'bg-purple-50' : 'bg-gray-50'
@@ -348,8 +352,8 @@ export default function DocumentBasedProjectModal({
                                 <div className="w-5 h-5 rounded-full border-2 border-gray-300 flex-shrink-0" />
                             )}
                             <p className={`text-sm ${analysisStep === 1 ? 'text-purple-900 font-medium' :
-                                    analysisStep > 1 ? 'text-green-900' :
-                                        'text-gray-600'
+                                analysisStep > 1 ? 'text-green-900' :
+                                    'text-gray-600'
                                 }`}>Generazione style guide</p>
                         </div>
                         <div className={`flex items-center gap-3 p-3 rounded-lg ${analysisStep >= 2 ? 'bg-green-50' : 'bg-gray-50'
@@ -362,8 +366,8 @@ export default function DocumentBasedProjectModal({
                                 <div className="w-5 h-5 rounded-full border-2 border-gray-300 flex-shrink-0" />
                             )}
                             <p className={`text-sm ${analysisStep === 2 ? 'text-green-900 font-medium' :
-                                    analysisStep > 2 ? 'text-green-900' :
-                                        'text-gray-600'
+                                analysisStep > 2 ? 'text-green-900' :
+                                    'text-gray-600'
                                 }`}>Estrazione dati progetto</p>
                         </div>
                     </div>

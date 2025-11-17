@@ -37,9 +37,15 @@ export async function clickElement(element: HTMLElement) {
  * Helper per aspettare che un elemento scompaia
  */
 export async function waitForElementToBeRemoved(element: HTMLElement) {
-    const { waitFor } = await import('@testing-library/react');
-    await waitFor(() => {
-        expect(element).not.toBeInTheDocument();
+    return new Promise<void>((resolve) => {
+        const checkRemoved = () => {
+            if (!document.contains(element)) {
+                resolve();
+            } else {
+                setTimeout(checkRemoved, 50);
+            }
+        };
+        checkRemoved();
     });
 }
 

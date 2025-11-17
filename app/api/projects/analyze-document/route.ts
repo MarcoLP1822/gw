@@ -5,6 +5,7 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
+import { logger } from '@/lib/logger';
 import { getExtractorForFile } from '@/lib/document-processing/text-extractor';
 import { callGPT5JSON } from '@/lib/ai/responses-api';
 import { StyleGuideService } from '@/lib/services/style-guide-service';
@@ -62,14 +63,14 @@ export async function POST(request: NextRequest) {
             );
         }
 
-        console.log('📄 Analyzing document:', file.name, `(${(file.size / 1024 / 1024).toFixed(2)}MB)`);
+        logger.info('Analyzing document', { fileName: file.name, sizeMB: (file.size / 1024 / 1024).toFixed(2) });
 
         // Convert file to buffer
         const arrayBuffer = await file.arrayBuffer();
         const buffer = Buffer.from(arrayBuffer);
 
         // Extract text from document
-        console.log('🔍 Extracting text...');
+        logger.info('🔍 Extracting text...');
         const extractor = await getExtractorForFile(file.type, file.name);
 
         if (!extractor.supports(file.type, file.name)) {
@@ -89,17 +90,17 @@ export async function POST(request: NextRequest) {
             );
         }
 
-        console.log(`✅ Text extracted: ${extraction.wordCount} words`);
+        logger.debug('Text extracted from document', { wordCount: extraction.wordCount });
 
         // Parallel processing: Generate style guide + Extract project data
-        console.log('🤖 Starting AI analysis...');
+        logger.info('Starting AI analysis');
 
         const [styleGuide, projectData] = await Promise.all([
             generateStyleGuideFromText(extractedText),
             extractProjectDataFromText(extractedText)
         ]);
 
-        console.log('✅ Analysis complete');
+        logger.info('✅ Analysis complete');
 
         return NextResponse.json({
             success: true,
@@ -113,7 +114,7 @@ export async function POST(request: NextRequest) {
         });
 
     } catch (error) {
-        console.error('❌ Error analyzing document:', error);
+        logger.error('❌ Error analyzing document', error);
         return NextResponse.json(
             {
                 success: false,
@@ -239,7 +240,7 @@ IMPORTANTE: Usa stringa vuota "" per campi non trovati. NON inventare informazio
 
         return cleanedData as Partial<ProjectFormData>;
     } catch (error) {
-        console.error('Error extracting project data:', error);
+        logger.error('Error extracting project data', error);
         // Return empty object on error - user will fill manually
         return {};
     }

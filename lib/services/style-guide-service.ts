@@ -9,6 +9,7 @@ import { DEFAULT_MODEL } from '@/lib/ai/openai-client';
 import { callGPT5JSON } from '@/lib/ai/responses-api';
 import { DocumentService } from './document-service';
 import { AIConfigService } from '@/lib/ai/config/ai-config-service';
+import { logger } from '@/lib/logger';
 
 export interface StyleGuideGenerationResult {
     styleGuide: string;
@@ -69,7 +70,7 @@ export class StyleGuideService {
 
             return true;
         } catch (error) {
-            console.error('Error saving custom style guide:', error);
+            logger.error('Error saving custom style guide', error);
             return false;
         }
     }
@@ -127,7 +128,7 @@ export class StyleGuideService {
                 source: 'ai_from_docs',
             };
         } catch (error) {
-            console.error('Error generating style guide from documents:', error);
+            logger.error('Error generating style guide from documents', error);
             return {
                 styleGuide: '',
                 success: false,
@@ -233,7 +234,7 @@ export class StyleGuideService {
                 source: 'ai_generated',
             };
         } catch (error) {
-            console.error('Error generating style guide from chapters:', error);
+            logger.error('Error generating style guide from chapters', error);
             return {
                 styleGuide: '',
                 success: false,
@@ -275,7 +276,7 @@ Rispondi con un JSON nel formato:
 
 ${prompt}`;
 
-        console.log('🎨 Generating style guide with GPT-5...');
+        logger.info('Generating style guide with GPT-5', { model });
 
         const response = await callGPT5JSON<{ styleGuide: string }>(fullPrompt, {
             model,
@@ -284,7 +285,7 @@ ${prompt}`;
             maxOutputTokens: 8000, // Aumentato: GPT-5 usa molti token per reasoning
         });
 
-        console.log('✅ Style guide generated');
+        logger.info('Style guide generated successfully');
 
         return response.styleGuide;
     }
@@ -311,7 +312,7 @@ ${prompt}`;
             });
             return true;
         } catch (error) {
-            console.error('Error deleting custom style guide:', error);
+            logger.error('Error deleting custom style guide', error);
             return false;
         }
     }

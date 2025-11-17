@@ -9,6 +9,7 @@
 import { del } from '@vercel/blob';
 import { prisma } from '@/lib/db';
 import { ExportedBook } from '@prisma/client';
+import { logger } from '@/lib/logger';
 
 export class BookExportService {
     /**
@@ -70,9 +71,9 @@ export class BookExportService {
         // Delete from Vercel Blob
         try {
             await del(book.fileUrl);
-            console.log(`✅ Deleted from Vercel Blob: ${book.fileUrl}`);
+            logger.info('Deleted from Vercel Blob', { fileUrl: book.fileUrl });
         } catch (error) {
-            console.error('Failed to delete from Vercel Blob:', error);
+            logger.error('Failed to delete from Vercel Blob', error, { fileUrl: book.fileUrl });
             // Continue to delete DB record anyway
         }
 
@@ -81,7 +82,7 @@ export class BookExportService {
             where: { id: bookId },
         });
 
-        console.log(`✅ Deleted from database: ${bookId}`);
+        logger.info('Deleted book from database', { bookId });
     }
 
     /**
@@ -114,7 +115,7 @@ export class BookExportService {
         });
 
         if (oldBooks.length === 0) {
-            console.log('No old books to cleanup');
+            logger.info('No old books to cleanup');
             return 0;
         }
 
@@ -122,7 +123,7 @@ export class BookExportService {
         await Promise.all(
             oldBooks.map((book) =>
                 del(book.fileUrl).catch((err) =>
-                    console.error(`Failed to delete ${book.fileUrl}:`, err)
+                    logger.error('Failed to delete from blob', err, { fileUrl: book.fileUrl })
                 )
             )
         );
@@ -136,7 +137,7 @@ export class BookExportService {
             },
         });
 
-        console.log(`✅ Cleaned up ${result.count} old books`);
+        logger.info('Cleaned up old books', { count: result.count });
         return result.count;
     }
 

@@ -8,6 +8,7 @@ import { prisma } from '@/lib/db';
 import { getExtractorForFile } from '../document-processing/text-extractor';
 import type { ProjectDocument } from '@prisma/client';
 import { randomUUID } from 'crypto';
+import { logger } from '@/lib/logger';
 
 export interface UploadDocumentParams {
     projectId: string;
@@ -136,7 +137,7 @@ export class DocumentService {
                 success: true,
             };
         } catch (error) {
-            console.error('Error uploading document from blob:', error);
+            logger.error('Error uploading document from blob', error);
             return {
                 document: null as any,
                 success: false,
@@ -229,7 +230,7 @@ export class DocumentService {
                 success: true,
             };
         } catch (error) {
-            console.error('Error uploading document:', error);
+            logger.error('Error uploading document', error);
             return {
                 document: null as any,
                 success: false,
@@ -282,7 +283,7 @@ export class DocumentService {
             });
             return true;
         } catch (error) {
-            console.error('Error deleting document:', error);
+            logger.error('Error deleting document', error);
             return false;
         }
     }

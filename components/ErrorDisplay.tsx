@@ -5,6 +5,7 @@
 
 import React from 'react';
 import { ErrorType, ErrorSeverity } from '@/lib/errors/api-errors';
+import { logger } from '@/lib/logger';
 
 export interface ErrorDisplayProps {
     error: {
@@ -152,7 +153,7 @@ export function useErrorHandler() {
     const [retryCount, setRetryCount] = React.useState(0);
 
     const handleError = React.useCallback((err: any) => {
-        console.error('Error caught:', err);
+        logger.error('Error caught by useErrorHandler', err);
         setError(err);
     }, []);
 

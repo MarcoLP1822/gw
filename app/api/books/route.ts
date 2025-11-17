@@ -4,6 +4,7 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
+import { logger } from '@/lib/logger';
 import { BookExportService } from '@/lib/services/book-export-service';
 
 export async function GET(request: NextRequest) {
@@ -16,7 +17,7 @@ export async function GET(request: NextRequest) {
             },
         });
     } catch (error) {
-        console.error('Failed to fetch books:', error);
+        logger.error('Failed to fetch books', error);
         return NextResponse.json(
             { error: 'Failed to fetch books' },
             { status: 500 }

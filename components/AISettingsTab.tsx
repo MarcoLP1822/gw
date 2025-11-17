@@ -6,6 +6,7 @@ import { FormFieldTooltip, tooltipContent } from '@/components/ui/Tooltip';
 import DocumentUpload from '@/components/DocumentUpload';
 import StyleGuideEditor from '@/components/StyleGuideEditor';
 import type { ProjectAIConfig } from '@prisma/client';
+import { logger } from '@/lib/logger';
 
 interface Document {
     id: string;
@@ -71,7 +72,7 @@ export default function AISettingsTab({ projectId, onRefresh }: AISettingsTabPro
                 setDocuments(data.documents);
             }
         } catch (err) {
-            console.error('Error loading documents:', err);
+            logger.error('Error loading documents', err);
         }
     };
 

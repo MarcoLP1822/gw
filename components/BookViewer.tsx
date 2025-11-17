@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { Document, Page, pdfjs } from 'react-pdf';
 import Card from '@/components/Card';
 import { ChevronLeft, ChevronRight, ZoomIn, ZoomOut, Download, Trash2, Loader2 } from 'lucide-react';
+import { logger } from '@/lib/logger';
 
 // Import CSS - react-pdf v10 uses cjs path
 import 'react-pdf/dist/Page/AnnotationLayer.css';
@@ -54,10 +55,10 @@ export default function BookViewer({ bookId, onDelete }: BookViewerProps) {
 
             // Mark as accessed
             await fetch(`/api/books/${bookId}/access`, { method: 'POST' }).catch(err =>
-                console.error('Failed to mark as accessed:', err)
+                logger.error('Failed to mark book as accessed', err)
             );
         } catch (error) {
-            console.error('Error loading book:', error);
+            logger.error('Error loading book', error);
             setError('Errore nel caricamento del libro');
         } finally {
             setLoading(false);
@@ -80,7 +81,7 @@ export default function BookViewer({ bookId, onDelete }: BookViewerProps) {
 
             onDelete?.();
         } catch (error) {
-            console.error('Error deleting book:', error);
+            logger.error('Error deleting book', error);
             alert('Errore durante l\'eliminazione del libro');
         }
     };
@@ -90,7 +91,7 @@ export default function BookViewer({ bookId, onDelete }: BookViewerProps) {
     };
 
     const onDocumentLoadError = (error: Error) => {
-        console.error('PDF load error:', error);
+        logger.error('PDF load error', error);
         setError('Errore nel caricamento del PDF');
     };
 

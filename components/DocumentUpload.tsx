@@ -11,6 +11,7 @@ import { useState, useRef } from 'react';
 import { Upload, FileText, X, Loader2, CheckCircle2, AlertCircle } from 'lucide-react';
 import { upload } from '@vercel/blob/client';
 import type { PutBlobResult } from '@vercel/blob';
+import { logger } from '@/lib/logger';
 
 interface Document {
     id: string;
@@ -80,7 +81,7 @@ export default function DocumentUpload({
                 }),
             });
 
-            console.log('File uploaded to Vercel Blob:', blob.url);
+            logger.info('File uploaded to Vercel Blob', { url: blob.url, fileName: file.name });
 
             setUploadProgress('Elaborazione documento...');
 
@@ -113,7 +114,7 @@ export default function DocumentUpload({
 
             onUploadSuccessAction();
         } catch (err) {
-            console.error('Upload error:', err);
+            logger.error('Document upload error', err);
             setError(err instanceof Error ? err.message : 'Errore durante il caricamento');
         } finally {
             setUploading(false);

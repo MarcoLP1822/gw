@@ -18,7 +18,8 @@
  * await generator.generateMultiple(
  *   [1, 2, 3, 4, 5],
  *   (progress) => {
- *     console.log(`Chapter ${progress.chapterNumber}: ${progress.status}`);
+ *     // Handle progress updates
+ *     updateUI(progress);
  *   }
  * );
  * ```
@@ -114,8 +115,6 @@ export class BatchChapterGenerator {
                 failed++;
 
                 onProgress(progress);
-
-                console.error(`Failed to generate chapter ${chapterNumber}:`, error);
 
                 // Don't break - continue with next chapters
                 // This allows partial batch completion

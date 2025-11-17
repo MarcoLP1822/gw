@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { X } from 'lucide-react';
 import { ProjectFormData } from '@/types';
+import { logger } from '@/lib/logger';
 
 interface EditProjectModalProps {
     isOpen: boolean;
@@ -32,7 +33,7 @@ export default function EditProjectModal({ isOpen, onClose, onSubmit, initialDat
             await onSubmit(formData);
             onClose();
         } catch (error) {
-            console.error('Error updating project:', error);
+            logger.error('Error updating project', error);
             alert('Errore durante l\'aggiornamento del progetto');
         } finally {
             setIsSubmitting(false);

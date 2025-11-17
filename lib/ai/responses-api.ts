@@ -8,6 +8,7 @@
  */
 
 import { openai, logAPICall } from './openai-client';
+import { logger } from '@/lib/logger';
 
 export type ReasoningEffort = 'minimal' | 'low' | 'medium' | 'high';
 export type Verbosity = 'low' | 'medium' | 'high';
@@ -69,7 +70,7 @@ export async function callGPT5(options: GPT5RequestOptions): Promise<GPT5Respons
         requestBody.previous_response_id = previousResponseId;
     }
 
-    console.log(`🎯 GPT-5 Request:`, {
+    logger.debug('GPT-5 Request', {
         model,
         reasoningEffort,
         verbosity,
@@ -80,7 +81,7 @@ export async function callGPT5(options: GPT5RequestOptions): Promise<GPT5Respons
     try {
         const response: any = await openai.responses.create(requestBody);
 
-        console.log(`✅ GPT-5 Response:`, {
+        logger.info('GPT-5 Response received', {
             model: response.model,
             tokens: response.usage?.total_tokens || 'N/A',
             reasoningTokens: response.usage?.reasoning_tokens || 'N/A',
@@ -88,8 +89,8 @@ export async function callGPT5(options: GPT5RequestOptions): Promise<GPT5Respons
 
         logAPICall('GPT-5 Response Received', response.model, response.usage?.total_tokens);
 
-        // DEBUG: Log completo della risposta SEMPRE
-        console.log('🔍 DEBUG - Full response structure:', JSON.stringify(response, null, 2));
+        // DEBUG: Log completo della risposta solo in development
+        logger.debug('Full response structure', response);
 
         // Gestisci diverse strutture di risposta
         let outputText = '';
@@ -97,36 +98,36 @@ export async function callGPT5(options: GPT5RequestOptions): Promise<GPT5Respons
         // Caso 1: output_text è già una stringa non vuota
         if (typeof response.output_text === 'string' && response.output_text.length > 0) {
             outputText = response.output_text;
-            console.log('✅ output_text is string, length:', outputText.length);
+            logger.debug('output_text is string', { length: outputText.length });
         }
         // Caso 2: Cerca nell'array output[] (GPT-5 Responses API)
         else if (response.output && Array.isArray(response.output)) {
-            console.log('🔍 Checking output array, length:', response.output.length);
+            logger.debug('Checking output array', { length: response.output.length });
             for (const item of response.output) {
                 if (item.type === 'text' && item.text) {
                     outputText = item.text;
-                    console.log('✅ Found text in output array, length:', outputText.length);
+                    logger.debug('Found text in output array', { length: outputText.length });
                     break;
                 }
                 // Prova anche content
                 if (item.content) {
                     outputText = typeof item.content === 'string' ? item.content : JSON.stringify(item.content);
-                    console.log('✅ Found content in output array, length:', outputText.length);
+                    logger.debug('Found content in output array', { length: outputText.length });
                     break;
                 }
             }
         }
         // Caso 3: output_text è un oggetto (es. { text: "..." })
         else if (response.output_text && typeof response.output_text === 'object') {
-            console.log('⚠️ output_text is object:', Object.keys(response.output_text));
+            logger.warn('output_text is object', { keys: Object.keys(response.output_text) });
             outputText = response.output_text.text ||
                 response.output_text.content ||
                 JSON.stringify(response.output_text);
-            console.log('⚠️ Extracted text length:', outputText.length);
+            logger.warn('Extracted text', { length: outputText.length });
         }
         // Caso 4: Prova altri campi
         else {
-            console.log('⚠️ output_text not found or wrong type:', typeof response.output_text);
+            logger.warn('output_text not found or wrong type', { type: typeof response.output_text });
             outputText = response.text || response.output || '';
         }
 
@@ -137,7 +138,7 @@ export async function callGPT5(options: GPT5RequestOptions): Promise<GPT5Respons
 
         // Debug: Log completo se non troviamo il testo
         if (!outputText) {
-            console.log('⚠️ No text found in response. Full structure:', JSON.stringify(response, null, 2));
+            logger.warn('No text found in response', response);
         }
 
         return {
@@ -147,7 +148,7 @@ export async function callGPT5(options: GPT5RequestOptions): Promise<GPT5Respons
             model: response.model,
         } as GPT5Response;
     } catch (error: any) {
-        console.error('❌ GPT-5 Error:', error);
+        logger.error('GPT-5 API Error', error);
         throw new Error(`GPT-5 API Error: ${error.message}`);
     }
 }
@@ -181,24 +182,15 @@ export async function callGPT5JSON<T = any>(
 
             return JSON.parse(response.output_text);
         } catch (error) {
-            console.error(`❌ Failed to parse JSON response (attempt ${attempt + 1}/${maxRetries + 1})`);
-
-            // Gestisci il caso in cui output_text sia undefined o non stringa
             const outputText = response.output_text || '';
             const isValidString = typeof outputText === 'string';
 
-            console.error('Response length:', isValidString ? outputText.length : 'N/A (not a string)');
-
-            if (isValidString && outputText.length > 0) {
-                console.error('First 500 chars:', outputText.substring(0, 500));
-                console.error('Last 500 chars:', outputText.substring(Math.max(0, outputText.length - 500)));
-            } else {
-                console.error('Output text is empty or invalid');
-            }
-
-            console.error('Parse error:', error);
-
-            // Prova a capire se è troncato (solo se abbiamo una stringa valida)
+            logger.error('Failed to parse JSON response', error, {
+                attempt: `${attempt + 1}/${maxRetries + 1}`,
+                responseLength: isValidString ? outputText.length : 'N/A (not a string)',
+                firstChars: isValidString && outputText.length > 0 ? outputText.substring(0, 500) : null,
+                lastChars: isValidString && outputText.length > 0 ? outputText.substring(Math.max(0, outputText.length - 500)) : null
+            });            // Prova a capire se è troncato (solo se abbiamo una stringa valida)
             const lastChar = isValidString && outputText.length > 0 ? outputText.trim().slice(-1) : '';
             const isTruncated = lastChar !== '}' && lastChar !== ']' && lastChar !== '';
 
