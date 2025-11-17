@@ -18,6 +18,26 @@ interface ChangelogEntry {
 
 const changelog: ChangelogEntry[] = [
     {
+        version: '3.15.0',
+        date: '17 Novembre 2025',
+        type: 'feature',
+        changes: [
+            {
+                category: 'Generale',
+                items: [
+                    'Replace console.log with structured logger system',
+                    'Clean up repository: remove obsolete files and scripts',
+                ],
+            },
+            {
+                category: 'Gestione Progetti',
+                items: [
+                    'Aggiunto margine alle pagine dettaglio progetto e cliente',
+                ],
+            }
+        ],
+    },
+    {
         version: '3.14.0',
         date: '17 Novembre 2025',
         type: 'feature',
