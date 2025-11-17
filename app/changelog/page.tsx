@@ -17,6 +17,31 @@ interface ChangelogEntry {
 
 const changelog: ChangelogEntry[] = [
     {
+        version: '3.11.6',
+        date: '17 Novembre 2025',
+        type: 'bugfix',
+        changes: [
+            {
+                category: 'Generale',
+                items: [
+                    'Sidebar fissa nella pagina flipbook per evitare scroll indesiderato',
+                ],
+            },
+            {
+                category: 'UI/UX',
+                items: [
+                    'Exclude test files from Vercel production build',
+                ],
+            },
+            {
+                category: 'AI Configuration',
+                items: [
+                    'Next.js 15+ compatibility - async params and Prisma model IDs',
+                ],
+            }
+        ],
+    },
+    {
         version: '3.11.5',
         date: '17 Novembre 2025',
         type: 'bugfix',
