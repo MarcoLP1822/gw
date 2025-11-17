@@ -18,6 +18,26 @@ interface ChangelogEntry {
 
 const changelog: ChangelogEntry[] = [
     {
+        version: '3.12.0',
+        date: '17 Novembre 2025',
+        type: 'feature',
+        changes: [
+            {
+                category: 'Generale',
+                items: [
+                    'Aggiunto margine sinistro a tutte le pagine per sidebar fissa',
+                    'Sidebar fissa nella pagina flipbook per evitare scroll indesiderato',
+                ],
+            },
+            {
+                category: 'UI/UX',
+                items: [
+                    'Exclude test files from Vercel production build',
+                ],
+            }
+        ],
+    },
+    {
         version: '3.11.6',
         date: '17 Novembre 2025',
         type: 'bugfix',
