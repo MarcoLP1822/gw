@@ -17,6 +17,26 @@ interface ChangelogEntry {
 
 const changelog: ChangelogEntry[] = [
     {
+        version: '3.11.3',
+        date: '17 Novembre 2025',
+        type: 'bugfix',
+        changes: [
+            {
+                category: 'Generale',
+                items: [
+                    'Aggiornato anche metodo PATCH per params asincroni',
+                    'Rimosse statistiche dal flipbook per accorciare la pagina',
+                ],
+            },
+            {
+                category: 'AI Configuration',
+                items: [
+                    'Aggiornato ai-config route per Next.js 15/16 params asincroni',
+                ],
+            }
+        ],
+    },
+    {
         version: '3.11.2',
         date: '17 Novembre 2025',
         type: 'bugfix',
