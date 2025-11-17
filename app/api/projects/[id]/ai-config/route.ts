@@ -9,10 +9,11 @@ import type { ProjectAIConfig } from '@prisma/client';
  */
 export async function GET(
     request: NextRequest,
-    { params }: { params: { id: string } }
+    { params }: { params: Promise<{ id: string }> }
 ) {
     try {
-        const config = await AIConfigService.getOrCreate(params.id);
+        const { id } = await params;
+        const config = await AIConfigService.getOrCreate(id);
 
         return NextResponse.json(config);
     } catch (error: any) {
@@ -30,14 +31,15 @@ export async function GET(
  */
 export async function POST(
     request: NextRequest,
-    { params }: { params: { id: string } }
+    { params }: { params: Promise<{ id: string }> }
 ) {
     try {
+        const { id } = await params;
         const body = await request.json();
 
         // Log per debug
         console.log('📝 Updating AI config:', {
-            projectId: params.id,
+            projectId: id,
             targetWordsPerChapter: body.targetWordsPerChapter,
             maxTokens: body.maxTokens
         });
@@ -56,7 +58,7 @@ export async function POST(
         }
 
         // Aggiorna la configurazione
-        const config = await AIConfigService.update(params.id, body);
+        const config = await AIConfigService.update(id, body);
 
         return NextResponse.json(config);
     } catch (error: any) {
@@ -71,7 +73,7 @@ export async function POST(
 // Alias for POST
 export async function PUT(
     request: NextRequest,
-    { params }: { params: { id: string } }
+    { params }: { params: Promise<{ id: string }> }
 ) {
     return POST(request, { params });
 }
@@ -82,10 +84,11 @@ export async function PUT(
  */
 export async function DELETE(
     request: NextRequest,
-    { params }: { params: { id: string } }
+    { params }: { params: Promise<{ id: string }> }
 ) {
     try {
-        const config = await AIConfigService.reset(params.id);
+        const { id } = await params;
+        const config = await AIConfigService.reset(id);
 
         return NextResponse.json(config);
     } catch (error: any) {
