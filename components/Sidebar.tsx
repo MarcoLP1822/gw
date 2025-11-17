@@ -96,22 +96,22 @@ export default function Sidebar({ collapsed, onToggleAction, mobileOpen = false,
         )}
       >
         {/* Header */}
-        <div className="p-2 flex items-center justify-between border-b border-gray-800">
+        <div className="p-4 flex items-center justify-between border-b border-gray-800">
           {!collapsed && (
-            <h1 className="text-lg font-bold">Ghost Writing</h1>
+            <h1 className="text-xl font-bold">Ghost Writing</h1>
           )}
           {/* Desktop toggle button */}
           <button
             onClick={onToggleAction}
-            className="hidden lg:block p-1 hover:bg-gray-800 rounded-lg transition-colors"
+            className="hidden lg:block p-2 hover:bg-gray-800 rounded-lg transition-colors"
             aria-label="Toggle sidebar"
           >
-            {collapsed ? <ChevronRight size={18} /> : <ChevronLeft size={18} />}
+            {collapsed ? <ChevronRight size={20} /> : <ChevronLeft size={20} />}
           </button>
           {/* Mobile close button */}
           <button
             onClick={onMobileClose}
-            className="lg:hidden p-1 hover:bg-gray-800 rounded-lg transition-colors"
+            className="lg:hidden p-2 hover:bg-gray-800 rounded-lg transition-colors"
             aria-label="Close menu"
           >
             <X size={20} />
@@ -119,8 +119,8 @@ export default function Sidebar({ collapsed, onToggleAction, mobileOpen = false,
         </div>
 
         {/* Navigation */}
-        <nav className="flex-1 p-1.5">
-          <ul className="space-y-0.5">
+        <nav className="flex-1 p-2">
+          <ul className="space-y-1">
             {menuItems.map((item) => {
               const active = isActive(item.href);
               return (
@@ -128,14 +128,14 @@ export default function Sidebar({ collapsed, onToggleAction, mobileOpen = false,
                   <a
                     href={item.href}
                     className={clsx(
-                      'flex items-center gap-2 px-2 py-1.5 rounded-lg transition-colors',
+                      'flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors',
                       active
                         ? 'bg-blue-600 text-white'
                         : 'text-gray-300 hover:bg-gray-800 hover:text-white'
                     )}
                     title={collapsed ? item.label : undefined}
                   >
-                    <item.icon size={18} />
+                    <item.icon size={20} />
                     {!collapsed && <span>{item.label}</span>}
                   </a>
                 </li>
@@ -145,13 +145,13 @@ export default function Sidebar({ collapsed, onToggleAction, mobileOpen = false,
         </nav>
 
         {/* User Profile */}
-        <div className="p-2 border-t border-gray-800">
+        <div className="p-4 border-t border-gray-800">
           <div className={clsx(
-            'flex items-center gap-2',
+            'flex items-center gap-3',
             collapsed && 'justify-center'
           )}>
-            <div className="w-7 h-7 bg-blue-600 rounded-full flex items-center justify-center">
-              <span className="text-xs font-semibold">MP</span>
+            <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center">
+              <span className="text-sm font-semibold">MP</span>
             </div>
             {!collapsed && (
               <div className="flex-1 min-w-0">

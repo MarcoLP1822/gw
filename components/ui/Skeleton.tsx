@@ -76,10 +76,6 @@ export function ProjectCardSkeleton() {
 
             <div className="flex items-center justify-between pt-4 border-t border-slate-100">
                 <Skeleton className="h-4 w-32" />
-                <div className="flex gap-2">
-                    <Skeleton className="h-8 w-8 rounded" />
-                    <Skeleton className="h-8 w-8 rounded" />
-                </div>
             </div>
         </div>
     );
@@ -102,12 +98,6 @@ export function ProjectTableRowSkeleton() {
             </td>
             <td className="py-4 px-4">
                 <Skeleton className="h-5 w-20" />
-            </td>
-            <td className="py-4 px-4">
-                <div className="flex gap-2">
-                    <Skeleton className="h-8 w-8 rounded" />
-                    <Skeleton className="h-8 w-8 rounded" />
-                </div>
             </td>
         </tr>
     );
@@ -133,9 +123,6 @@ export function ProjectTableSkeleton({ rows = 5 }: { rows?: number }) {
                         </th>
                         <th className="text-left py-3 px-4">
                             <Skeleton className="h-4 w-24" />
-                        </th>
-                        <th className="text-left py-3 px-4">
-                            <Skeleton className="h-4 w-16" />
                         </th>
                     </tr>
                 </thead>
@@ -211,11 +198,6 @@ export function ProjectHeaderSkeleton() {
                 <div className="flex-1">
                     <Skeleton className="h-8 w-64 mb-2" />
                     <Skeleton className="h-5 w-48" />
-                </div>
-                <div className="flex gap-2">
-                    <Skeleton className="h-10 w-10 rounded" />
-                    <Skeleton className="h-10 w-10 rounded" />
-                    <Skeleton className="h-10 w-10 rounded" />
                 </div>
             </div>
 

@@ -121,3 +121,32 @@ docs/DEPLOYMENT_COMPLETE.txt
 docs/QUICK_DEPLOY.md
 docs/POST_DEPLOYMENT.md
 docs/COMMANDS.md
+
+# Scripts obsoleti e specifici per progetti
+scripts/*-style-guide.ts
+scripts/apply-*.ts
+scripts/check-*.ts
+scripts/clear-*.ts
+scripts/show-*.ts
+scripts/fix-ai-model.sql
+scripts/fix-model-to-gpt5-mini.sql
+scripts/fix-chapter-references.js
+scripts/fix-spacing.js
+scripts/fix-style-guide-conflicts.ts
+scripts/migrate-to-gpt5.sql
+scripts/update-ai-model.sql
+scripts/update-ai-configs.js
+scripts/update-max-tokens*.sql
+scripts/update-max-tokens*.ts
+scripts/update-reasoning-effort-to-low.ts
+scripts/update-target-words-5000.ts
+scripts/verify-ai-model*.js
+scripts/verify-gpt5-*.js
+scripts/verify-gpt5-*.ts
+scripts/read-consistency-report.js
+
+# Scripts di test temporanei
+scripts/test-api-endpoint.ts
+
+# Script di utility locale
+cleanup-repo.ps1

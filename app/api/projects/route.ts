@@ -92,10 +92,20 @@ export async function GET(request: NextRequest) {
                 bookTitle: true,
                 bookSubtitle: true,
                 authorName: true,
+                authorRole: true,
                 company: true,
                 industry: true,
+                targetReaders: true,
+                currentSituation: true,
+                challengeFaced: true,
+                transformation: true,
+                achievement: true,
+                lessonLearned: true,
+                businessGoals: true,
+                uniqueValue: true,
                 status: true,
                 estimatedPages: true,
+                additionalNotes: true,
                 createdAt: true,
                 updatedAt: true,
                 // Include conteggio capitoli se esistono
@@ -107,10 +117,18 @@ export async function GET(request: NextRequest) {
             }
         });
 
+        // Mappa i progetti per normalizzare il nome del campo _count.Chapter -> _count.chapters
+        const mappedProjects = projects.map(project => ({
+            ...project,
+            _count: {
+                chapters: project._count.Chapter
+            }
+        }));
+
         return NextResponse.json({
             success: true,
-            projects,
-            total: projects.length
+            projects: mappedProjects,
+            total: mappedProjects.length
         });
 
     } catch (error) {
