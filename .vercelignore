@@ -16,6 +16,12 @@ yarn-error.log
 # Testing
 coverage
 .nyc_output
+tests/
+*.test.ts
+*.test.tsx
+*.spec.ts
+*.spec.tsx
+vitest.config.ts
 
 # IDE
 .vscode
