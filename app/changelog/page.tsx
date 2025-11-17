@@ -18,6 +18,26 @@ interface ChangelogEntry {
 
 const changelog: ChangelogEntry[] = [
     {
+        version: '3.13.0',
+        date: '17 Novembre 2025',
+        type: 'feature',
+        changes: [
+            {
+                category: 'Gestione Progetti',
+                items: [
+                    'Aggiunto margine alle pagine dettaglio progetto e cliente',
+                ],
+            },
+            {
+                category: 'Generale',
+                items: [
+                    'Aggiunto margine sinistro a tutte le pagine per sidebar fissa',
+                    'Sidebar fissa nella pagina flipbook per evitare scroll indesiderato',
+                ],
+            }
+        ],
+    },
+    {
         version: '3.12.0',
         date: '17 Novembre 2025',
         type: 'feature',
