@@ -1,6 +1,7 @@
 import { ProjectFormData } from '@/types';
 import { saveAs } from 'file-saver';
 import { ApiErrorResponse, ErrorType } from '@/lib/errors/api-errors';
+import { logger } from '@/lib/logger';
 
 // ============================================================
 // ENHANCED ERROR HANDLING
