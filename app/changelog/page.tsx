@@ -18,6 +18,26 @@ interface ChangelogEntry {
 
 const changelog: ChangelogEntry[] = [
     {
+        version: '3.20.0',
+        date: '18 Novembre 2025',
+        type: 'feature',
+        changes: [
+            {
+                category: 'Generale',
+                items: [
+                    'Implementato rate limiting su tutti gli endpoint critici',
+                    'Refactor: replace all console.log with structured logger system',
+                ],
+            },
+            {
+                category: 'Gestione Progetti',
+                items: [
+                    'Aggiunto import logger mancante in lib/api/projects.ts',
+                ],
+            }
+        ],
+    },
+    {
         version: '3.19.0',
         date: '18 Novembre 2025',
         type: 'feature',
