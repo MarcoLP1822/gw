@@ -18,6 +18,31 @@ interface ChangelogEntry {
 
 const changelog: ChangelogEntry[] = [
     {
+        version: '3.19.0',
+        date: '18 Novembre 2025',
+        type: 'feature',
+        changes: [
+            {
+                category: 'Generale',
+                items: [
+                    'Refactor: replace all console.log with structured logger system',
+                ],
+            },
+            {
+                category: 'Gestione Progetti',
+                items: [
+                    'Aggiunto import logger mancante in lib/api/projects.ts',
+                ],
+            },
+            {
+                category: 'UI/UX',
+                items: [
+                    'Refactor: sostituiti console.log con logger strutturato in lib/ e app/',
+                ],
+            }
+        ],
+    },
+    {
         version: '3.18.0',
         date: '18 Novembre 2025',
         type: 'feature',
