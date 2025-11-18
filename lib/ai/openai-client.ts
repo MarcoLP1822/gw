@@ -1,4 +1,5 @@
 import OpenAI from 'openai';
+import { logger } from '@/lib/logger';
 
 // Inizializza il client OpenAI
 export const openai = new OpenAI({
@@ -26,5 +27,5 @@ export const DEFAULT_CONFIG = {
  * Helper per loggare le chiamate API con il modello utilizzato
  */
 export function logAPICall(operation: string, model: string, tokens?: number) {
-    console.log(`[OpenAI API] ${operation} - Model: ${model}${tokens ? ` - Tokens: ${tokens}` : ''}`);
+    logger.info(`[OpenAI API] ${operation} - Model: ${model}${tokens ? ` - Tokens: ${tokens}` : ''}`);
 }

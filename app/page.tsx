@@ -12,6 +12,7 @@ import WebBasedProjectModal from '@/components/WebBasedProjectModal';
 import { ProjectFormData } from '@/types';
 import { projectsApi } from '@/lib/api/projects';
 import { toast } from '@/lib/ui/toast';
+import { logger } from '@/lib/logger';
 import { FileText, Users, Clock, CheckCircle, Plus, Loader2, Upload, Sparkles, Globe } from 'lucide-react';
 
 interface Stats {
@@ -68,7 +69,7 @@ export default function Home() {
           setRecentActivity(activityData.activities);
         }
       } catch (error) {
-        console.error('Error fetching dashboard data:', error);
+        logger.error('Errore caricamento dashboard', { error });
         toast.error('Errore nel caricamento dei dati');
       } finally {
         setLoading(false);
@@ -158,7 +159,7 @@ export default function Home() {
       router.push(`/progetti/${response.project.id}`);
 
     } catch (error) {
-      console.error('Errore durante la creazione del progetto:', error);
+      logger.error('Errore creazione progetto', { error });
       toast.error('Errore durante la creazione del progetto. Riprova.');
     } finally {
       setIsSubmitting(false);
@@ -172,16 +173,16 @@ export default function Home() {
       // Estrai styleGuide dal projectData
       const { styleGuide, ...projectDataOnly } = projectData;
 
-      console.log('📝 Creating project from document with data:', projectDataOnly);
+      logger.info('Creazione progetto da documento', { projectData: projectDataOnly });
 
       // Crea il progetto
       const response = await projectsApi.create(projectDataOnly);
       const projectId = response.project.id;
 
-      console.log('✅ Project created:', projectId);
+      logger.info('Progetto creato', { projectId });
 
       // Salva lo style guide generato come customStyleGuide
-      console.log('💾 Saving style guide...');
+      logger.info('Salvataggio style guide', { projectId });
       const styleGuideResponse = await fetch(`/api/projects/${projectId}/style-guide`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
@@ -189,9 +190,9 @@ export default function Home() {
       });
 
       if (!styleGuideResponse.ok) {
-        console.warn('⚠️ Failed to save style guide, but project was created');
+        logger.warn('Fallimento salvataggio style guide', { projectId });
       } else {
-        console.log('✅ Style guide saved');
+        logger.info('Style guide salvato', { projectId });
       }
 
       // Chiudi il modal
@@ -208,11 +209,11 @@ export default function Home() {
       }
 
       // Naviga alla pagina del progetto appena creato
-      console.log('🚀 Redirecting to project:', projectId);
+      logger.info('Redirect a progetto', { projectId });
       router.push(`/progetti/${projectId}`);
 
     } catch (error) {
-      console.error('❌ Errore durante la creazione del progetto:', error);
+      logger.error('Errore creazione progetto da documento', { error });
       toast.error('Errore durante la creazione del progetto. Riprova.');
     } finally {
       setIsSubmitting(false);
@@ -226,16 +227,16 @@ export default function Home() {
       // Estrai styleGuide dal projectData
       const { styleGuide, ...projectDataOnly } = projectData;
 
-      console.log('🌐 Creating project from website with data:', projectDataOnly);
+      logger.info('Creazione progetto da sito web', { projectData: projectDataOnly });
 
       // Crea il progetto
       const response = await projectsApi.create(projectDataOnly);
       const projectId = response.project.id;
 
-      console.log('✅ Project created:', projectId);
+      logger.info('Progetto creato', { projectId });
 
       // Salva lo style guide generato come customStyleGuide
-      console.log('💾 Saving style guide...');
+      logger.info('Salvataggio style guide', { projectId });
       const styleGuideResponse = await fetch(`/api/projects/${projectId}/style-guide`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
@@ -243,9 +244,9 @@ export default function Home() {
       });
 
       if (!styleGuideResponse.ok) {
-        console.warn('⚠️ Failed to save style guide, but project was created');
+        logger.warn('Fallimento salvataggio style guide', { projectId });
       } else {
-        console.log('✅ Style guide saved');
+        logger.info('Style guide salvato', { projectId });
       }
 
       // Chiudi il modal
@@ -262,11 +263,11 @@ export default function Home() {
       }
 
       // Naviga alla pagina del progetto appena creato
-      console.log('🚀 Redirecting to project:', projectId);
+      logger.info('Redirect a progetto', { projectId });
       router.push(`/progetti/${projectId}`);
 
     } catch (error) {
-      console.error('❌ Errore durante la creazione del progetto:', error);
+      logger.error('Errore creazione progetto da sito web', { error });
       toast.error('Errore durante la creazione del progetto. Riprova.');
     } finally {
       setIsSubmitting(false);

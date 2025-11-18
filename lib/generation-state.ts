@@ -3,6 +3,8 @@
  * Usa localStorage per persistere lo stato tra navigazioni
  */
 
+import { logger } from '@/lib/logger';
+
 export interface GenerationState {
     projectId: string;
     isGenerating: boolean;
@@ -23,7 +25,7 @@ export const GenerationStateManager = {
         try {
             localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
         } catch (error) {
-            console.error('Error saving generation state:', error);
+            logger.error('Error saving generation state:', error);
         }
     },
 
@@ -46,7 +48,7 @@ export const GenerationStateManager = {
 
             return state;
         } catch (error) {
-            console.error('Error loading generation state:', error);
+            logger.error('Error loading generation state:', error);
             return null;
         }
     },
@@ -68,7 +70,7 @@ export const GenerationStateManager = {
         try {
             localStorage.removeItem(STORAGE_KEY);
         } catch (error) {
-            console.error('Error clearing generation state:', error);
+            logger.error('Error clearing generation state:', error);
         }
     },
 

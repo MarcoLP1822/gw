@@ -6,6 +6,7 @@
  */
 
 import * as cheerio from 'cheerio';
+import { logger } from '@/lib/logger';
 
 export interface WebExtractionResult {
     text: string;
@@ -51,7 +52,7 @@ export async function extractFromWebsite(
         throw new Error('URL non valido');
     }
 
-    console.log(`🌐 Fetching website: ${url}`);
+    logger.info(`🌐 Fetching website: ${url}`);
 
     // Fetch HTML with timeout
     const controller = new AbortController();
@@ -102,7 +103,7 @@ export async function extractFromWebsite(
         clearTimeout(timeoutId);
     }
 
-    console.log(`✅ HTML fetched: ${(html.length / 1024).toFixed(2)}KB`);
+    logger.info(`✅ HTML fetched: ${(html.length / 1024).toFixed(2)}KB`);
 
     // Parse HTML with Cheerio
     const $ = cheerio.load(html);
@@ -144,7 +145,7 @@ export async function extractFromWebsite(
         if (element.length > 0) {
             mainContent = element.text();
             if (mainContent.trim().length > 200) {
-                console.log(`📄 Content extracted from: ${selector}`);
+                logger.info(`📄 Content extracted from: ${selector}`);
                 break;
             }
         }
@@ -153,7 +154,7 @@ export async function extractFromWebsite(
     // Fallback: extract from body if no main content found
     if (!mainContent || mainContent.trim().length < 200) {
         mainContent = $('body').text();
-        console.log('📄 Content extracted from: body (fallback)');
+        logger.info('📄 Content extracted from: body (fallback)');
     }
 
     // Clean up text
@@ -168,7 +169,7 @@ export async function extractFromWebsite(
 
     const wordCount = countWords(cleanText);
 
-    console.log(`✅ Extracted ${wordCount} words from ${url}`);
+    logger.info(`✅ Extracted ${wordCount} words from ${url}`);
 
     return {
         text: cleanText,
@@ -248,7 +249,7 @@ export async function crawlWebsite(
     const maxDepth = options.maxDepth || 2;
     const maxPages = options.maxPages || 20;
 
-    console.log(`🕷️ Starting crawl: ${startUrl} (depth: ${maxDepth}, max pages: ${maxPages})`);
+    logger.info(`🕷️ Starting crawl: ${startUrl} (depth: ${maxDepth}, max pages: ${maxPages})`);
 
     const visited = new Set<string>();
     const toVisit: Array<{ url: string; depth: number }> = [{ url: startUrl, depth: 0 }];
@@ -262,7 +263,7 @@ export async function crawlWebsite(
             continue;
         }
 
-        console.log(`📄 Crawling [${current.depth}]: ${current.url}`);
+        logger.info(`📄 Crawling [${current.depth}]: ${current.url}`);
         visited.add(current.url);
 
         try {
@@ -283,13 +284,13 @@ export async function crawlWebsite(
             clearTimeout(timeoutId);
 
             if (!response.ok) {
-                console.warn(`⚠️ Skipping ${current.url}: HTTP ${response.status}`);
+                logger.warn(`⚠️ Skipping ${current.url}: HTTP ${response.status}`);
                 continue;
             }
 
             const contentType = response.headers.get('content-type') || '';
             if (!contentType.includes('text/html')) {
-                console.warn(`⚠️ Skipping ${current.url}: Not HTML`);
+                logger.warn(`⚠️ Skipping ${current.url}: Not HTML`);
                 continue;
             }
 
@@ -302,7 +303,7 @@ export async function crawlWebsite(
             // Extract links for next level (only if not at max depth)
             if (current.depth < maxDepth && visited.size < maxPages) {
                 const links = extractInternalLinks(html, current.url);
-                console.log(`🔗 Found ${links.length} internal links at depth ${current.depth}`);
+                logger.info(`🔗 Found ${links.length} internal links at depth ${current.depth}`);
 
                 // Add new links to visit queue
                 for (const link of links.slice(0, 10)) { // Limit links per page
@@ -316,7 +317,7 @@ export async function crawlWebsite(
             await new Promise(resolve => setTimeout(resolve, 500));
 
         } catch (error) {
-            console.error(`❌ Error crawling ${current.url}:`, error instanceof Error ? error.message : error);
+            logger.error(`❌ Error crawling ${current.url}:`, error instanceof Error ? error.message : error);
             continue;
         }
     }
@@ -346,7 +347,7 @@ export async function crawlWebsite(
         }
     }
 
-    console.log(`📊 Selected ${selectedResults.length}/${results.length} pages for analysis (${currentWordCount} words)`);
+    logger.info(`📊 Selected ${selectedResults.length}/${results.length} pages for analysis (${currentWordCount} words)`);
 
     // Combine all results with clear sections
     const combinedText = selectedResults
@@ -356,7 +357,7 @@ export async function crawlWebsite(
         })
         .join('\n\n─────────────────────────────────────\n\n');
 
-    console.log(`✅ Crawl complete: ${results.length} pages crawled, ${selectedResults.length} pages included, ${currentWordCount} total words`);
+    logger.info(`✅ Crawl complete: ${results.length} pages crawled, ${selectedResults.length} pages included, ${currentWordCount} total words`);
 
     return {
         text: combinedText,
@@ -385,7 +386,7 @@ export async function extractFromMultipleUrls(
         throw new Error('Massimo 5 URL supportati');
     }
 
-    console.log(`🌐 Fetching ${urls.length} URLs...`);
+    logger.info(`🌐 Fetching ${urls.length} URLs...`);
 
     // Extract from all URLs in parallel (with individual error handling)
     const results = await Promise.allSettled(
@@ -400,7 +401,7 @@ export async function extractFromMultipleUrls(
             successfulResults.push(result.value);
         } else {
             failedUrls.push(urls[index]);
-            console.error(`❌ Failed to extract from ${urls[index]}:`, result.reason);
+            logger.error(`❌ Failed to extract from ${urls[index]}:`, result.reason);
         }
     });
 
@@ -418,7 +419,7 @@ export async function extractFromMultipleUrls(
         0
     );
 
-    console.log(`✅ Combined ${successfulResults.length}/${urls.length} URLs: ${combinedWordCount} words`);
+    logger.info(`✅ Combined ${successfulResults.length}/${urls.length} URLs: ${combinedWordCount} words`);
 
     return {
         text: combinedText,

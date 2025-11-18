@@ -1,5 +1,6 @@
 import { prisma } from '@/lib/db';
 import { openai, DEFAULT_MODEL, logAPICall } from '@/lib/ai/openai-client';
+import { logger } from '@/lib/logger';
 import { callGPT5JSON, getReasoningEffortForTask, getVerbosityForOutput, ReasoningEffort, Verbosity } from '@/lib/ai/responses-api';
 import { randomUUID } from 'crypto';
 import {
@@ -66,7 +67,7 @@ export class ChapterGenerationService {
 
                 // Se ci sono issue critici, rigenera
                 if (quickCheck.hasCriticalIssues) {
-                    console.log(
+                    logger.warn(
                         `⚠️ Critical issues found in chapter ${chapterNumber}, regenerating...`
                     );
                     const fixedResult = await this.regenerateWithFix(
@@ -299,28 +300,28 @@ ${chapterInstructions}
 ${generateChapterPrompt(context)}
 `;
 
-        console.log(`🤖 Generating chapter ${chapterNumber} with GPT-5...`);
-        console.log('\n' + '='.repeat(80));
-        console.log('📝 FULL PROMPT FOR GPT-5:');
-        console.log('='.repeat(80));
-        console.log(fullPrompt.substring(0, 1000) + '...');
-        console.log('='.repeat(80) + '\n');
+        logger.info(`🤖 Generating chapter ${chapterNumber} with GPT-5...`);
+        logger.info('\n' + '='.repeat(80));
+        logger.info('📝 FULL PROMPT FOR GPT-5:');
+        logger.info('='.repeat(80));
+        logger.info(fullPrompt.substring(0, 1000) + '...');
+        logger.info('='.repeat(80) + '\n');
 
         // 🔧 USA I PARAMETRI AI DALLA CONFIGURAZIONE
         const modelToUse = aiConfig.model as any || DEFAULT_MODEL;
 
         // 📊 LOG: Quale modello stiamo usando
-        console.log(`\n🎯 USING AI MODEL: ${modelToUse}`);
-        console.log(`   Reasoning Effort: ${aiConfig.reasoningEffort || 'low'}`);
-        console.log(`   Verbosity: ${aiConfig.verbosity || 'medium'}`);
-        console.log(`   Max Output Tokens: ${aiConfig.maxTokens}\n`);
+        logger.info(`\n🎯 USING AI MODEL: ${modelToUse}`);
+        logger.info(`   Reasoning Effort: ${aiConfig.reasoningEffort || 'low'}`);
+        logger.info(`   Verbosity: ${aiConfig.verbosity || 'medium'}`);
+        logger.info(`   Max Output Tokens: ${aiConfig.maxTokens}\n`);
 
         logAPICall(`Generate Chapter ${chapterNumber}`, modelToUse);
 
         try {
             // GPT-5 usa la Responses API
             if (this.isGPT5Model(modelToUse)) {
-                console.log('🎯 Using GPT-5 Responses API');
+                logger.info('🎯 Using GPT-5 Responses API');
 
                 const response = await callGPT5JSON<{
                     chapter: string;
@@ -334,9 +335,9 @@ ${generateChapterPrompt(context)}
                     maxOutputTokens: aiConfig.maxTokens || 20000, // Aumentato per capitoli completi
                 });
 
-                console.log('✅ GPT-5 Response received');
-                console.log('🐛 DEBUG: Response keys:', Object.keys(response));
-                console.log('🐛 DEBUG: Content length:', (response.chapter || '').length);
+                logger.info('✅ GPT-5 Response received');
+                logger.debug('🐛 DEBUG: Response keys:', { keys: Object.keys(response) });
+                logger.debug('🐛 DEBUG: Content length:', { length: (response.chapter || '').length });
 
                 return {
                     content: response.chapter || '',
@@ -378,7 +379,7 @@ ${generateChapterPrompt(context)}
             maxOutputTokens: 500,
         });
 
-        console.log(`✅ Quick validation completed`);
+        logger.info(`✅ Quick validation completed`);
 
         return result;
     }
@@ -424,7 +425,7 @@ ${fixPrompt}`;
         // Se il JSON viene troncato, aumentare questo valore
         const maxTokens = aiConfig.maxTokens || 20000;
 
-        console.log(`🔄 Regenerating chapter with maxOutputTokens: ${maxTokens}`);
+        logger.info(`🔄 Regenerating chapter with maxOutputTokens: ${maxTokens}`);
 
         const result = await callGPT5JSON<{
             chapter: string;
@@ -567,25 +568,25 @@ ${fixPrompt}`;
      * Affina style guide dopo cap 2
      */
     private async refineStyleGuide(projectId: string) {
-        console.log('📝 Checking style guide after chapter 2...');
+        logger.info('📝 Checking style guide after chapter 2...');
 
         // Check if custom style guide already exists
         const hasCustomStyleGuide = await StyleGuideService.hasStyleGuide(projectId);
 
         if (hasCustomStyleGuide) {
-            console.log('✅ Custom style guide already exists, skipping auto-generation');
+            logger.info('✅ Custom style guide already exists, skipping auto-generation');
             return;
         }
 
         // Auto-generate style guide from chapters 1 and 2
-        console.log('🤖 Generating style guide from chapters 1-2...');
+        logger.info('🤖 Generating style guide from chapters 1-2...');
 
         const result = await StyleGuideService.generateFromChapters(projectId);
 
         if (result.success) {
-            console.log('✅ Style guide generated and saved');
+            logger.info('✅ Style guide generated and saved');
         } else {
-            console.log('⚠️ Style guide generation failed:', result.error);
+            logger.warn('⚠️ Style guide generation failed:', { error: result.error });
         }
     }
 
@@ -627,7 +628,7 @@ ${fixPrompt}`;
                 where: { id: projectId },
                 data: { status: newStatus },
             });
-            console.log(`✅ Project status updated: ${project.status} → ${newStatus}`);
+            logger.info(`✅ Project status updated: ${project.status} → ${newStatus}`);
         }
     }
 
@@ -663,7 +664,7 @@ ${fixPrompt}`;
      * Consistency check finale su tutto il libro
      */
     async finalConsistencyCheck(projectId: string): Promise<ConsistencyReport> {
-        console.log('🔍 Running final consistency check...');
+        logger.info('🔍 Running final consistency check...');
 
         const project = await prisma.project.findUnique({
             where: { id: projectId },
@@ -691,9 +692,9 @@ ${fixPrompt}`;
 
         // 📊 LOG: Using GPT-5 for consistency check
         const reasoningEffort = getReasoningEffortForTask('consistency-check');
-        console.log(`\n🎯 CONSISTENCY CHECK WITH GPT-5`);
-        console.log(`   Reasoning Effort: ${reasoningEffort} (balanced accuracy)`);
-        console.log(`   Verbosity: medium (standard report)\n`);
+        logger.info(`\n🎯 CONSISTENCY CHECK WITH GPT-5`);
+        logger.info(`   Reasoning Effort: ${reasoningEffort} (balanced accuracy)`);
+        logger.info(`   Verbosity: medium (standard report)\n`);
 
         // Use GPT-5 Responses API with medium reasoning (sweet spot: accurate + cost-effective)
         const report = await callGPT5JSON<ConsistencyReport>(prompt, {
@@ -703,8 +704,8 @@ ${fixPrompt}`;
             maxOutputTokens: 4000, // Sufficient for medium reasoning + detailed report
         });
 
-        console.log(`✅ Consistency check completed`);
-        console.log(`   Overall Score: ${report.overallScore || 'N/A'}\n`);
+        logger.info(`✅ Consistency check completed`);
+        logger.info(`   Overall Score: ${report.overallScore || 'N/A'}\n`);
 
         // Salva report nel DB
         await prisma.consistencyReport.create({

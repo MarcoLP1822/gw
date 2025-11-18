@@ -5,6 +5,7 @@
  */
 
 import mammoth from 'mammoth';
+import { logger } from '@/lib/logger';
 import { TextExtractor, ExtractionResult, countWords } from '../text-extractor';
 
 export class DocxExtractor implements TextExtractor {
@@ -23,7 +24,7 @@ export class DocxExtractor implements TextExtractor {
             const result = await mammoth.extractRawText({ buffer });
 
             if (result.messages.length > 0) {
-                console.warn(`Warnings extracting ${filename}:`, result.messages);
+                logger.warn(`Warnings extracting ${filename}:`, { messages: result.messages });
             }
 
             // Clean up extracted text

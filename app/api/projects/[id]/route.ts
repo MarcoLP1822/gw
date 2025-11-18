@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
 import { ProjectFormData } from '@/types';
+import { logger } from '@/lib/logger';
 
 // GET /api/projects/[id] - Ottieni dettagli progetto singolo
 export async function GET(
@@ -8,9 +9,9 @@ export async function GET(
     { params }: { params: Promise<{ id: string }> }
 ) {
     try {
-        console.log('📥 GET /api/projects/[id] - Request received');
+        logger.info('📥 GET /api/projects/[id] - Request received');
         const { id } = await params;
-        console.log('🔍 Project ID:', id);
+        logger.info('🔍 Project ID:', { id });
 
         const project = await prisma.project.findUnique({
             where: {
@@ -39,16 +40,16 @@ export async function GET(
         });
 
         if (!project) {
-            console.log('❌ Project not found:', id);
+            logger.info('❌ Project not found:', { id });
             return NextResponse.json(
                 { error: 'Progetto non trovato' },
                 { status: 404 }
             );
         }
 
-        console.log('✅ Project found:', project.bookTitle);
-        console.log('📋 Outline present:', !!project.Outline);
-        console.log('📊 Consistency reports:', project.ConsistencyReport?.length || 0);
+        logger.info('✅ Project found:', { bookTitle: project.bookTitle });
+        logger.info('📋 Outline present:', { hasOutline: !!project.Outline });
+        logger.info('📊 Consistency reports:', { count: project.ConsistencyReport?.length || 0 });
 
         // Normalizza i dati per il frontend (lowercase per compatibilità)
         const normalizedProject = {
@@ -63,8 +64,8 @@ export async function GET(
         });
 
     } catch (error) {
-        console.error('❌ Error fetching project:', error);
-        console.error('Error details:', {
+        logger.error('❌ Error fetching project:', error);
+        logger.error('Error details:', {
             name: error instanceof Error ? error.name : 'Unknown',
             message: error instanceof Error ? error.message : 'Unknown error',
             stack: error instanceof Error ? error.stack : undefined
@@ -132,7 +133,7 @@ export async function PUT(
         });
 
     } catch (error) {
-        console.error('Error updating project:', error);
+        logger.error('Error updating project:', error);
         return NextResponse.json(
             { error: 'Errore durante l\'aggiornamento del progetto' },
             { status: 500 }
@@ -172,7 +173,7 @@ export async function DELETE(
         });
 
     } catch (error) {
-        console.error('Error deleting project:', error);
+        logger.error('Error deleting project:', error);
         return NextResponse.json(
             { error: 'Errore durante l\'eliminazione del progetto' },
             { status: 500 }

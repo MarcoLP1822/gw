@@ -272,7 +272,7 @@ export const projectsApi = {
             // Ottieni il blob del file
             const blob = await response.blob();
 
-            console.log('Blob received:', blob.size, 'bytes', blob.type);
+            logger.info('Blob received:', { size: blob.size, type: blob.type });
 
             // Ottieni il nome del file dall'header Content-Disposition
             const contentDisposition = response.headers.get('Content-Disposition');
@@ -284,14 +284,14 @@ export const projectsApi = {
                 }
             }
 
-            console.log('Downloading as:', fileName);
+            logger.info('Downloading as:', { fileName });
 
             // Usa file-saver per un download più affidabile
             saveAs(blob, fileName);
 
             return { success: true, fileName };
         } catch (error) {
-            console.error('Export error:', error);
+            logger.error('Export error:', error);
             throw error;
         }
     },

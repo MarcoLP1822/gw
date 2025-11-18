@@ -7,6 +7,7 @@ import Sidebar from '@/components/Sidebar';
 import PageContainer from '@/components/PageContainer';
 import BookSelector from '@/components/BookSelector';
 import Card from '@/components/Card';
+import { logger } from '@/lib/logger';
 import { BookOpen } from 'lucide-react';
 
 // Import BookViewer dynamically to avoid SSR issues with react-pdf
@@ -58,7 +59,7 @@ export default function FlipbookPage() {
             const data = await response.json();
             setBooks(data);
         } catch (error) {
-            console.error('Error loading books:', error);
+            logger.error('Errore caricamento libri', { error });
             setError('Errore nel caricamento dei libri');
         } finally {
             setLoading(false);

@@ -3,6 +3,8 @@
  * Helper functions per interagire con l'API dei libri esportati
  */
 
+import { logger } from '@/lib/logger';
+
 export interface ExportedBook {
     id: string;
     projectId: string;
@@ -75,7 +77,7 @@ export const booksApi = {
             method: 'POST',
         }).catch((error) => {
             // Non bloccare l'app se il tracking fallisce
-            console.error('Failed to mark book as accessed:', error);
+            logger.error('Failed to mark book as accessed:', error);
         });
     },
 };

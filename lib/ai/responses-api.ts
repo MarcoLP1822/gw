@@ -198,7 +198,7 @@ export async function callGPT5JSON<T = any>(
                 // Retry con più token - incremento più aggressivo
                 const previousTokens = currentMaxTokens;
                 currentMaxTokens = Math.min(currentMaxTokens * 2, 128000); // Max 128k per GPT-5
-                console.log(`🔄 JSON truncated, retrying with increased tokens: ${previousTokens} → ${currentMaxTokens}`);
+                logger.info(`🔄 JSON truncated, retrying with increased tokens: ${previousTokens} → ${currentMaxTokens}`);
                 continue; // Riprova con più token
             }
 
