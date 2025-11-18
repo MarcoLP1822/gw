@@ -10,6 +10,8 @@ import { getExtractorForFile } from '@/lib/document-processing/text-extractor';
 import { callGPT5JSON } from '@/lib/ai/responses-api';
 import { StyleGuideService } from '@/lib/services/style-guide-service';
 import { ProjectFormData } from '@/types';
+import { rateLimit, RateLimitPresets } from '@/lib/rate-limit';
+import { handleApiError } from '@/lib/errors/api-errors';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -29,6 +31,8 @@ interface AnalysisResult {
  */
 export async function POST(request: NextRequest) {
     try {
+        // Rate limiting: max 2 analisi AI al minuto
+        await rateLimit(request, RateLimitPresets.AI_GENERATION);
         const formData = await request.formData();
         const file = formData.get('file') as File;
 

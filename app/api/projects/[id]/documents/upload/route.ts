@@ -11,6 +11,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { handleUpload, type HandleUploadBody } from '@vercel/blob/client';
 import { DocumentService } from '@/lib/services/document-service';
 import { logger } from '@/lib/logger';
+import { rateLimit, RateLimitPresets } from '@/lib/rate-limit';
+import { handleApiError } from '@/lib/errors/api-errors';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -25,6 +27,8 @@ export async function POST(
     const body = (await request.json()) as HandleUploadBody;
 
     try {
+        // Rate limiting: max 5 upload al minuto
+        await rateLimit(request, RateLimitPresets.FILE_UPLOAD);
         const jsonResponse = await handleUpload({
             body,
             request,

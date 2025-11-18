@@ -6,6 +6,8 @@ import { generateOutlinePrompt, SYSTEM_PROMPT } from '@/lib/ai/prompts/outline-g
 import { GeneratedOutline } from '@/types';
 import { randomUUID } from 'crypto';
 import { logger } from '@/lib/logger';
+import { rateLimit, RateLimitPresets } from '@/lib/rate-limit';
+import { handleApiError } from '@/lib/errors/api-errors';
 
 /**
  * POST /api/projects/[id]/generate-outline
@@ -19,6 +21,8 @@ export async function POST(
     const projectId = id;
 
     try {
+        // Rate limiting: max 2 generazioni al minuto
+        await rateLimit(request, RateLimitPresets.AI_GENERATION);
 
         // 1. Recupera il progetto dal database
         const project = await prisma.project.findUnique({

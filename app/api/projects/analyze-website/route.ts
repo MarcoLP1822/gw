@@ -9,6 +9,8 @@ import { logger } from '@/lib/logger';
 import { extractFromWebsite, extractFromMultipleUrls, crawlWebsite } from '@/lib/content-extraction/web-extractor';
 import { callGPT5JSON } from '@/lib/ai/responses-api';
 import { ProjectFormData } from '@/types';
+import { rateLimit, RateLimitPresets } from '@/lib/rate-limit';
+import { handleApiError } from '@/lib/errors/api-errors';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -26,6 +28,9 @@ interface AnalysisResult {
  */
 export async function POST(request: NextRequest) {
     try {
+        // Rate limiting: max 2 analisi AI al minuto
+        await rateLimit(request, RateLimitPresets.AI_GENERATION);
+
         const body = await request.json();
         const { url, urls, crawl = false, maxDepth = 2, maxPages = 20 } = body;
 
