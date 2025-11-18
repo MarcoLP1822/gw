@@ -10,6 +10,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { handleUpload, type HandleUploadBody } from '@vercel/blob/client';
 import { DocumentService } from '@/lib/services/document-service';
+import { logger } from '@/lib/logger';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -45,7 +46,7 @@ export async function POST(
                         purpose = payload.purpose || 'style_reference';
                         fileName = payload.fileName || pathname;
                     } catch (e) {
-                        console.warn('Failed to parse clientPayload:', e);
+                        logger.warn('Failed to parse clientPayload', e);
                     }
                 }
 
@@ -67,7 +68,7 @@ export async function POST(
 
         return NextResponse.json(jsonResponse);
     } catch (error) {
-        console.error('Upload handling error:', error);
+        logger.error('Upload handling error', error);
         return NextResponse.json(
             { error: (error as Error).message },
             { status: 400 }

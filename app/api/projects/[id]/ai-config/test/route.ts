@@ -4,6 +4,7 @@ import { PromptBuilder } from '@/lib/ai/prompt-builder';
 import { validateAIConfig, DEFAULT_AI_CONFIG } from '@/lib/ai/config/defaults';
 import { prisma } from '@/lib/db';
 import type { ProjectAIConfig } from '@prisma/client';
+import { logger } from '@/lib/logger';
 
 /**
  * POST /api/projects/[id]/ai-config/test
@@ -72,8 +73,7 @@ Il paragrafo deve:
 NON scrivere un capitolo completo, solo un paragrafo di esempio.
 `;
 
-        console.log('🧪 Testing AI Config...');
-        console.log('Configuration:', testConfig);
+        logger.info('🧪 Testing AI Config', { projectId: id, model: testConfig.model });
 
         // 🔧 GPT-4o e modelli successivi usano max_completion_tokens invece di max_tokens
         const isNewModel = (testConfig.model as string).includes('gpt-4o') ||
@@ -101,7 +101,7 @@ NON scrivere un capitolo completo, solo un paragrafo di esempio.
             requestParams.frequency_penalty = testConfig.frequencyPenalty;
             requestParams.presence_penalty = testConfig.presencePenalty;
         } else {
-            console.log(`⚠️ Model ${testConfig.model} has parameter limitations - using defaults only`);
+            logger.warn('⚠️ Model has parameter limitations - using defaults only', { model: testConfig.model });
         }
 
         // Usa il parametro corretto in base al modello
@@ -150,7 +150,7 @@ NON scrivere un capitolo completo, solo un paragrafo di esempio.
             },
         });
     } catch (error: any) {
-        console.error('Error testing AI config:', error);
+        logger.error('Error testing AI config', error);
         return NextResponse.json(
             {
                 error: error.message || 'Failed to test AI config',

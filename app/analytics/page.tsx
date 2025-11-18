@@ -6,6 +6,7 @@ import Sidebar from '@/components/Sidebar';
 import PageContainer from '@/components/PageContainer';
 import Card from '@/components/Card';
 import { TrendingUp, TrendingDown, DollarSign, FileText, Users, Clock } from 'lucide-react';
+import { logger } from '@/lib/logger';
 
 interface MonthlyData {
     month: string;
@@ -48,7 +49,7 @@ export default function AnalyticsPage() {
                     setAnalytics(data.analytics);
                 }
             } catch (error) {
-                console.error('Error fetching analytics:', error);
+                logger.error('Error fetching analytics', error);
             } finally {
                 setLoading(false);
             }

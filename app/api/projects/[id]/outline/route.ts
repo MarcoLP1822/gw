@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
+import { logger } from '@/lib/logger';
 
 /**
  * PATCH /api/projects/[id]/outline
@@ -59,7 +60,7 @@ export async function PATCH(
             },
         });
     } catch (error) {
-        console.error('Errore nell\'aggiornamento outline:', error);
+        logger.error('Errore nell\'aggiornamento outline', error);
 
         return NextResponse.json(
             {

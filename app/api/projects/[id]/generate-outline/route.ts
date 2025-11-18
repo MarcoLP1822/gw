@@ -5,6 +5,7 @@ import { callGPT5JSON } from '@/lib/ai/responses-api';
 import { generateOutlinePrompt, SYSTEM_PROMPT } from '@/lib/ai/prompts/outline-generator';
 import { GeneratedOutline } from '@/types';
 import { randomUUID } from 'crypto';
+import { logger } from '@/lib/logger';
 
 /**
  * POST /api/projects/[id]/generate-outline
@@ -63,11 +64,12 @@ ${userPrompt}`;
         // 3. Chiama GPT-5 Responses API
         const startTime = Date.now();
 
-        // 📊 LOG: Quale modello stiamo usando
-        console.log(`\n🎯 GENERATING OUTLINE WITH GPT-5`);
-        console.log(`   Model: ${DEFAULT_MODEL}`);
-        console.log(`   Reasoning Effort: medium`);
-        console.log(`   Verbosity: medium\n`);
+        logger.info('🎯 Generating outline with GPT-5', {
+            model: DEFAULT_MODEL,
+            reasoningEffort: 'medium',
+            verbosity: 'medium',
+            projectId
+        });
 
         logAPICall('Generate Outline', DEFAULT_MODEL);
 
@@ -80,9 +82,11 @@ ${userPrompt}`;
 
         const generationTime = Date.now() - startTime;
 
-        // 📊 LOG: Risposta ricevuta
-        console.log(`✅ Outline generated successfully`);
-        console.log(`   Generation time: ${(generationTime / 1000).toFixed(2)}s\n`);
+        logger.info('✅ Outline generated successfully', {
+            projectId,
+            generationTime: `${(generationTime / 1000).toFixed(2)}s`,
+            chaptersCount: generatedOutline.chapters.length
+        });
 
         logAPICall('Outline Generated', DEFAULT_MODEL);
 
@@ -141,7 +145,7 @@ ${userPrompt}`;
             },
         });
     } catch (error) {
-        console.error('Errore nella generazione outline:', error);
+        logger.error('Errore nella generazione outline', error);
 
         // Log errore nel database
         try {
@@ -160,7 +164,7 @@ ${userPrompt}`;
                 },
             });
         } catch (logError) {
-            console.error('Errore nel logging:', logError);
+            logger.error('Errore nel logging', logError);
         }
 
         return NextResponse.json(

@@ -7,6 +7,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
 import { PdfGenerator } from '@/lib/export/pdf-generator';
 import { put } from '@vercel/blob';
+import { logger } from '@/lib/logger';
 
 export async function GET(
     request: NextRequest,
@@ -87,10 +88,10 @@ export async function GET(
                 },
             });
 
-            console.log(`✅ PDF auto-saved to Flipbook: ${url}`);
+            logger.info('✅ PDF auto-saved to Flipbook', { url, projectId: id, fileName });
         } catch (saveError) {
             // Log error but don't fail the download
-            console.error('❌ Failed to save PDF to Flipbook:', saveError);
+            logger.error('❌ Failed to save PDF to Flipbook', saveError, { projectId: id });
         }
 
         // 4. Return PDF for download
@@ -103,7 +104,7 @@ export async function GET(
             },
         });
     } catch (error) {
-        console.error('Export PDF error:', error);
+        logger.error('Export PDF error', error);
         return NextResponse.json(
             { error: 'Errore durante l\'esportazione del PDF' },
             { status: 500 }

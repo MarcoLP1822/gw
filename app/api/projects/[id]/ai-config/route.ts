@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { AIConfigService } from '@/lib/ai/config/ai-config-service';
 import { validateAIConfig } from '@/lib/ai/config/defaults';
 import type { ProjectAIConfig } from '@prisma/client';
+import { logger } from '@/lib/logger';
 
 /**
  * GET /api/projects/[id]/ai-config
@@ -17,7 +18,7 @@ export async function GET(
 
         return NextResponse.json(config);
     } catch (error: any) {
-        console.error('Error fetching AI config:', error);
+        logger.error('Error fetching AI config', error);
         return NextResponse.json(
             { error: error.message || 'Failed to fetch AI config' },
             { status: 500 }
@@ -37,8 +38,7 @@ export async function POST(
         const { id } = await params;
         const body = await request.json();
 
-        // Log per debug
-        console.log('📝 Updating AI config:', {
+        logger.info('📝 Updating AI config', {
             projectId: id,
             targetWordsPerChapter: body.targetWordsPerChapter,
             maxTokens: body.maxTokens
@@ -47,7 +47,7 @@ export async function POST(
         // Valida i dati
         const validation = validateAIConfig(body);
         if (!validation.valid) {
-            console.error('❌ Validation failed:', validation.errors);
+            logger.error('❌ Validation failed', validation.errors);
             return NextResponse.json(
                 {
                     error: 'Invalid configuration',
@@ -62,7 +62,7 @@ export async function POST(
 
         return NextResponse.json(config);
     } catch (error: any) {
-        console.error('Error updating AI config:', error);
+        logger.error('Error updating AI config', error);
         return NextResponse.json(
             { error: error.message || 'Failed to update AI config' },
             { status: 500 }
@@ -92,7 +92,7 @@ export async function DELETE(
 
         return NextResponse.json(config);
     } catch (error: any) {
-        console.error('Error resetting AI config:', error);
+        logger.error('Error resetting AI config', error);
         return NextResponse.json(
             { error: error.message || 'Failed to reset AI config' },
             { status: 500 }
@@ -140,7 +140,7 @@ export async function PATCH(
 
         return NextResponse.json(config);
     } catch (error: any) {
-        console.error('Error patching AI config:', error);
+        logger.error('Error patching AI config', error);
         return NextResponse.json(
             { error: error.message || 'Failed to patch AI config' },
             { status: 500 }

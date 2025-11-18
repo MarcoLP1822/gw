@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
 import { DocxGenerator } from '@/lib/export/docx-generator';
 import { Packer } from 'docx';
+import { logger } from '@/lib/logger';
 
 export async function GET(
     request: NextRequest,
@@ -61,7 +62,7 @@ export async function GET(
             },
         });
     } catch (error) {
-        console.error('Export DOCX error:', error);
+        logger.error('Export DOCX error', error);
         return NextResponse.json(
             { error: 'Errore durante l\'esportazione del documento' },
             { status: 500 }

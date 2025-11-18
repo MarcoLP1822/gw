@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
+import { logger } from '@/lib/logger';
 
 /**
  * POST /api/projects/[id]/reset
@@ -84,7 +85,7 @@ export async function POST(
         });
 
     } catch (error) {
-        console.error('Error resetting project:', error);
+        logger.error('Error resetting project', error);
         return NextResponse.json(
             {
                 success: false,

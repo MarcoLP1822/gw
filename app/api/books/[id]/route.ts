@@ -6,6 +6,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { BookExportService } from '@/lib/services/book-export-service';
+import { logger } from '@/lib/logger';
 
 export async function GET(
     request: NextRequest,
@@ -28,7 +29,7 @@ export async function GET(
             },
         });
     } catch (error) {
-        console.error('Failed to fetch book:', error);
+        logger.error('Failed to fetch book', error);
         return NextResponse.json(
             { error: 'Failed to fetch book' },
             { status: 500 }
@@ -49,7 +50,7 @@ export async function DELETE(
             message: 'Book deleted successfully'
         });
     } catch (error) {
-        console.error('Failed to delete book:', error);
+        logger.error('Failed to delete book', error);
 
         const errorMessage = error instanceof Error ? error.message : 'Failed to delete book';
         const statusCode = errorMessage === 'Libro non trovato' ? 404 : 500;

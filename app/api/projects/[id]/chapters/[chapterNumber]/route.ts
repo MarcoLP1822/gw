@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { logger } from '@/lib/logger';
 
 /**
  * GET /api/projects/[id]/chapters/[chapterNumber]
@@ -29,7 +30,7 @@ export async function GET(
 
         return NextResponse.json({ chapter });
     } catch (error: any) {
-        console.error('Error fetching chapter:', error);
+        logger.error('Error fetching chapter', error);
 
         return NextResponse.json(
             { error: 'Errore durante il recupero del capitolo' },
@@ -106,7 +107,7 @@ export async function PUT(
             hasUndo: true, // Indica che l'undo è disponibile
         });
     } catch (error: any) {
-        console.error('Error updating chapter:', error);
+        logger.error('Error updating chapter', error);
 
         return NextResponse.json(
             { error: 'Errore durante l\'aggiornamento del capitolo' },

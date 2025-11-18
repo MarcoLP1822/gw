@@ -820,7 +820,7 @@ function OutlineTab({
         for (const chapterNum of remaining) {
             // Check if stop was requested BEFORE starting new chapter
             if (stopBatchGeneration) {
-                console.log(`⏸️ Stop richiesto prima di Cap. ${chapterNum}`);
+                logger.info('⏸️ Stop richiesto prima di capitolo', { chapterNum, completedCount, totalCount });
                 toast.info(`⏸️ Generazione interrotta. Completati ${completedCount}/${totalCount} capitoli`);
                 break;
             }
@@ -842,7 +842,7 @@ function OutlineTab({
 
                 if (!response.ok) {
                     const errorData = await response.json().catch(() => ({ error: 'Unknown error' }));
-                    console.error(`❌ Error generating chapter ${chapterNum}:`, errorData);
+                    logger.error('❌ Error generating chapter', errorData, { chapterNum, projectId: project.id });
                     toast.error(`Errore Cap. ${chapterNum}: ${errorData.error || 'Errore sconosciuto'}`, { duration: 5000 });
                     // Continue with next chapters even if one fails
                 } else {
@@ -852,7 +852,7 @@ function OutlineTab({
 
                 // Check if stop was requested DURING chapter generation
                 if (stopBatchGeneration) {
-                    console.log(`⏸️ Stop richiesto dopo Cap. ${chapterNum}`);
+                    logger.info('⏸️ Stop richiesto dopo capitolo', { chapterNum, completedCount, totalCount });
                     toast.info(`⏸️ Generazione interrotta dopo Cap. ${chapterNum}. Completati ${completedCount}/${totalCount} capitoli`);
                     break;
                 }
@@ -865,7 +865,7 @@ function OutlineTab({
                 await onRefresh();
 
             } catch (error) {
-                console.error(`❌ Error generating chapter ${chapterNum}:`, error);
+                logger.error('❌ Error generating chapter', error, { chapterNum, projectId: project.id });
                 toast.error(`Errore Cap. ${chapterNum}`, { duration: 3000 });
                 // Continue with next chapters even if one fails
             }
@@ -928,7 +928,7 @@ function OutlineTab({
         for (const chapterNum of remaining) {
             // Check if stop was requested BEFORE starting new chapter
             if (stopBatchGeneration) {
-                console.log(`⏸️ Stop richiesto prima di Cap. ${chapterNum}`);
+                logger.info('⏸️ Stop richiesto prima di capitolo', { chapterNum, completedCount, totalCount });
                 toast.info(`⏸️ Generazione interrotta. Completati ${completedCount}/${totalCount} capitoli`);
                 break;
             }
@@ -950,17 +950,17 @@ function OutlineTab({
 
                 if (!response.ok) {
                     const errorData = await response.json().catch(() => ({ error: 'Unknown error' }));
-                    console.error(`❌ Error generating chapter ${chapterNum}:`, errorData);
+                    logger.error('❌ Error generating chapter', errorData, { chapterNum, projectId: project.id });
                     toast.error(`Errore Cap. ${chapterNum}: ${errorData.error || 'Errore sconosciuto'}`, { duration: 5000 });
                     // Continue with next chapters
                 } else {
                     completedCount++;
-                    console.log(`✅ Chapter ${chapterNum} generated successfully. Progress: ${completedCount}/${totalCount}`);
+                    logger.info('✅ Chapter generated successfully', { chapterNum, completedCount, totalCount, projectId: project.id });
                 }
 
                 // Check if stop was requested DURING chapter generation
                 if (stopBatchGeneration) {
-                    console.log(`⏸️ Stop richiesto dopo Cap. ${chapterNum}`);
+                    logger.info('⏸️ Stop richiesto dopo capitolo', { chapterNum, completedCount, totalCount });
                     toast.info(`⏸️ Generazione interrotta dopo Cap. ${chapterNum}. Completati ${completedCount}/${totalCount} capitoli`);
                     break;
                 }
@@ -973,7 +973,7 @@ function OutlineTab({
                 await onRefresh();
 
             } catch (error) {
-                console.error(`❌ Error generating chapter ${chapterNum}:`, error);
+                logger.error('❌ Error generating chapter', error, { chapterNum, projectId: project.id });
                 toast.error(`Errore Cap. ${chapterNum}`, { duration: 3000 });
                 // Continue with next chapters
             }

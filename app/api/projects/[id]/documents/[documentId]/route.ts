@@ -7,6 +7,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { DocumentService } from '@/lib/services/document-service';
+import { logger } from '@/lib/logger';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -35,7 +36,7 @@ export async function GET(
             document,
         });
     } catch (error) {
-        console.error('Error fetching document:', error);
+        logger.error('Error fetching document', error);
         return NextResponse.json(
             {
                 success: false,
@@ -70,7 +71,7 @@ export async function DELETE(
             message: 'Documento eliminato con successo',
         });
     } catch (error) {
-        console.error('Error deleting document:', error);
+        logger.error('Error deleting document', error);
         return NextResponse.json(
             {
                 success: false,

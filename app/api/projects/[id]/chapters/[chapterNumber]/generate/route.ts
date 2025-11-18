@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { chapterGenerationService } from '@/lib/ai/services/chapter-generation';
 import { handleApiError, ApiErrors } from '@/lib/errors/api-errors';
+import { logger } from '@/lib/logger';
 
 // Aumenta il timeout per la generazione dei capitoli (può richiedere diversi minuti)
 export const maxDuration = 300; // 5 minuti
@@ -24,7 +25,7 @@ export async function POST(
             return NextResponse.json(error.toJSON(), { status: error.statusCode });
         }
 
-        console.log(`🚀 Starting chapter ${chapterNumber} generation for project ${projectId}`);
+        logger.info('🚀 Starting chapter generation', { projectId, chapterNumber });
 
         const chapter = await chapterGenerationService.generateChapter(
             projectId,
@@ -37,7 +38,7 @@ export async function POST(
             message: `Capitolo ${chapterNumber} generato con successo`,
         });
     } catch (error: any) {
-        console.error('Error generating chapter:', error);
+        logger.error('Error generating chapter', error);
 
         // Usa l'error handler centralizzato
         const apiError = handleApiError(error);

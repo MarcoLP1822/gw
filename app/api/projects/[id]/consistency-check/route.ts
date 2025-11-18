@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { chapterGenerationService } from '@/lib/ai/services/chapter-generation';
+import { logger } from '@/lib/logger';
 
 /**
  * POST /api/projects/[id]/consistency-check
@@ -13,7 +14,7 @@ export async function POST(
         const { id } = await params;
         const projectId = id;
 
-        console.log(`🔍 Running consistency check for project ${projectId}`);
+        logger.info('🔍 Running consistency check', { projectId });
 
         const report = await chapterGenerationService.finalConsistencyCheck(projectId);
 
@@ -23,7 +24,7 @@ export async function POST(
             message: 'Consistency check completato',
         });
     } catch (error: any) {
-        console.error('Error in consistency check:', error);
+        logger.error('Error in consistency check', error);
 
         return NextResponse.json(
             {
@@ -66,7 +67,7 @@ export async function GET(
             createdAt: report.createdAt
         });
     } catch (error: any) {
-        console.error('Error fetching consistency report:', error);
+        logger.error('Error fetching consistency report', error);
 
         return NextResponse.json(
             { error: 'Errore durante il recupero del report' },
@@ -93,7 +94,7 @@ export async function DELETE(
             where: { projectId },
         });
 
-        console.log(`🗑️ Deleted ${deleted.count} consistency report(s) for project ${projectId}`);
+        logger.info('🗑️ Deleted consistency reports', { projectId, count: deleted.count });
 
         return NextResponse.json({
             success: true,
@@ -101,7 +102,7 @@ export async function DELETE(
             message: 'Consistency report cancellato - rigenerabile dopo le modifiche',
         });
     } catch (error: any) {
-        console.error('Error deleting consistency report:', error);
+        logger.error('Error deleting consistency report', error);
 
         return NextResponse.json(
             { error: 'Errore durante la cancellazione del report' },

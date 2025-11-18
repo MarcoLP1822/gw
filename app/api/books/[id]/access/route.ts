@@ -5,6 +5,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { BookExportService } from '@/lib/services/book-export-service';
+import { logger } from '@/lib/logger';
 
 export async function POST(
     request: NextRequest,
@@ -19,7 +20,7 @@ export async function POST(
             message: 'Book marked as accessed'
         });
     } catch (error) {
-        console.error('Failed to mark book as accessed:', error);
+        logger.error('Failed to mark book as accessed', error);
         return NextResponse.json(
             { error: 'Failed to mark book as accessed' },
             { status: 500 }

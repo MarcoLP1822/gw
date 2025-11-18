@@ -6,6 +6,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { DocumentService } from '@/lib/services/document-service';
+import { logger } from '@/lib/logger';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -54,7 +55,7 @@ export async function POST(
             document: result.document,
         });
     } catch (error) {
-        console.error('Error processing document:', error);
+        logger.error('Error processing document', error);
         return NextResponse.json(
             {
                 success: false,

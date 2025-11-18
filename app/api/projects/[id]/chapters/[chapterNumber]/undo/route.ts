@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { logger } from '@/lib/logger';
 
 /**
  * POST /api/projects/[id]/chapters/[chapterNumber]/undo
@@ -68,7 +69,7 @@ export async function POST(
             canRedo: true, // Indica che si può fare redo (tornare alla versione dopo)
         });
     } catch (error: any) {
-        console.error('Error undoing chapter:', error);
+        logger.error('Error undoing chapter', error);
 
         return NextResponse.json(
             { error: 'Errore durante il ripristino della versione precedente' },

@@ -7,6 +7,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { StyleGuideService } from '@/lib/services/style-guide-service';
+import { logger } from '@/lib/logger';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -28,7 +29,7 @@ export async function GET(
             hasStyleGuide: !!styleGuide,
         });
     } catch (error) {
-        console.error('Error fetching style guide:', error);
+        logger.error('Error fetching style guide', error);
         return NextResponse.json(
             {
                 success: false,
@@ -79,7 +80,7 @@ export async function PUT(
             message: 'Style guide salvato con successo',
         });
     } catch (error) {
-        console.error('Error saving style guide:', error);
+        logger.error('Error saving style guide', error);
         return NextResponse.json(
             {
                 success: false,
@@ -116,7 +117,7 @@ export async function DELETE(
             message: 'Style guide personalizzato eliminato con successo',
         });
     } catch (error) {
-        console.error('Error deleting style guide:', error);
+        logger.error('Error deleting style guide', error);
         return NextResponse.json(
             {
                 success: false,
