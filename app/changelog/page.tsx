@@ -18,6 +18,31 @@ interface ChangelogEntry {
 
 const changelog: ChangelogEntry[] = [
     {
+        version: '3.17.0',
+        date: '18 Novembre 2025',
+        type: 'feature',
+        changes: [
+            {
+                category: 'UI/UX',
+                items: [
+                    'Refactor: sostituiti console.log con logger strutturato in lib/ e app/',
+                ],
+            },
+            {
+                category: 'Consistency Check',
+                items: [
+                    'Sincronizzazione outline e consistency report con database',
+                ],
+            },
+            {
+                category: 'Generale',
+                items: [
+                    'Replace console.log with structured logger system',
+                ],
+            }
+        ],
+    },
+    {
         version: '3.16.0',
         date: '17 Novembre 2025',
         type: 'feature',
