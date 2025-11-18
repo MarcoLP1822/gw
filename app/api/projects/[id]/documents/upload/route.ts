@@ -50,7 +50,7 @@ export async function POST(
                         purpose = payload.purpose || 'style_reference';
                         fileName = payload.fileName || pathname;
                     } catch (e) {
-                        logger.warn('Failed to parse clientPayload', e);
+                        logger.warn('Failed to parse clientPayload', e as Error);
                     }
                 }
 
