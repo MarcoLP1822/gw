@@ -174,6 +174,40 @@ export interface ConsistencyReport {
 }
 
 // ============================================================
+// SUGGESTION APPLY
+// ============================================================
+
+export interface DiffChange {
+  type: 'deletion' | 'replacement' | 'addition';
+  targetText: string;          // Testo originale da modificare
+  newText?: string;            // Nuovo testo (se replacement/addition)
+  lineStart: number;           // Riga di inizio (per UI scroll)
+  lineEnd: number;             // Riga di fine
+  reasoning: string;           // Breve spiegazione della modifica
+}
+
+export interface ApplySuggestionResult {
+  success: boolean;
+  diff?: {
+    chapterNumber: number;
+    oldContent: string;
+    newContent: string;
+    changes: DiffChange[];
+    estimatedCost: number;     // USD per la chiamata AI
+    wordsChanged: number;
+    percentageChanged: number;
+  };
+  chapter?: any;               // Se applied (preview=false)
+  error?: string;
+}
+
+export interface SuggestionApplyRequest {
+  issue: ConsistencyIssue;     // Issue dal consistency report
+  chapterNumber: number;       // Capitolo da modificare
+  preview: boolean;            // true = solo diff, false = apply
+}
+
+// ============================================================
 // AI CONFIGURATION - Technical Parameters Only
 // ============================================================
 

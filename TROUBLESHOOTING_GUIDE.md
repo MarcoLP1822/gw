@@ -407,5 +407,26 @@ Prepara:
 
 ---
 
-**Documento aggiornato**: 11 Ottobre 2025  
-**Versione**: 1.0
+## 💡 Tips Aggiuntivi
+
+### Performance Optimization
+- Usa `reasoning_effort: "low"` per generazioni più veloci
+- Riduci `max_output_tokens` se non servono capitoli lunghi
+- Abilita rate limiting per evitare costi eccessivi
+
+### Best Practices
+- Esegui sempre `.\scripts\health-check.ps1` prima di iniziare
+- Fai backup regolari del database (`npx prisma db pull`)
+- Monitora i costi OpenAI su https://platform.openai.com/usage
+- Usa Prisma Studio per debug (`npm run db:studio`)
+
+### Riferimenti Rapidi
+- **API Docs**: `docs/API_DOCUMENTATION.md`
+- **Architecture**: `docs/ARCHITECTURE.md`
+- **Security**: `docs/SECURITY.md`
+- **Testing**: `docs/TESTING.md`
+
+---
+
+**Documento aggiornato**: 19 Novembre 2025  
+**Versione**: 1.1

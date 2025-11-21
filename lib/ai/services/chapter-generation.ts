@@ -19,6 +19,9 @@ import {
     MasterContext,
     QuickCheckResult,
     ConsistencyReport,
+    ConsistencyIssue,
+    ApplySuggestionResult,
+    DiffChange,
 } from '@/types';
 import { AIConfigService } from '@/lib/ai/config/ai-config-service';
 import { PromptBuilder } from '@/lib/ai/prompt-builder';
@@ -718,6 +721,317 @@ ${fixPrompt}`;
         });
 
         return report;
+    }
+
+    /**
+     * Applica o genera preview di un suggerimento del consistency check
+     */
+    async applySuggestion(
+        projectId: string,
+        chapterNumber: number,
+        issue: ConsistencyIssue,
+        previewOnly: boolean = true
+    ): Promise<ApplySuggestionResult> {
+        logger.info('🔧 Applying consistency suggestion', {
+            projectId,
+            chapterNumber,
+            issueType: issue.type,
+            preview: previewOnly
+        });
+
+        try {
+            // 1. Carica il capitolo corrente
+            const chapter = await prisma.chapter.findUnique({
+                where: { projectId_chapterNumber: { projectId, chapterNumber } },
+                select: { content: true, wordCount: true }
+            });
+
+            if (!chapter) {
+                throw new Error(`Capitolo ${chapterNumber} non trovato`);
+            }
+
+            // 2. Genera prompt per AI
+            const prompt = this.generateApplySuggestionPrompt(
+                chapter.content,
+                chapterNumber,
+                issue
+            );
+
+            // 3. Chiama GPT-5 per generare modifiche precise
+            const reasoningEffort = getReasoningEffortForTask('suggestion-apply');
+            logger.info('🤖 Chiamata GPT-5 per applicazione suggestion', {
+                reasoningEffort,
+                chapterNumber
+            });
+
+            const aiResponse = await callGPT5JSON<{
+                modificationType: 'deletion' | 'replacement' | 'addition';
+                targetText: string;
+                newText?: string;
+                reasoning: string;
+                confidence: number;
+            }>(prompt, {
+                model: 'gpt-5-mini',
+                reasoningEffort: reasoningEffort,
+                verbosity: 'medium',
+                maxOutputTokens: 2000,
+            });
+
+            // 4. Valida confidence AI
+            if (aiResponse.confidence < 0.7) {
+                throw new Error(
+                    'Suggestion troppo ambigua per applicazione automatica. ' +
+                    'Richiede revisione manuale.'
+                );
+            }
+
+            // 5. Genera nuovo contenuto
+            const newContent = this.applyChange(
+                chapter.content,
+                aiResponse.targetText,
+                aiResponse.newText || '',
+                aiResponse.modificationType
+            );
+
+            // 6. Calcola metriche
+            const oldWords = chapter.content.split(/\s+/).length;
+            const newWords = newContent.split(/\s+/).length;
+            const wordsChanged = Math.abs(newWords - oldWords);
+            const percentageChanged = (wordsChanged / oldWords) * 100;
+
+            // 7. Se preview, ritorna diff
+            if (previewOnly) {
+                return {
+                    success: true,
+                    diff: {
+                        chapterNumber,
+                        oldContent: chapter.content,
+                        newContent,
+                        changes: [{
+                            type: aiResponse.modificationType,
+                            targetText: aiResponse.targetText,
+                            newText: aiResponse.newText,
+                            lineStart: this.findLineNumber(chapter.content, aiResponse.targetText),
+                            lineEnd: this.findLineNumber(chapter.content, aiResponse.targetText) +
+                                this.countLines(aiResponse.targetText),
+                            reasoning: aiResponse.reasoning
+                        }],
+                        estimatedCost: 0.03, // Stima basata su token usage
+                        wordsChanged,
+                        percentageChanged: Math.round(percentageChanged * 10) / 10
+                    }
+                };
+            }
+
+            // 8. Se apply, salva con versioning esistente
+            const updatedChapter = await prisma.chapter.update({
+                where: { projectId_chapterNumber: { projectId, chapterNumber } },
+                data: {
+                    content: newContent,
+                    wordCount: newWords,
+                    previousContent: chapter.content,  // ✅ Riuso versioning esistente
+                    previousContentSavedAt: new Date(),
+                    lastModifiedBy: 'ai_suggestion',
+                    updatedAt: new Date()
+                }
+            });
+
+            logger.info('✅ Suggestion applied successfully', {
+                projectId,
+                chapterNumber,
+                wordsChanged
+            });
+
+            return {
+                success: true,
+                chapter: updatedChapter
+            };
+
+        } catch (error: any) {
+            logger.error('❌ Error applying suggestion', error, {
+                projectId,
+                chapterNumber
+            });
+
+            return {
+                success: false,
+                error: error.message || 'Errore durante l\'applicazione del suggerimento'
+            };
+        }
+    }
+
+    /**
+     * Applica contenuto personalizzato (editato manualmente dall'utente)
+     */
+    async applyCustomContent(
+        projectId: string,
+        chapterNumber: number,
+        customContent: string
+    ): Promise<ApplySuggestionResult> {
+        try {
+            logger.info('📝 Applying custom content', {
+                projectId,
+                chapterNumber,
+                contentLength: customContent.length
+            });
+
+            // 1. Ottieni capitolo esistente
+            const chapter = await prisma.chapter.findUnique({
+                where: { projectId_chapterNumber: { projectId, chapterNumber } }
+            });
+
+            if (!chapter) {
+                throw new Error(`Capitolo ${chapterNumber} non trovato`);
+            }
+
+            // 2. Calcola word count
+            const newWords = customContent.split(/\s+/).filter(w => w.length > 0).length;
+
+            // 3. Salva con versioning
+            const updatedChapter = await prisma.chapter.update({
+                where: { projectId_chapterNumber: { projectId, chapterNumber } },
+                data: {
+                    content: customContent,
+                    wordCount: newWords,
+                    previousContent: chapter.content,  // Salva versione precedente per undo
+                    previousContentSavedAt: new Date(),
+                    lastModifiedBy: 'user_manual_edit',
+                    updatedAt: new Date()
+                }
+            });
+
+            logger.info('✅ Custom content applied successfully', {
+                projectId,
+                chapterNumber,
+                newWords
+            });
+
+            return {
+                success: true,
+                chapter: updatedChapter
+            };
+
+        } catch (error: any) {
+            logger.error('❌ Error applying custom content', error, {
+                projectId,
+                chapterNumber
+            });
+
+            return {
+                success: false,
+                error: error.message || 'Errore durante l\'applicazione del contenuto personalizzato'
+            };
+        }
+    }
+
+    /**
+     * Genera prompt per applicazione suggestion
+     */
+    private generateApplySuggestionPrompt(
+        chapterContent: string,
+        chapterNumber: number,
+        issue: ConsistencyIssue
+    ): string {
+        return `Sei un editor esperto. Il tuo compito è applicare con PRECISIONE CHIRURGICA una modifica a un capitolo.
+
+---
+
+# CONTENUTO CAPITOLO ${chapterNumber}
+
+${chapterContent}
+
+---
+
+# PROBLEMA RILEVATO
+
+**Tipo**: ${issue.type}
+**Severità**: ${issue.severity}
+**Descrizione**: ${issue.description}
+
+# SUGGERIMENTO DA APPLICARE
+
+${issue.suggestion}
+
+---
+
+# IL TUO COMPITO
+
+Identifica il **testo ESATTO** da modificare e genera la modifica precisa.
+
+**REGOLE CRITICHE**:
+1. \`targetText\` deve essere LETTERALE (copia-incolla esatto dal capitolo)
+2. Include almeno 10-20 parole di contesto per identificazione univoca
+3. Se la modifica è vaga o ambigua, setta \`confidence\` < 0.7
+4. Mantieni SEMPRE lo stile dell'autore
+5. NON modificare oltre lo stretto necessario
+
+---
+
+# OUTPUT FORMAT
+
+Rispondi con JSON valido:
+
+\`\`\`json
+{
+  "modificationType": "deletion" | "replacement" | "addition",
+  "targetText": "Testo ESATTO da modificare (include contesto circostante)",
+  "newText": "Nuovo testo (solo per replacement/addition)",
+  "reasoning": "Breve spiegazione della modifica (1 frase)",
+  "confidence": 0.0-1.0 (quanto sei sicuro che questa modifica sia corretta)
+}
+\`\`\`
+
+**Esempi**:
+
+\`\`\`json
+{
+  "modificationType": "replacement",
+  "targetText": "La Triade TDL è un framework che comprende Teoria, Design e Leadership - tre pilastri fondamentali per il successo imprenditoriale.",
+  "newText": "La Triade TDL [già introdotta nel Cap. 1] è essenziale per il successo.",
+  "reasoning": "Snellita ripetizione già presente in capitolo precedente",
+  "confidence": 0.95
+}
+\`\`\`
+
+Sii PRECISO e CONSERVATIVO. In dubbio, setta confidence bassa.`;
+    }
+
+    /**
+     * Applica la modifica al contenuto
+     */
+    private applyChange(
+        content: string,
+        targetText: string,
+        newText: string,
+        type: 'deletion' | 'replacement' | 'addition'
+    ): string {
+        switch (type) {
+            case 'deletion':
+                return content.replace(targetText, '');
+            case 'replacement':
+                return content.replace(targetText, newText);
+            case 'addition':
+                // Per addition, targetText identifica il punto di inserimento
+                return content.replace(targetText, targetText + '\n\n' + newText);
+            default:
+                return content;
+        }
+    }
+
+    /**
+     * Helper: trova numero di riga di un testo
+     */
+    private findLineNumber(content: string, searchText: string): number {
+        const index = content.indexOf(searchText);
+        if (index === -1) return 0;
+        return content.substring(0, index).split('\n').length;
+    }
+
+    /**
+     * Helper: conta righe in un testo
+     */
+    private countLines(text: string): number {
+        return text.split('\n').length;
     }
 }
 

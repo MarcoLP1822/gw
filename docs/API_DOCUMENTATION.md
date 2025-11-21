@@ -446,6 +446,94 @@ curl -X DELETE http://localhost:3000/api/projects/[ID_PROGETTO]
 
 ---
 
+## 📝 POST /api/projects/[id]/suggestions/apply
+
+**Applica o genera preview di un suggerimento del consistency check**
+
+### Request
+
+```typescript
+POST /api/projects/[id]/suggestions/apply
+Content-Type: application/json
+
+{
+  "issue": {
+    "type": "repetition" | "contradiction" | "style_shift" | "tone_change" | "factual_error",
+    "severity": "high" | "medium" | "low",
+    "chapter": number,
+    "description": string,
+    "suggestion": string
+  },
+  "chapterNumber": number,
+  "preview": boolean  // true = solo diff, false = apply
+}
+```
+
+### Response (preview=true)
+
+```typescript
+{
+  "success": true,
+  "diff": {
+    "chapterNumber": number,
+    "oldContent": string,
+    "newContent": string,
+    "changes": [{
+      "type": "deletion" | "replacement" | "addition",
+      "targetText": string,
+      "newText": string | undefined,
+      "lineStart": number,
+      "lineEnd": number,
+      "reasoning": string
+    }],
+    "estimatedCost": number,     // USD
+    "wordsChanged": number,
+    "percentageChanged": number
+  }
+}
+```
+
+### Response (preview=false)
+
+```typescript
+{
+  "success": true,
+  "chapter": {
+    // Chapter object con content aggiornato
+    // previousContent salvato per undo
+  }
+}
+```
+
+### Errors
+
+```typescript
+400 Bad Request
+{
+  "error": "Parametri mancanti: issue e chapterNumber richiesti"
+}
+
+400 Bad Request
+{
+  "error": "Issue malformato: chapter, description e suggestion richiesti"
+}
+
+500 Internal Server Error
+{
+  "error": "Suggestion troppo ambigua per applicazione automatica. Richiede revisione manuale."
+}
+```
+
+### Features
+
+- ✅ **Preview obbligatorio**: Preview diff prima di applicare
+- ✅ **AI Confidence Threshold**: Rifiuta se confidence < 0.7
+- ✅ **Versioning automatico**: Salva `previousContent` per undo
+- ✅ **Impact metrics**: Calcola parole/percentuale cambiate
+- ✅ **Cost estimation**: Stima costo chiamata AI
+
+---
+
 ## 🎯 Next Steps
 
 ### Sprint Corrente ✅
@@ -453,6 +541,7 @@ curl -X DELETE http://localhost:3000/api/projects/[ID_PROGETTO]
 - ✅ API routes CRUD
 - ✅ Integrazione UI base
 - ✅ Test manuale
+- ✅ Apply Consistency Suggestions (Sprint 1 & 2)
 
 ### Prossimi Sprint 🔜
 

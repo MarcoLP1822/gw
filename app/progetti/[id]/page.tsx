@@ -8,12 +8,14 @@ import Card from '@/components/Card';
 import NewProjectModal from '@/components/NewProjectModal';
 import AISettingsTab from '@/components/AISettingsTab';
 import WorkflowStepper from '@/components/WorkflowStepper';
+import DiffViewerModal from '@/components/DiffViewerModal';
 import { projectsApi } from '@/lib/api/projects';
 import { ProjectFormData } from '@/types';
 import { toast } from '@/lib/ui/toast';
 import { ProjectDetailPageSkeleton } from '@/components/ui/Skeleton';
 import { GenerationStateManager } from '@/lib/generation-state';
 import { logger } from '@/lib/logger';
+import { FEATURE_FLAGS } from '@/lib/config/feature-flags';
 import {
     ArrowLeft,
     Loader2,
@@ -1131,24 +1133,24 @@ function OutlineTab({
                 </div>
             </Card>
 
-            {/* Batch Generation Controls */}
+            {/* Gestione Capitoli */}
             <Card>
-                <div className="flex items-center justify-between">
+                <div className="flex items-center justify-between mb-1">
                     <div>
-                        <h3 className="text-lg font-semibold text-gray-900 mb-1">Generazione Multipla</h3>
+                        <h3 className="text-lg font-semibold text-gray-900 mb-1">Gestione Capitoli</h3>
                         <p className="text-sm text-gray-600">
                             {totalChapters === completedChapters
-                                ? 'Rigenera tutti i capitoli da capo'
-                                : 'Genera più capitoli in sequenza automaticamente'}
+                                ? 'Rigenera tutti i capitoli o aggiungine di nuovi'
+                                : 'Genera capitoli in batch o aggiungine di nuovi'}
                         </p>
                     </div>
-                    <div className="flex gap-3">
+                    <div className="flex gap-2 flex-wrap justify-end">
                         {/* Pulsante Genera Prossimi 3 - solo se ci sono capitoli da completare */}
                         {totalChapters > completedChapters && totalChapters - completedChapters > 1 && (
                             <button
                                 onClick={() => handleBatchGenerateNext(3)}
                                 disabled={generatingChapter !== null || isGeneratingOutline}
-                                className="px-4 py-2 bg-blue-600 text-white text-sm rounded-lg hover:bg-blue-700 disabled:bg-blue-300 disabled:cursor-not-allowed flex items-center gap-2 transition-colors"
+                                className="px-3 py-2 bg-blue-600 text-white text-sm rounded-lg hover:bg-blue-700 disabled:bg-blue-300 disabled:cursor-not-allowed flex items-center gap-2 transition-colors"
                             >
                                 <Sparkles size={16} />
                                 Genera Prossimi 3
@@ -1158,7 +1160,7 @@ function OutlineTab({
                         <button
                             onClick={handleBatchGenerateAll}
                             disabled={generatingChapter !== null || isGeneratingOutline}
-                            className="px-4 py-2 bg-indigo-600 text-white text-sm rounded-lg hover:bg-indigo-700 disabled:bg-indigo-300 disabled:cursor-not-allowed flex items-center gap-2 transition-colors"
+                            className="px-3 py-2 bg-indigo-600 text-white text-sm rounded-lg hover:bg-indigo-700 disabled:bg-indigo-300 disabled:cursor-not-allowed flex items-center gap-2 transition-colors"
                             title={totalChapters === completedChapters ? 'Rigenera tutti i capitoli da capo' : `Genera i ${totalChapters - completedChapters} capitoli rimanenti`}
                         >
                             <Sparkles size={16} />
@@ -1166,21 +1168,22 @@ function OutlineTab({
                                 ? 'Rigenera Tutti'
                                 : `Genera Tutti (${totalChapters - completedChapters})`}
                         </button>
+                        {/* Pulsante Aggiungi Capitolo */}
+                        <button
+                            onClick={() => handleAddChapter()}
+                            disabled={generatingChapter !== null || isGeneratingOutline}
+                            className="px-3 py-2 bg-green-600 text-white text-sm rounded-lg hover:bg-green-700 disabled:bg-green-300 disabled:cursor-not-allowed flex items-center gap-2 transition-colors"
+                        >
+                            <Sparkles size={16} />
+                            Aggiungi Capitolo
+                        </button>
                     </div>
                 </div>
             </Card>
 
             {/* Lista capitoli con pulsanti di generazione */}
-            <div className="flex items-center justify-between mb-4">
+            <div className="mb-3">
                 <h3 className="text-lg font-semibold text-gray-900">Capitoli</h3>
-                <button
-                    onClick={() => handleAddChapter()}
-                    disabled={generatingChapter !== null || isGeneratingOutline}
-                    className="px-4 py-2 bg-green-600 text-white text-sm rounded-lg hover:bg-green-700 disabled:bg-green-300 disabled:cursor-not-allowed flex items-center gap-2 transition-colors"
-                >
-                    <Sparkles size={16} />
-                    Aggiungi Capitolo
-                </button>
             </div>
 
             <div className="space-y-2">
@@ -1869,6 +1872,10 @@ function ConsistencyTab({
     regeneratingChapter
 }: ConsistencyTabProps) {
     const [runningCheck, setRunningCheck] = useState(false);
+    const [selectedIssue, setSelectedIssue] = useState<{
+        issue: any;
+        chapterNumber: number;
+    } | null>(null);
 
     // Usa il report già incluso nel progetto
     const existingReport = (project as any).consistencyReport;
@@ -1983,28 +1990,14 @@ function ConsistencyTab({
             {consistencyReport && (
                 <Card>
                     <div className="space-y-3">
-                        {/* Header con Overall Score */}
-                        <div className="flex items-start gap-2">
-                            <div className="flex-shrink-0 w-24 h-24 rounded-full bg-purple-100 flex items-center justify-center">
-                                <div className="text-center">
-                                    <div className="text-3xl font-bold text-purple-600">
-                                        {consistencyReport.overallScore || 0}
-                                    </div>
-                                    <div className="text-xs text-purple-600">/100</div>
+                        {/* Header */}
+                        <div>
+                            {contentChanged && (
+                                <div className="mt-2 inline-flex items-center gap-1 px-2 py-1 bg-orange-100 text-orange-700 text-xs rounded">
+                                    <AlertCircle size={12} />
+                                    Potrebbe essere obsoleto
                                 </div>
-                            </div>
-                            <div className="flex-1">
-                                <h3 className="text-2xl font-bold text-gray-900 mb-2">Report Completo</h3>
-                                <p className="text-gray-600">
-                                    Analisi dettagliata della qualità e coerenza del libro
-                                </p>
-                                {contentChanged && (
-                                    <div className="mt-2 inline-flex items-center gap-1 px-2 py-1 bg-orange-100 text-orange-700 text-xs rounded">
-                                        <AlertCircle size={12} />
-                                        Potrebbe essere obsoleto
-                                    </div>
-                                )}
-                            </div>
+                            )}
                         </div>
 
                         {/* Score breakdown cards */}
@@ -2097,10 +2090,24 @@ function ConsistencyTab({
                                                             {issue.severity}
                                                         </span>
                                                     </div>
-                                                    <div className="text-sm text-gray-700 flex items-start gap-2">
+                                                    <div className="text-sm text-gray-700 flex items-start gap-2 mb-3">
                                                         <span className="text-gray-400">💡</span>
                                                         <span>{issue.suggestion}</span>
                                                     </div>
+
+                                                    {/* Preview Modifica Button */}
+                                                    {FEATURE_FLAGS.SUGGESTION_AUTO_APPLY && issue.chapter && (
+                                                        <button
+                                                            onClick={() => setSelectedIssue({
+                                                                issue: issue,
+                                                                chapterNumber: issue.chapter
+                                                            })}
+                                                            disabled={generatingChapter !== null || regeneratingChapter !== null}
+                                                            className="px-4 py-2 bg-purple-600 text-white text-sm rounded-lg hover:bg-purple-700 disabled:bg-purple-300 disabled:cursor-not-allowed flex items-center gap-2 transition-colors"
+                                                        >
+                                                            🔍 Preview Modifica
+                                                        </button>
+                                                    )}
                                                 </div>
                                             ))}
                                     </div>
@@ -2154,6 +2161,21 @@ function ConsistencyTab({
                         </p>
                     </div>
                 </Card>
+            )}
+
+            {/* Diff Viewer Modal */}
+            {selectedIssue && (
+                <DiffViewerModal
+                    isOpen={!!selectedIssue}
+                    onCloseAction={() => setSelectedIssue(null)}
+                    issue={selectedIssue.issue}
+                    chapterNumber={selectedIssue.chapterNumber}
+                    projectId={project.id}
+                    onAppliedAction={async () => {
+                        await onRefresh();  // Ricarica progetto
+                        toast.info('💡 Considera di rigenerare il consistency report per verificare l\'impatto');
+                    }}
+                />
             )}
         </div>
     );

@@ -18,6 +18,47 @@ interface ChangelogEntry {
 
 const changelog: ChangelogEntry[] = [
     {
+        version: '3.21.0',
+        date: '21 Novembre 2025',
+        type: 'feature',
+        changes: [
+            {
+                category: 'Consistency Check',
+                items: [
+                    '🚀 Nuova funzionalità: Apply Consistency Suggestions',
+                    '🔍 Preview diff interattivo prima di applicare modifiche',
+                    '✨ Applicazione automatica suggerimenti con AI (GPT-5)',
+                    '📊 Split view per confronto before/after con syntax highlighting',
+                    '📈 Metriche di impatto: parole cambiate, percentuale, costo stimato',
+                    '💡 AI reasoning: visualizza spiegazione della modifica proposta',
+                    '↩️ Supporto undo automatico con versioning (previousContent)',
+                    '⚙️ Feature flag configurabile per rollout graduale (NEXT_PUBLIC_ENABLE_SUGGESTION_APPLY)',
+                    '🛡️ AI confidence threshold (0.7): rifiuta applicazioni automatiche se AI non è sicura',
+                    '⚠️ Warning banner per cascading invalidation tra suggerimenti',
+                ],
+            },
+            {
+                category: 'Developer Experience',
+                items: [
+                    'Nuovo endpoint API: POST /api/projects/[id]/suggestions/apply',
+                    'Extended AI service con metodo applySuggestion() in chapter-generation.ts',
+                    'Nuovi types: DiffChange, ApplySuggestionResult, SuggestionApplyRequest',
+                    'Feature flags system: lib/config/feature-flags.ts',
+                    'Nuovo componente: DiffViewerModal.tsx con full split-view',
+                    'Aggiunto reasoning effort "suggestion-apply": "medium" per bilanciamento accuracy/costo',
+                ],
+            },
+            {
+                category: 'Documentation',
+                items: [
+                    'Aggiornata API_DOCUMENTATION.md con nuovo endpoint',
+                    'Aggiornata COMPONENTS.md con DiffViewerModal',
+                    'Creato SUGGESTION_APPLY_IMPLEMENTATION_PLAN.md (piano completo 3 sprint)',
+                ],
+            },
+        ],
+    },
+    {
         version: '3.20.0',
         date: '18 Novembre 2025',
         type: 'feature',

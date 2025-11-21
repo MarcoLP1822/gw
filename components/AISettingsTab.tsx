@@ -5,6 +5,7 @@ import { Settings, Sliders, Save, RotateCcw, AlertCircle, CheckCircle2, Loader2,
 import { FormFieldTooltip, tooltipContent } from '@/components/ui/Tooltip';
 import DocumentUpload from '@/components/DocumentUpload';
 import StyleGuideEditor from '@/components/StyleGuideEditor';
+import Card from '@/components/Card';
 import type { ProjectAIConfig } from '@prisma/client';
 import { logger } from '@/lib/logger';
 
@@ -170,13 +171,23 @@ export default function AISettingsTab({ projectId, onRefresh }: AISettingsTabPro
     if (!config) return <div className="text-center py-12"><AlertCircle className="w-12 h-12 text-red-500 mx-auto mb-4" /><p className="text-gray-600">Errore caricamento</p></div>;
 
     return (
-        <div className="max-w-4xl mx-auto space-y-6">
+        <div className="max-w-4xl mx-auto space-y-3">
             {/* Messaggi di errore/successo */}
-            {error && <div className="p-4 bg-red-50 border border-red-200 rounded-lg flex items-start gap-3"><AlertCircle className="w-5 h-5 text-red-600" /><p className="text-sm text-red-800">{error}</p></div>}
-            {successMessage && <div className="p-4 bg-green-50 border border-green-200 rounded-lg flex items-start gap-3"><CheckCircle2 className="w-5 h-5 text-green-600" /><p className="text-sm text-green-800">{successMessage}</p></div>}
+            {error && (
+                <div className="p-3 bg-red-50 border border-red-200 rounded-lg flex items-start gap-3">
+                    <AlertCircle className="w-5 h-5 text-red-600" />
+                    <p className="text-sm text-red-800">{error}</p>
+                </div>
+            )}
+            {successMessage && (
+                <div className="p-3 bg-green-50 border border-green-200 rounded-lg flex items-start gap-3">
+                    <CheckCircle2 className="w-5 h-5 text-green-600" />
+                    <p className="text-sm text-green-800">{successMessage}</p>
+                </div>
+            )}
 
             {/* Save/Reset Buttons */}
-            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+            <Card>
                 <div className="flex items-center justify-between gap-4 flex-wrap">
                     <div className="flex items-center gap-3">
                         <button
@@ -209,13 +220,13 @@ export default function AISettingsTab({ projectId, onRefresh }: AISettingsTabPro
                         <strong>Attenzione:</strong> Il &quot;Reset Progetto Completo&quot; cancellerà permanentemente tutto il contenuto generato (outline, capitoli, consistency reports) e riporterà il progetto allo stato iniziale di bozza. Questa azione non può essere annullata.
                     </p>
                 </div>
-            </div>
+            </Card>
 
             {/* Parametri Tecnici - Collapsible */}
-            <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+            <Card>
                 <button
                     onClick={() => toggleSection('technical')}
-                    className="w-full p-6 flex items-center justify-between hover:bg-gray-50 transition-colors"
+                    className="w-full -m-3 p-3 flex items-center justify-between hover:bg-gray-50 transition-colors"
                 >
                     <div className="flex items-center gap-3">
                         <Sliders className="w-5 h-5 text-blue-600" />
@@ -229,8 +240,8 @@ export default function AISettingsTab({ projectId, onRefresh }: AISettingsTabPro
                 </button>
 
                 {expandedSections.includes('technical') && (
-                    <div className="px-6 pb-6 border-t border-gray-100">
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
+                    <div className="px-3 pb-3 border-t border-gray-100">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-3">
                             <div className="md:col-span-2">
                                 <label className="block text-sm font-medium text-gray-700 mb-2">
                                     AI Model
@@ -318,13 +329,13 @@ export default function AISettingsTab({ projectId, onRefresh }: AISettingsTabPro
                         </div>
                     </div>
                 )}
-            </div>
+            </Card>
 
             {/* Document Upload Section - Collapsible */}
-            <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+            <Card>
                 <button
                     onClick={() => toggleSection('documents')}
-                    className="w-full p-6 flex items-center justify-between hover:bg-gray-50 transition-colors"
+                    className="w-full -m-3 p-3 flex items-center justify-between hover:bg-gray-50 transition-colors"
                 >
                     <div className="flex items-center gap-3">
                         <FileText className="w-5 h-5 text-green-600" />
@@ -338,8 +349,8 @@ export default function AISettingsTab({ projectId, onRefresh }: AISettingsTabPro
                 </button>
 
                 {expandedSections.includes('documents') && (
-                    <div className="px-6 pb-6 border-t border-gray-100">
-                        <p className="text-sm text-gray-600 mb-4 mt-6">
+                    <div className="px-3 pb-3 border-t border-gray-100">
+                        <p className="text-sm text-gray-600 mb-4 mt-3">
                             Carica documenti di riferimento per generare automaticamente lo style guide
                         </p>
                         <DocumentUpload
@@ -350,13 +361,13 @@ export default function AISettingsTab({ projectId, onRefresh }: AISettingsTabPro
                         />
                     </div>
                 )}
-            </div>
+            </Card>
 
             {/* Style Guide Section - Collapsible */}
-            <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+            <Card>
                 <button
                     onClick={() => toggleSection('styleguide')}
-                    className="w-full p-6 flex items-center justify-between hover:bg-gray-50 transition-colors"
+                    className="w-full -m-3 p-3 flex items-center justify-between hover:bg-gray-50 transition-colors"
                 >
                     <div className="flex items-center gap-3">
                         <Sparkles className="w-5 h-5 text-purple-600" />
@@ -370,7 +381,7 @@ export default function AISettingsTab({ projectId, onRefresh }: AISettingsTabPro
                 </button>
 
                 {expandedSections.includes('styleguide') && (
-                    <div className="px-6 pb-6 border-t border-gray-100 mt-6">
+                    <div className="px-3 pb-3 border-t border-gray-100 mt-3">
                         <StyleGuideEditor
                             projectId={projectId}
                             hasDocuments={documents.length > 0}
@@ -378,9 +389,7 @@ export default function AISettingsTab({ projectId, onRefresh }: AISettingsTabPro
                         />
                     </div>
                 )}
-            </div>
-
-
+            </Card>
         </div>
     );
 }

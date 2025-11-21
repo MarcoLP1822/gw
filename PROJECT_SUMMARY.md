@@ -1,8 +1,8 @@
 # 🎉 Ghost Writing Platform - Project Summary
 
 **Status**: ✅ **PRODUCTION READY**  
-**Last Update**: 13 Novembre 2025  
-**Version**: 2.1 - Complete System + Vercel Blob Upload
+**Last Update**: 19 Novembre 2025  
+**Version**: 2.2 - Sistema Completo con Logging e Rate Limiting
 
 ---
 
@@ -32,7 +32,7 @@
 
 #### 2. **AI Outline Generation** ✅
 - Automatic outline generation (10-15 chapters)
-- Model: OpenAI gpt-4o-mini
+- Model: OpenAI gpt-5-mini
 - Time: ~20 seconds
 - Cost: ~$0.003 per outline
 - Unlimited regeneration
@@ -58,7 +58,7 @@
 - Final comprehensive check on complete book
 - Detailed report with 0-100 score
 - Analysis: coherence, characters, style, timeline
-- Model: gpt-4o for maximum accuracy
+- Model: gpt-5-mini con reasoning effort elevato
 
 #### 6. **Document Export** ✅
 - Professional DOCX export
@@ -114,6 +114,20 @@
 - Style guide generation from documents
 - Client-side direct upload
 
+### System Improvements
+
+#### 14. **Logging Strutturato** ✅
+- Sistema di logging centralizzato (`lib/logger.ts`)
+- Livelli: debug, info, warn, error
+- Context tracking per debugging avanzato
+- Sostituiti tutti i console.log in produzione
+
+#### 15. **Rate Limiting** ✅
+- Sistema di rate limiting per API (`lib/rate-limit.ts`)
+- Protezione da abusi e costi eccessivi
+- Preset configurabili per diversi endpoint
+- Memory-based storage (pronto per Redis)
+
 ---
 
 ## 🏗️ Architecture
@@ -138,15 +152,17 @@
 │   └─ /api/stats (dashboard analytics)      │
 └─────────────────┬───────────────────────────┘
                   │
-┌─────────────────▼───────────────────────────┐
+┌─────────────────┴─────────────────────────────┐
 │      BUSINESS LOGIC (Services/Utils)        │
+│   ├─ Logger (structured logging)          │
+│   ├─ RateLimit (API protection)           │
 │   ├─ PromptBuilder (dynamic AI prompts)    │
 │   ├─ AIConfigService (config management)   │
 │   ├─ ChapterGenerationService              │
 │   ├─ BatchGenerationService                │
 │   ├─ ConsistencyChecker                    │
 │   └─ DocxGenerator (export)                │
-└─────────────────┬───────────────────────────┘
+└─────────────────┬─────────────────────────────┘
                   │
 ┌─────────────────▼───────────────────────────┐
 │      DATA LAYER (Prisma + PostgreSQL)       │
@@ -159,9 +175,9 @@
 │   └─ User (auth ready)                     │
 └─────────────────┬───────────────────────────┘
                   │
-┌─────────────────▼───────────────────────────┐
+┌─────────────────┴─────────────────────────────┐
 │      EXTERNAL SERVICES                      │
-│   ├─ OpenAI API (GPT-4o, GPT-4o-mini)      │
+│   ├─ OpenAI API (GPT-5-mini)               │
 │   ├─ Supabase (PostgreSQL hosting)         │
 │   ├─ Vercel Blob (file storage)            │
 │   └─ Vercel (deployment ready)             │
@@ -178,7 +194,9 @@
 |----------|---------|----------|
 | **README.md** | Main project overview, features, setup | Everyone |
 | **PROJECT_SUMMARY.md** | This file - high-level overview | Everyone |
+| **DEBUG_SUMMARY.md** | Stato app e roadmap | Developers |
 | **TROUBLESHOOTING_GUIDE.md** | Common issues and solutions | Developers/Users |
+| **QUICK_FIXES.md** | Soluzioni rapide | Everyone |
 
 ### Technical Docs (docs/ folder)
 
@@ -279,7 +297,7 @@ npm run dev
 
 ## 📊 Cost Estimates
 
-Based on OpenAI pricing (GPT-4o-mini):
+Based on OpenAI pricing (GPT-5-mini):
 
 | Operation | Cost | Time |
 |-----------|------|------|
@@ -289,7 +307,7 @@ Based on OpenAI pricing (GPT-4o-mini):
 | Consistency Check | ~$0.02 | ~40s |
 | **Total per Book** | **~$0.12** | **~7min** |
 
-*Note: Using GPT-4o for consistency check adds ~$0.15 more*
+*Note: GPT-5-mini offre reasoning capabilities avanzate senza costi aggiuntivi*
 
 ---
 
@@ -368,6 +386,6 @@ The application is complete, tested, and ready for deployment. All core features
 
 ---
 
-**Last Updated**: November 13, 2025  
-**Version**: 2.1  
+**Last Updated**: November 19, 2025  
+**Version**: 2.2  
 **Maintainers**: Ghost Writing Team

@@ -33,7 +33,7 @@ Una piattaforma completa per la creazione automatizzata di libri di business e c
 - ✅ **Modifica Progetti**: Aggiorna dati dopo la creazione
 
 ### 🤖 Sprint 3: AI Outline Generation
-- ✅ **Generazione Outline con AI**: OpenAI GPT-5-mini-2025-08-07
+- ✅ **Generazione Outline con AI**: OpenAI GPT-5-mini
 - ✅ **Prompt Engineering**: Template personalizzati per outline
 - ✅ **Rigenerazione Illimitata**: Migliora l'outline infinite volte
 - ✅ **Visualizzazione Professionale**: Card design per capitoli
@@ -81,7 +81,7 @@ Una piattaforma completa per la creazione automatizzata di libri di business e c
 - **pgBouncer** - Connection pooling
 
 ### AI
-- **OpenAI API** - GPT-5-mini-2025-08-07
+- **OpenAI API** - GPT-5-mini
 - **JSON Mode** - Structured output
 - **Custom Prompts** - Tailored for book writing
 
@@ -168,10 +168,11 @@ Vedi `prisma/schema.prisma` per lo schema completo.
 ## 🤖 AI Integration
 
 ### Modello Utilizzato
-- **GPT-5-mini-2025-08-07** - Per tutte le operazioni (outline, capitoli, consistency check)
+- **GPT-5-mini** - Per tutte le operazioni (outline, capitoli, consistency check)
   - Veloce ed economico
   - Ottimizzato per la generazione di contenuti lunghi
   - Consistente e affidabile
+  - Supporta Responses API con reasoning effort e verbosity
 
 **Nota**: Altri modelli saranno disponibili in futuro per offrire più opzioni di qualità e prezzo.
 
@@ -248,8 +249,9 @@ OPENAI_API_KEY=sk-proj-...
 
 ### 📋 Essential Docs
 - **[PROJECT_SUMMARY.md](./PROJECT_SUMMARY.md)** - Complete project overview & current status
-- **[IMPLEMENTATION_COMPLETE.md](./IMPLEMENTATION_COMPLETE.md)** - Latest features implementation report
+- **[DEBUG_SUMMARY.md](./DEBUG_SUMMARY.md)** - Stato attuale e roadmap
 - **[TROUBLESHOOTING_GUIDE.md](./TROUBLESHOOTING_GUIDE.md)** - Common issues & solutions
+- **[QUICK_FIXES.md](./QUICK_FIXES.md)** - Soluzioni rapide
 
 ### 🔧 Technical Documentation (`/docs` folder)
 - **[docs/API_DOCUMENTATION.md](./docs/API_DOCUMENTATION.md)** - Complete API reference with examples
@@ -296,7 +298,7 @@ Questo progetto è sotto licenza MIT. Vedi il file `LICENSE` per dettagli.
 
 ---
 
-## 🔧 **Debug & Maintenance Tools** ⭐ NEW
+## 🔧 **Maintenance Tools**
 
 ### Quick Commands
 ```powershell
@@ -307,24 +309,17 @@ Questo progetto è sotto licenza MIT. Vedi il file `LICENSE` per dettagli.
 .\scripts\update-dependencies.ps1
 ```
 
-### 📖 Documentation
-- **`DEBUG_REPORT.md`** - Analisi completa (77% score) ⭐
-- **`DEBUG_SUMMARY.md`** - Riepilogo + Roadmap ⭐
-- **`QUICK_FIXES.md`** - Soluzioni rapide ⭐
-- **`docs/SECURITY.md`** - Security best practices ⭐
-
-### 🛠️ New Libraries
-- **`lib/logger.ts`** - Logging strutturato ⭐
-- **`lib/rate-limit.ts`** - Rate limiting ⭐
+### 🛠️ Librerie Utility
+- **`lib/logger.ts`** - Sistema di logging strutturato
+- **`lib/rate-limit.ts`** - Rate limiting per API
+- **`lib/errors/`** - Gestione errori centralizzata
 
 ### ⚠️ Pre-Production Checklist
 - [ ] NextAuth.js authentication
-- [ ] API routes rate limiting
-- [ ] Structured logging
-- [ ] Input validation (Zod)
+- [ ] Enhanced rate limiting per tutte le API routes
+- [ ] Input validation con Zod
 - [ ] Error monitoring (Sentry)
-
-**📊 Health Status**: ✅ 6/7 checks | ⚠️ 12 packages outdated
+- [ ] Performance monitoring
 
 ---
 
@@ -340,5 +335,5 @@ Questo progetto è sotto licenza MIT. Vedi il file `LICENSE` per dettagli.
 
 <p align="center">
   Made with ❤️ for writers and entrepreneurs<br>
-  <strong>Last Debug: 17 Nov 2025 | Status: ✅ Ready for Development</strong>
+  <strong>Last Update: 19 Nov 2025 | Status: ✅ Ready for Development</strong>
 </p>

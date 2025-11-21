@@ -486,5 +486,14 @@ npm run db:reset  # Solo in dev!
 
 ---
 
-**Last Updated**: 17 Novembre 2025  
-**Version**: 1.0
+## 📚 Documentazione Completa
+
+Per guide più dettagliate, consulta:
+- **[TROUBLESHOOTING_GUIDE.md](./TROUBLESHOOTING_GUIDE.md)** - Guide approfondite
+- **[DEBUG_SUMMARY.md](./DEBUG_SUMMARY.md)** - Stato app e roadmap
+- **[docs/](./docs/)** - Documentazione tecnica completa
+
+---
+
+**Last Updated**: 19 Novembre 2025  
+**Version**: 1.1

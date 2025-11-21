@@ -521,6 +521,63 @@ setIsOpen(false);
 
 ---
 
+## 🔍 DiffViewerModal
+
+**Location**: `components/DiffViewerModal.tsx`
+
+**Purpose**: Modal per preview e applicazione di suggerimenti dal consistency check con split-view diff before/after.
+
+**Props**:
+```typescript
+interface DiffViewerModalProps {
+  isOpen: boolean;
+  onCloseAction: () => void;
+  issue: ConsistencyIssue;
+  chapterNumber: number;
+  projectId: string;
+  onAppliedAction: () => void;  // Callback quando modifica applicata
+}
+```
+
+**Usage**:
+```tsx
+<DiffViewerModal
+  isOpen={!!selectedIssue}
+  onCloseAction={() => setSelectedIssue(null)}
+  issue={selectedIssue.issue}
+  chapterNumber={selectedIssue.chapterNumber}
+  projectId={project.id}
+  onAppliedAction={async () => {
+    await onRefresh();
+    toast.info('💡 Considera di rigenerare il consistency report');
+  }}
+/>
+```
+
+**Features**:
+- ✅ **Split-view diff**: Before/after side-by-side comparison
+- ✅ **Auto-fetch preview**: Carica preview automaticamente all'apertura
+- ✅ **Loading states**: Spinner + messaggio durante generazione
+- ✅ **Error handling**: UI per retry in caso di errore
+- ✅ **Impact metrics**: Visualizza parole cambiate, percentuale, costo
+- ✅ **AI reasoning**: Mostra spiegazione della modifica
+- ✅ **Actions**: Rifiuta, Rigenera, Applica
+- ✅ **Warning banner**: Alert per cascading invalidation
+- ✅ **Responsive**: Grid su mobile, 2 colonne su desktop
+- ✅ **Syntax highlighting**: Evidenzia modifiche in rosso/verde
+
+**States**:
+- `loading`: Boolean per stato caricamento preview
+- `diffData`: Oggetto con oldContent, newContent, changes, metrics
+- `applying`: Boolean per stato applicazione modifica
+- `error`: String con messaggio errore
+
+**API Calls**:
+- `POST /api/projects/[id]/suggestions/apply` con `preview: true` per diff
+- `POST /api/projects/[id]/suggestions/apply` con `preview: false` per apply
+
+---
+
 ## 🎯 Best Practices
 
 1. **Component Composition**

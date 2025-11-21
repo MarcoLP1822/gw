@@ -233,6 +233,7 @@ export function getReasoningEffortForTask(taskType: string): ReasoningEffort {
         'outline-generation': 'medium',
         'style-guide': 'medium',
         'consistency-check': 'medium', // Balanced: accurate but cost-effective
+        'suggestion-apply': 'medium',  // Balanced: accuracy importante ma non critical
 
         // Tasks complessi - high
         'deep-analysis': 'high',

@@ -30,7 +30,6 @@ npm run dev
 | File | Descrizione | Quando Usarlo |
 |------|-------------|---------------|
 | **[DEBUG_SUMMARY.md](../DEBUG_SUMMARY.md)** | Riepilogo esecutivo + Roadmap | Panoramica veloce |
-| **[DEBUG_REPORT.md](../DEBUG_REPORT.md)** | Analisi completa di debug | Approfondimento tecnico |
 | **[QUICK_FIXES.md](../QUICK_FIXES.md)** | Soluzioni rapide | Quando hai un problema |
 | **[TROUBLESHOOTING_GUIDE.md](../TROUBLESHOOTING_GUIDE.md)** | Guide dettagliate | Debug avanzato |
 
@@ -60,7 +59,6 @@ npm run dev
 | File | Descrizione | Quando Usarlo |
 |------|-------------|---------------|
 | **[TESTING.md](TESTING.md)** | Guida ai test | Scrivere test |
-| **[TEST_IMPLEMENTATION_SUMMARY.md](../TEST_IMPLEMENTATION_SUMMARY.md)** | Stato test | Verificare coverage |
 
 ### 🗄️ Database
 | File | Descrizione | Quando Usarlo |
@@ -225,7 +223,7 @@ npm outdated
 
 ### Self-Service
 1. **[QUICK_FIXES.md](../QUICK_FIXES.md)** - 90% dei problemi comuni
-2. **[DEBUG_REPORT.md](../DEBUG_REPORT.md)** - Analisi tecnica
+2. **[DEBUG_SUMMARY.md](../DEBUG_SUMMARY.md)** - Stato app e roadmap
 3. **[TROUBLESHOOTING_GUIDE.md](../TROUBLESHOOTING_GUIDE.md)** - Debug avanzato
 
 ### Code Examples
@@ -252,7 +250,7 @@ npm run verify:deployment
 ghost/
 ├── 📄 README.md                    ← Start here
 ├── 📄 DEBUG_SUMMARY.md            ← Overview ⭐
-├── 📄 DEBUG_REPORT.md             ← Deep dive ⭐
+├── 📄 PROJECT_SUMMARY.md          ← Project status ⭐
 ├── 📄 QUICK_FIXES.md              ← Solutions ⭐
 │
 ├── docs/
@@ -274,8 +272,8 @@ ghost/
 
 ---
 
-**Last Updated**: 17 Novembre 2025  
-**Version**: 1.0  
+**Last Updated**: 19 Novembre 2025  
+**Version**: 1.1  
 **Status**: ✅ Complete
 
 **📌 Bookmark this page for easy documentation navigation!**
