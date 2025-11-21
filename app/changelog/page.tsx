@@ -18,6 +18,26 @@ interface ChangelogEntry {
 
 const changelog: ChangelogEntry[] = [
     {
+        version: '3.22.0',
+        date: '21 Novembre 2025',
+        type: 'feature',
+        changes: [
+            {
+                category: 'Consistency Check',
+                items: [
+                    'Apply Consistency Suggestions v3.21.0',
+                ],
+            },
+            {
+                category: 'Generale',
+                items: [
+                    'TypeScript error in upload route - cast error to Error type',
+                    'Implementato rate limiting su tutti gli endpoint critici',
+                ],
+            }
+        ],
+    },
+    {
         version: '3.21.0',
         date: '21 Novembre 2025',
         type: 'feature',
