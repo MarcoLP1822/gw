@@ -268,7 +268,7 @@ const changelog: ChangelogEntry[] = [
                 category: 'Generale',
                 items: [
                     'Aggiunto margine sinistro a tutte le pagine per sidebar fissa',
-                    'Sidebar fissa nella pagina flipbook per evitare scroll indesiderato',
+                    'Sidebar fissa nella pagina Book viewer per evitare scroll indesiderato',
                 ],
             }
         ],
@@ -282,7 +282,7 @@ const changelog: ChangelogEntry[] = [
                 category: 'Generale',
                 items: [
                     'Aggiunto margine sinistro a tutte le pagine per sidebar fissa',
-                    'Sidebar fissa nella pagina flipbook per evitare scroll indesiderato',
+                    'Sidebar fissa nella pagina Book viewer per evitare scroll indesiderato',
                 ],
             },
             {
@@ -301,7 +301,7 @@ const changelog: ChangelogEntry[] = [
             {
                 category: 'Generale',
                 items: [
-                    'Sidebar fissa nella pagina flipbook per evitare scroll indesiderato',
+                    'Sidebar fissa nella pagina Book viewer per evitare scroll indesiderato',
                 ],
             },
             {
@@ -372,7 +372,7 @@ const changelog: ChangelogEntry[] = [
                 category: 'Generale',
                 items: [
                     'Aggiornato anche metodo PATCH per params asincroni',
-                    'Rimosse statistiche dal flipbook per accorciare la pagina',
+                    'Rimosse statistiche dal Book viewer per accorciare la pagina',
                 ],
             },
             {
@@ -398,7 +398,7 @@ const changelog: ChangelogEntry[] = [
             {
                 category: 'Generale',
                 items: [
-                    'Rimosse statistiche dal flipbook per accorciare la pagina',
+                    'Rimosse statistiche dal Book viewer per accorciare la pagina',
                 ],
             }
         ],
@@ -411,7 +411,7 @@ const changelog: ChangelogEntry[] = [
             {
                 category: 'Generale',
                 items: [
-                    'Rimosse statistiche dal flipbook per accorciare la pagina',
+                    'Rimosse statistiche dal Book viewer per accorciare la pagina',
                 ],
             },
             {

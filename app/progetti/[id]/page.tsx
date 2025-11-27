@@ -2263,7 +2263,7 @@ function ExportTab({ project }: { project: ProjectDetail }) {
             document.body.removeChild(a);
 
             setExportSuccess(true);
-            toast.success('📄 PDF scaricato e salvato nella libreria Flipbook!');
+            toast.success('📄 PDF scaricato e salvato nella libreria Book viewer!');
             setTimeout(() => setExportSuccess(false), 3000);
         } catch (err) {
             const errorMessage = err instanceof Error ? err.message : 'Errore sconosciuto';
@@ -2404,7 +2404,7 @@ function ExportTab({ project }: { project: ProjectDetail }) {
                         <strong>Formato DOCX:</strong> Microsoft Word (.docx) compatibile con Word 2013+
                     </p>
                     <p>
-                        <strong>Formato PDF:</strong> Il PDF viene automaticamente salvato nella libreria Flipbook per la visualizzazione online
+                        <strong>Formato PDF:</strong> Il PDF viene automaticamente salvato nella libreria Book viewer per la visualizzazione online
                     </p>
                     <p>
                         <strong>Contenuto:</strong> Copertina personalizzata, copyright, indice automatico,

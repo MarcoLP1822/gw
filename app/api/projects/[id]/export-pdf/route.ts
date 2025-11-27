@@ -1,6 +1,6 @@
 /**
  * PDF Export API
- * Genera PDF + Download + Auto-Save to Flipbook
+ * Genera PDF + Download + Auto-Save to Book Viewer
  */
 
 import { NextRequest, NextResponse } from 'next/server';
@@ -51,7 +51,7 @@ export async function GET(
 
         const fileName = PdfGenerator.generateFileName(project);
 
-        // 3. AUTO-SAVE to Vercel Blob + Supabase (for Flipbook)
+        // 3. AUTO-SAVE to Vercel Blob + Supabase (for Book viewer)
         try {
             const uint8Array = new Uint8Array(buffer);
             const blob = new Blob([uint8Array], { type: 'application/pdf' });
@@ -88,10 +88,10 @@ export async function GET(
                 },
             });
 
-            logger.info('✅ PDF auto-saved to Flipbook', { url, projectId: id, fileName });
+            logger.info('✅ PDF auto-saved to Book viewer', { url, projectId: id, fileName });
         } catch (saveError) {
             // Log error but don't fail the download
-            logger.error('❌ Failed to save PDF to Flipbook', saveError, { projectId: id });
+            logger.error('❌ Failed to save PDF to Book viewer', saveError, { projectId: id });
         }
 
         // 4. Return PDF for download

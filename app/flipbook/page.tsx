@@ -38,7 +38,7 @@ interface ExportedBook {
     };
 }
 
-export default function FlipbookPage() {
+export default function BookViewerPage() {
     const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
     const [mobileOpen, setMobileOpen] = useState(false);
     const [selectedBookId, setSelectedBookId] = useState<string | null>(null);
@@ -80,7 +80,7 @@ export default function FlipbookPage() {
                 sidebarCollapsed ? "lg:ml-16" : "lg:ml-64"
             )}>
                 <PageContainer
-                    title="📚 Flipbook - Libreria Digitale"
+                    title="📚 Book viewer - Libreria Digitale"
                     onMenuClick={() => setMobileOpen(true)}
                 >
                     {/* Book Selector */}
