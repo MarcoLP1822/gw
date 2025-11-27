@@ -18,6 +18,26 @@ interface ChangelogEntry {
 
 const changelog: ChangelogEntry[] = [
     {
+        version: '3.24.0',
+        date: '27 Novembre 2025',
+        type: 'feature',
+        changes: [
+            {
+                category: 'Generale',
+                items: [
+                    '🎨 Rebrand: Flipbook → Book Viewer',
+                    '🧹 Pulizia repository: rimozione file obsoleti e non implementati',
+                ],
+            },
+            {
+                category: 'Consistency Check',
+                items: [
+                    'Apply Consistency Suggestions v3.21.0',
+                ],
+            }
+        ],
+    },
+    {
         version: '3.23.0',
         date: '27 Novembre 2025',
         type: 'feature',
