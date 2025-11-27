@@ -18,6 +18,26 @@ interface ChangelogEntry {
 
 const changelog: ChangelogEntry[] = [
     {
+        version: '3.23.0',
+        date: '27 Novembre 2025',
+        type: 'feature',
+        changes: [
+            {
+                category: 'Generale',
+                items: [
+                    '🧹 Pulizia repository: rimozione file obsoleti e non implementati',
+                    'TypeScript error in upload route - cast error to Error type',
+                ],
+            },
+            {
+                category: 'Consistency Check',
+                items: [
+                    'Apply Consistency Suggestions v3.21.0',
+                ],
+            }
+        ],
+    },
+    {
         version: '3.22.0',
         date: '21 Novembre 2025',
         type: 'feature',
